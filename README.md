@@ -3,7 +3,9 @@
 Separate your domain model from your delivery mechanism.
 
 ## Overview
-Aggregate Repository is a [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html)-style ORM (object relational mapper) that persists POROs (plain old Ruby objects) to a relational DB.
+Vorpal is a [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html)-style ORM (object relational mapper) framelet that persists POROs (plain old Ruby objects) to a relational DB.
+
+We say 'framelet' because it doesn't attempt to give you all the goodies that ORMs usually provide. Instead, it layers on top of an existing ORM and allows you to use the simplicity of the Active Record pattern where appropriate and the power of the Data Mapper pattern when you need it.
 
 3 things set it apart from existing Ruby ORMs (ActiveRecord and Datamapper):
 
@@ -129,17 +131,7 @@ TBD
 
 ## API Documentation
 
-(Link to rubydoc.info)
-
-### Configuration DSL
-
-See Yardoc.
-
-For polymorphic associations, do we want to save the type as the table_name or the domain_class? Is the domain class easier to query with?
-
-### Repository
-
-See Yardoc.
+(http://rubydoc.info/github/nulogy/vorpal/master/frames)
 
 ## Caveats
 It also does not do some things that you might expect from other ORMs:

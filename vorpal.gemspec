@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Sean Kirby"]
   spec.email         = ["seank@nulogy.com"]
   spec.summary       = %q{Separate your domain model from your delivery mechanism.}
-  spec.description   = %q{An ORM adaptor that fits on top of ActiveRecord to give you 'Data Mapper' semantics.}
+  spec.description   = %q{An ORM framelet that fits on top of ActiveRecord to give you 'Data Mapper' semantics.}
   spec.homepage      = "https://github.com/nulogy/vorpal"
   spec.license       = "MIT"
 
