@@ -79,7 +79,7 @@ class Tree
   attribute :branches, Array[Branch]
 end
 ```
-POROs must have setters and getters for all fields and associations that are to be persisted.
+POROs must have setters and getters for all fields and associations that are to be persisted. They must also provide a no argument constructor.
 
 Along with a relational model:
 
