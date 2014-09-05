@@ -126,7 +126,7 @@ repository = Persistence::Configuration.define do
   end
 end
 ```
-Why don't we use DDD language? I see no mention of aggregates and entities!
+NOTE: Why don't we use DDD language? I see no mention of aggregates and entities!
 
 And use it:
 
@@ -138,9 +138,9 @@ small_tree = repository.load(small_tree_id, Tree)
 repository.destroy(dead_tree)
 ```
 
-Show implementation of a repository using the aggregate repository!!!
+TODO: Show implementation of a repository using the aggregate repository!!!
 
-Talk about aggregate boundary.
+TODO: Talk about aggregate boundary.
 
 ### With ActiveRecord
 TBD
