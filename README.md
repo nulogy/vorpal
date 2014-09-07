@@ -107,12 +107,12 @@ CREATE TABLE branches
 Create a repository configured to persist the aggregate to the relational model:
 
 ```ruby
-require 'vorpal/configuration'
+require 'vorpal'
 
 module TreeRepository
   extend self
   
-  @repository = Vorpal::Configuration.define do
+  @repository = Vorpal.define do
     map Tree do
       fields :name
       belongs_to :gardener, owned: false

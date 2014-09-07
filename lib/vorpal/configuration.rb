@@ -2,30 +2,8 @@ require 'vorpal/aggregate_repository'
 require 'vorpal/config_builder'
 
 module Vorpal
-# Allows easy creation of {Vorpal::AggregateRepository}
-# instances.
-#
-# ```ruby
-# repository = Vorpal::Configuration.define do
-#   map Tree do
-#     fields :name
-#     belongs_to :trunk
-#     has_many :branches
-#   end
-#
-#   map Trunk do
-#     fields :length
-#     has_one :tree
-#   end
-#
-#   map Branch do
-#     fields :length
-#     belongs_to :tree
-#   end
-# end
-# ```
+
 module Configuration
-  extend self
 
   # Configures and creates a {Vorpal::AggregateRepository} instance.
   #

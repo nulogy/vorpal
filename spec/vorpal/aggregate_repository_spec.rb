@@ -1,6 +1,6 @@
 require 'integration_spec_helper'
 
-require 'vorpal/configuration'
+require 'vorpal'
 
 require 'virtus'
 
@@ -596,7 +596,7 @@ describe 'Aggregate Repository' do
 private
 
   def configure_polymorphic_has_many
-    Vorpal::Configuration.define do
+    Vorpal.define do
       map Tree do
         fields :name
         has_many :branches
@@ -620,7 +620,7 @@ private
   end
 
   def configure_polymorphic_belongs_to
-    Vorpal::Configuration.define do
+    Vorpal.define do
       map Bug do
         fields :name
         belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
@@ -637,7 +637,7 @@ private
   end
 
   def configure_ar_polymorphic_belongs_to
-    Vorpal::Configuration.define do
+    Vorpal.define do
       map Tree do
         fields :name
         belongs_to :environment, owned: false, fk: :environment_id, fk_type: :environment_type, child_class: Swamp
@@ -648,7 +648,7 @@ private
   end
 
   def configure_unowned_polymorphic_belongs_to
-    Vorpal::Configuration.define do
+    Vorpal.define do
       map Bug do
         fields :name
         belongs_to :lives_on, owned: false, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
@@ -665,7 +665,7 @@ private
   end
 
   def configure_unowned
-    Vorpal::Configuration.define do
+    Vorpal.define do
       map Tree do
         fields :name
         has_many :branches, owned: false
@@ -683,7 +683,7 @@ private
   end
 
   def configure_recursive
-    Vorpal::Configuration.define do
+    Vorpal.define do
       map Branch do
         fields :length
         has_many :branches
@@ -697,7 +697,7 @@ private
   end
 
   def configure_with_cycle
-    Vorpal::Configuration.define do
+    Vorpal.define do
       map Branch do
         fields :length
         belongs_to :tree
@@ -711,7 +711,7 @@ private
   end
   
   def configure
-    Vorpal::Configuration.define do
+    Vorpal.define do
       map Tree do
         fields :name
         belongs_to :trunk
@@ -732,7 +732,7 @@ private
   end
 
   def configure_has_one
-    Vorpal::Configuration.define do
+    Vorpal.define do
       map Trunk do
         fields :length
         has_one :tree
@@ -745,7 +745,7 @@ private
   end
 
   def configure_unowned_has_one
-    Vorpal::Configuration.define do
+    Vorpal.define do
       map Trunk do
         fields :length
         has_one :tree, owned: false
