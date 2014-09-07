@@ -15,7 +15,7 @@ Separate your domain model from your persistence mechanism. Some problems call f
 ## Overview
 Vorpal is a [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html)-style ORM (object relational mapper) framelet that persists POROs (plain old Ruby objects) to a relational DB. It has been heavily influenced by concepts from [Domain Driven Design](http://www.infoq.com/minibooks/domain-driven-design-quickly).
 
-We say 'framelet' because it doesn't attempt to give you all the goodies that ORMs usually provide. Instead, it layers on top of an existing ORM and allows you to use the simplicity of the [Active Record](http://www.martinfowler.com/eaaCatalog/activeRecord.html) pattern where appropriate and the power of the [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html) pattern when you need it.
+We say 'framelet' because it doesn't attempt to give you all the goodies that ORMs usually provide. Instead, it layers on top of an existing ORM and allows you to take advantage of the ease of the [Active Record](http://www.martinfowler.com/eaaCatalog/activeRecord.html) pattern where appropriate and the power of the [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html) pattern when you need it.
 
 3 things set it apart from existing main-stream Ruby ORMs ([ActiveRecord](http://api.rubyonrails.org/files/activerecord/README_rdoc.html), [Datamapper](http://datamapper.org/), and [Sequel](http://sequel.jeremyevans.net/)):
 
@@ -54,7 +54,7 @@ Start with a domain model of POROs and AR:Base objects that form an aggregate:
 ```ruby
 class Tree; end
 
-class Trunk
+class Branch
   include Virtus.model
 
   attribute :id, Integer
@@ -87,7 +87,7 @@ CREATE TABLE trees
 (
   id serial NOT NULL,
   name text,
-  trunk_id integer
+  gardener_id integer
 );
 
 CREATE TABLE gardeners
@@ -100,6 +100,7 @@ CREATE TABLE branches
 (
   id serial NOT NULL,
   length numeric,
+  diameter numeric,
   tree_id integer
 );
 ```
@@ -139,8 +140,13 @@ module TreeRepository
     @repository.destroy(tree)
   end
   
-  Tree < ActiveRecord::Base; end
-  Branch < ActiveRecord::Base; end
+  class ARTree < ActiveRecord::Base
+    self.table_name = 'trees'
+  end
+  
+  class ARBranch < ActiveRecord::Base
+    self.table_name = 'branches'
+  end
 end
 ```
 
