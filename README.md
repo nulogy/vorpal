@@ -50,7 +50,7 @@ Or install it yourself as:
     $ gem install vorpal
 
 ## Usage
-Start with a domain model of POROs and AR:Base objects that form an aggregate:
+Start with a domain model of POROs and AR::Base objects that form an aggregate:
 
 ```ruby
 class Tree; end
@@ -81,7 +81,7 @@ In this aggregate, the Tree is the root and the Branches are inside the aggregat
 
 POROs must have setters and getters for all fields and associations that are to be persisted. They must also provide a no argument constructor.
 
-Along with a relational model:
+Along with a relational model (in PostgreSQL):
 
 ```sql
 CREATE TABLE trees
@@ -151,7 +151,7 @@ module TreeRepository
 end
 ```
 
-Here we've used the `owned` flag on the belongs_to from the Tree to the Gardener to show that the Gardener is on the aggregate boundary.
+Here we've used the `owned` flag on the `belongs_to` from the Tree to the Gardener to show that the Gardener is on the aggregate boundary.
 
 And use it:
 
