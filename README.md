@@ -49,7 +49,7 @@ Or install it yourself as:
     $ gem install vorpal
 
 ## Usage
-Start with a domain model of POROs that form an aggregate:
+Start with a domain model of POROs and AR:Base objects that form an aggregate:
 
 ```ruby
 class Tree; end
@@ -59,15 +59,11 @@ class Trunk
 
   attribute :id, Integer
   attribute :length, Decimal
+  attribute :diameter, Decimal
   attribute :tree, Tree
 end
 
-class Branch
-  include Virtus.model
-
-  attribute :id, Integer
-  attribute :length, Decimal
-  attribute :tree, Tree
+class Gardener < ActiveRecord::Base
 end
 
 class Tree
@@ -75,10 +71,13 @@ class Tree
 
   attribute :id, Integer
   attribute :name, String
-  attribute :trunk, Trunk
+  attribute :gardener, Gardener
   attribute :branches, Array[Branch]
 end
 ```
+
+In this aggregate, the Tree is the root and the Branches are inside the aggregate boundary. The Gardener is not technically part of the aggregate but is required for the aggregate to make sense so we say that it is on the aggregate boundary.
+
 POROs must have setters and getters for all fields and associations that are to be persisted. They must also provide a no argument constructor.
 
 Along with a relational model:
@@ -89,61 +88,79 @@ CREATE TABLE trees
   id serial NOT NULL,
   name text,
   trunk_id integer
-)
+);
 
-CREATE TABLE trunks
+CREATE TABLE gardeners
 (
   id serial NOT NULL,
-  length numeric
-)
+  name text
+);
 
 CREATE TABLE branches
 (
   id serial NOT NULL,
   length numeric,
   tree_id integer
-)
+);
 ```
 
 Create a repository configured to persist the aggregate to the relational model:
 
 ```ruby
-repository = Persistence::Configuration.define do
-  map Tree do
-    fields :name
-    belongs_to :trunk
-    has_many :branches
-  end
+require 'vorpal/configuration'
 
-  map Trunk do
-    fields :length
-    has_one :tree
+module TreeRepository
+  extend self
+  
+  @repository = Vorpal::Configuration.define do
+    map Tree do
+      fields :name
+      belongs_to :gardener, owned: false
+      has_many :branches
+    end
+
+    map Gardener
+  
+    map Branch do
+      fields :length, :diameter
+      belongs_to :tree
+    end
   end
   
-  map Branch do
-    fields :length
-    belongs_to :tree
+  def find(id)
+    @repository.load(id, Tree)
   end
+  
+  def save(tree)
+    @repository.persist(tree)
+  end
+  
+  def destroy(tree)
+    @repository.destroy(tree)
+  end
+  
+  Tree < ActiveRecord::Base; end
+  Branch < ActiveRecord::Base; end
 end
 ```
-NOTE: Why don't we use DDD language? I see no mention of aggregates and entities!
+
+Here we've used the `owned` flag on the belongs_to from the Tree to the Gardener to show that the Gardener is on the aggregate boundary.
 
 And use it:
 
 ```ruby
-repository.persist(big_tree)
+# Saves/updates the given Tree as well as all Branches referenced by it,
+# but not Gardeners.
+TreeRepository.save(big_tree)
 
-small_tree = repository.load(small_tree_id, Tree)
+# Loads the given Tree as well as all Branches and Gardeners 
+# referenced by it.
+small_tree = TreeRepository.find(small_tree_id)
 
-repository.destroy(dead_tree)
+# Destroys the given Tree as well as all Branches referenced by it,
+# but not Gardeners.
+TreeRepository.destroy(dead_tree)
 ```
-
-TODO: Show implementation of a repository using the aggregate repository!!!
-
-TODO: Talk about aggregate boundary.
-
-### With ActiveRecord
-TBD
 
 ## API Documentation
 
