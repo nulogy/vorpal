@@ -31,7 +31,7 @@ Need to know why mixing domain logic and persistence isn't always the best? Here
 * [Perpetuity](https://github.com/jgaskins/perpetuity) - a Ruby [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html)-style ORM.
 * [EDR](http://victorsavkin.com/post/41016739721/building-rich-domain-models-in-rails-separating) - another [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html)-style ORM framelet by Victor Savkin.
 * [Architecture, the Lost Years](https://www.youtube.com/watch?v=WpkDN78P884) - talk by Bob Martin
-* [Hexagon Architecture Pattern](http://alistair.cockburn.us/Hexagonal+architecture) - Alistair Cockburn
+* [Hexagonal Architecture Pattern](http://alistair.cockburn.us/Hexagonal+architecture) - Alistair Cockburn
 
 ## Installation
 
