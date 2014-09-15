@@ -25,14 +25,6 @@ We say 'framelet' because it doesn't attempt to give you all the goodies that OR
 
 This last point is incredibly important because applications that grow organically can get very far without needing to separate persistence and domain logic. But when they do, Vorpal will play nicely with all that legacy code.
 
-## Resources
-Need to know why mixing domain logic and persistence isn't always the best? Here you go.
-
-* [Perpetuity](https://github.com/jgaskins/perpetuity) - a Ruby [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html)-style ORM.
-* [EDR](http://victorsavkin.com/post/41016739721/building-rich-domain-models-in-rails-separating) - another [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html)-style ORM framelet by Victor Savkin.
-* [Architecture, the Lost Years](https://www.youtube.com/watch?v=WpkDN78P884) - talk by Bob Martin
-* [Hexagonal Architecture Pattern](http://alistair.cockburn.us/Hexagonal+architecture) - Alistair Cockburn
-
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -50,6 +42,9 @@ Or install it yourself as:
     $ gem install vorpal
 
 ## Usage
+
+**Warning! API still in flux! Expect it to change with every release until 0.1.0. After this point, semantic versioning will be used.**
+
 Start with a domain model of POROs and AR::Base objects that form an aggregate:
 
 ```ruby
@@ -179,9 +174,7 @@ It also does not do some things that you might expect from other ORMs:
 1. No lazy loading of associations. This might sound like a big deal, but with [correctly designed aggregates](http://dddcommunity.org/library/vernon_2011/) it turns out not to be.
 1. No managing of transactions. It is the strong opinion of the authors that managing transactions is an application-level concern.
 1. No support for validations. Validations are not a persistence concern.
-1. Has a dependency on ActiveRecord.
-1. No facilities for doing arbitrary queryies against the DB.
-1. No callbacks.
+1. No AR-style callbacks. Use Infrastructure, Application, or Domain [services](http://martinfowler.com/bliki/EvansClassification.html) instead.
 
 ## Constraints
 1. Persisted entities must have getters and setters for all persisted fields and associations. They do not need to be public.
@@ -196,11 +189,43 @@ It also does not do some things that you might expect from other ORMs:
 * Support for other ORMs.
 * Identity map for an entire application transaction.
 * Value objects.
-* Remove dependency on ActiveRecord (optimistic locking? connection pooling? migrations? DDL DSL? Copy DB structure to test DB?)
+* Remove dependency on ActiveRecord (optimistic locking? updated_at, created_at support?)
 * Application-generated primary key ids.
 * More efficient object loading (use fewer queries.)
 * Single table inheritance?
 * Different fields names in domain models than in the DB.
+ 
+## FAQ
+
+**Q.** Why do I care about separating my persistence mechanism from my domain models?
+
+**A.** It generally comes back to the [Single Responsibility Principle](http://en.wikipedia.org/wiki/Single_responsibility_principle). Here are some resources for the curious:
+* [Architecture, the Lost Years](https://www.youtube.com/watch?v=WpkDN78P884) - talk by Bob Martin.
+* [Hexagonal Architecture Pattern](http://alistair.cockburn.us/Hexagonal+architecture) - Alistair Cockburn.
+* [Perpetuity](https://github.com/jgaskins/perpetuity) - a Ruby [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html)-style ORM.
+* [EDR](http://victorsavkin.com/post/41016739721/building-rich-domain-models-in-rails-separating) - another [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html)-style ORM framelet by Victor Savkin.
+
+**Q.** How do I do more complicated queries against the DB without direct access to ActiveRecord?
+
+**A.** Create a method on a [Repository](http://martinfowler.com/eaaCatalog/repository.html)! They have full access to the DB/ORM so you can use [Arel](https://github.com/rails/arel) and go [crazy](http://asciicasts.com/episodes/239-activerecord-relation-walkthrough) or direct SQL if you want.
+
+**Q.** How do I do validations now that I don't have access to ActiveRecord anymore?
+
+**A.** Depends on what kind of validations you want to do:
+* For validating single attributes on a model: [ActiveModel::Validations](http://api.rubyonrails.org/classes/ActiveModel/Validations.html) work very well.
+* For validating whole objects or object compositions (like the state of an Aggregate): Validator objects are preferred. Chapter 5 of [Implementing Domain Driven Design](https://vaughnvernon.co/?page_id=168) contains more guidance.
+
+**Q.** How do I use Rails view helpers like [`form_for`](http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for)?
+
+**A.** Check out [ActiveModel::Model](http://api.rubyonrails.org/classes/ActiveModel/Model.html). For more complex use-cases consider using a [Form](http://rhnh.net/2012/12/03/form-objects-in-rails) [Object](https://www.reinteractive.net/posts/158-form-objects-in-rails).
+
+**Q.** How do I get dirty checking?
+
+**A.** Check out [ActiveModel::Dirty](http://api.rubyonrails.org/classes/ActiveModel/Dirty.html).
+
+**Q.** How do I get serialization?
+
+**A.** You can use [ActiveModel::Serialization](http://api.rubyonrails.org/classes/ActiveModel/Serialization.html) or [ActiveModel::Serializers](https://github.com/rails-api/active_model_serializers) but they are not heartily recommended. The former is too coupled to the model and the latter is too coupled to Rails controllers. Vorpal includes the [SimpleSerializer](http://rubydoc.info/github/nulogy/vorpal/master/SimpleSerializer) and [SimpleDeserializer](http://rubydoc.info/github/nulogy/vorpal/master/SimpleDeserializer) for this purpose.
 
 ## Contributing
 
