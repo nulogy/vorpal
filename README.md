@@ -189,7 +189,7 @@ It also does not do some things that you might expect from other ORMs:
 * Support for other ORMs.
 * Identity map for an entire application transaction.
 * Value objects.
-* Remove dependency on ActiveRecord (optimistic locking? updated_at, created_at support?)
+* Remove dependency on ActiveRecord (optimistic locking? updated_at, created_at support? Data type conversions?)
 * Application-generated primary key ids.
 * More efficient object loading (use fewer queries.)
 * Single table inheritance?
