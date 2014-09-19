@@ -175,6 +175,7 @@ It also does not do some things that you might expect from other ORMs:
 1. No managing of transactions. It is the strong opinion of the authors that managing transactions is an application-level concern.
 1. No support for validations. Validations are not a persistence concern.
 1. No AR-style callbacks. Use Infrastructure, Application, or Domain [services](http://martinfowler.com/bliki/EvansClassification.html) instead.
+1. No has-many-through associations. Use two has-many associations to a join entity instead.
 
 ## Constraints
 1. Persisted entities must have getters and setters for all persisted fields and associations. They do not need to be public.
@@ -226,6 +227,12 @@ It also does not do some things that you might expect from other ORMs:
 **Q.** How do I get serialization?
 
 **A.** You can use [ActiveModel::Serialization](http://api.rubyonrails.org/classes/ActiveModel/Serialization.html) or [ActiveModel::Serializers](https://github.com/rails-api/active_model_serializers) but they are not heartily recommended. The former is too coupled to the model and the latter is too coupled to Rails controllers. Vorpal includes the [SimpleSerializer](http://rubydoc.info/github/nulogy/vorpal/master/SimpleSerializer) and [SimpleDeserializer](http://rubydoc.info/github/nulogy/vorpal/master/SimpleDeserializer) for this purpose.
+
+## Contributors
+
+* [Sean Kirby](https://github.com/sskirby)
+* [Paul Sobocinski](https://github.com/psobocinski)
+* [Jason Cheong-Kee-You](https://github.com/jchunky)
 
 ## Contributing
 
