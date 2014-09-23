@@ -181,13 +181,11 @@ It also does not do some things that you might expect from other ORMs:
 ## Constraints
 1. Persisted entities must have getters and setters for all persisted fields and associations. They do not need to be public.
 1. Only supports PostgreSQL.
-1. Identity map only applies to a single call to `#load` or `#load_all`.
 
 ## Future Enhancements
 * Aggregate updated_at.
 * Support for other DBMSs.
 * Support for other ORMs.
-* Identity map for an entire application transaction.
 * Value objects.
 * Remove dependency on ActiveRecord (optimistic locking? updated_at, created_at support? Data type conversions?)
 * More efficient object loading (use fewer queries.)

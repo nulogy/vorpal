@@ -61,8 +61,7 @@ class AggregateRepository
   #   aggregates to be loaded.
   # @param domain_class [Class] Type of the roots of the aggregate to be loaded.
   # @return [[Object]] Entities with the given primary key values and type.
-  def load_all(ids, domain_class)
-    identity_map = IdentityMap.new
+  def load_all(ids, domain_class, identity_map=IdentityMap.new)
     ids.map { |id| load(id, domain_class, identity_map) }
   end
 
