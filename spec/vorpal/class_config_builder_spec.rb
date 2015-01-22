@@ -1,10 +1,12 @@
 require 'integration_spec_helper'
 
-describe ConfigBuilder do
+require 'vorpal/config_builder'
+
+describe Vorpal::ConfigBuilder do
   class Tester; end
 
   it 'includes the primary key in the list of fields' do
-    builder = ConfigBuilder.new(Tester, {})
+    builder = Vorpal::ConfigBuilder.new(Tester, {})
     config = builder.build
     # config.field
   end
