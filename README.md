@@ -223,6 +223,14 @@ It also does not do some things that you might expect from other ORMs:
 
 **A.** You can use [ActiveModel::Serialization](http://api.rubyonrails.org/classes/ActiveModel/Serialization.html) or [ActiveModel::Serializers](https://github.com/rails-api/active_model_serializers) but they are not heartily recommended. The former is too coupled to the model and the latter is too coupled to Rails controllers. Vorpal includes the [SimpleSerializer](http://rubydoc.info/github/nulogy/vorpal/master/SimpleSerializer) and [SimpleDeserializer](http://rubydoc.info/github/nulogy/vorpal/master/SimpleDeserializer) for this purpose.
 
+## Running Tests
+
+1. Start a PostgreSQL server.
+2. Either:
+  * Create a DB user called `vorpal` with password `pass` and a DB called `vorpal_test`. OR:
+  * Modify `spec/integration_spec_helper.rb`.
+3. Run `rake` from the terminal.
+
 ## Contributors
 
 * [Sean Kirby](https://github.com/sskirby)
