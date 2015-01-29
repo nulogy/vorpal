@@ -203,7 +203,16 @@ It also does not do some things that you might expect from other ORMs:
 
 **Q.** How do I do more complicated queries against the DB without direct access to ActiveRecord?
 
-**A.** Create a method on a [Repository](http://martinfowler.com/eaaCatalog/repository.html)! They have full access to the DB/ORM so you can use [Arel](https://github.com/rails/arel) and go [crazy](http://asciicasts.com/episodes/239-activerecord-relation-walkthrough) or use direct SQL if you want.
+**A.** Create a method on a [Repository](http://martinfowler.com/eaaCatalog/repository.html)! They have full access to the DB/ORM so you can use [Arel](https://github.com/rails/arel) and go [crazy](http://asciicasts.com/episodes/239-activerecord-relation-walkthrough) or use direct SQL if you want. 
+
+For example:
+
+```ruby
+  def find_all
+    ARTree.pluck(:id) # use an AR query to determine the aggregate ids
+    @repository.load_all(ids, Tree) # use the repository to load all the aggregates
+  end
+```
 
 **Q.** How do I do validations now that I don't have access to ActiveRecord anymore?
 
