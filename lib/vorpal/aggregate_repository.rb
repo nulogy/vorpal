@@ -36,8 +36,6 @@ class AggregateRepository
   #
   # @param objects [[Object]] array of aggregate roots to be saved.
   # @return [[Object]] array of aggregate roots.
-  #
-  # TODO: Nil out object ids if one of the objects can't be saved?
   def persist_all(objects)
     objects.map(&method(:persist))
   end
