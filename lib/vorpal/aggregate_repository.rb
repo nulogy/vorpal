@@ -47,6 +47,9 @@ class AggregateRepository
   #   loaded.
   # @param domain_class [Class] Type of the root of the aggregate to
   #   be loaded.
+  # @param identity_map [Vorpal::IdentityMap] Provide your own IdentityMap instance
+  #   if you want entity id - unique object mapping for a greater scope than one
+  #   operation.
   # @return [Object] Entity with the given primary key value and type.
   def load(id, domain_class, identity_map=IdentityMap.new)
     db_object = @configs.config_for(domain_class).load_by_id(id)
@@ -58,6 +61,9 @@ class AggregateRepository
   # @param ids [[Integer]] Array of primary key values of the roots of the
   #   aggregates to be loaded.
   # @param domain_class [Class] Type of the roots of the aggregate to be loaded.
+  # @param identity_map [Vorpal::IdentityMap] Provide your own IdentityMap instance
+  #   if you want entity id - unique object mapping for a greater scope than one
+  #   operation.
   # @return [[Object]] Entities with the given primary key values and type.
   def load_all(ids, domain_class, identity_map=IdentityMap.new)
     ids.map { |id| load(id, domain_class, identity_map) }
