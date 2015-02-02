@@ -87,8 +87,7 @@ class AggregateRepository
   # @param objects [[Object]] Array of roots of the aggregates to be destroyed.
   # @return [[Object]] Roots that were passed in.
   def destroy_all(objects)
-    objects.each(&method(:destroy))
-    objects
+    objects.map(&method(:destroy))
   end
 
   private
