@@ -18,8 +18,8 @@ module Configuration
   #
   # @param domain_class [Class] Type of the domain model to be mapped
   # @param options [Hash] Configure how to map the domain model
-  # @option options [String] :table_name (Name of the domain class snake-cased and pluralized.)
-  #   Name of the relational DB table.
+  # @option options [String] :to (Class with the same name as the domain class with a 'DB' appended.)
+  #   Class of the ActiveRecord object that will map this domain class to the DB.
   # @option options [Object] :serializer (map the {ConfigBuilder#fields} directly)
   #   Object that will convert the domain objects into a hash.
   #

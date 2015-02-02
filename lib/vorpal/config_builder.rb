@@ -77,18 +77,18 @@ class ConfigBuilder
   def build_class_config
     Vorpal::ClassConfig.new(
       domain_class: @domain_class,
-      table_name: @class_options[:table_name] || table_name,
+      db_class: @class_options[:to] || db_class,
       serializer: @class_options[:serializer] || serializer(fields_with_id),
       deserializer: @class_options[:deserializer] || deserializer(fields_with_id),
     )
   end
 
-  def fields_with_id
-    [:id].concat @fields
+  def db_class
+    "#{@domain_class.name}DB".constantize
   end
 
-  def table_name
-    @domain_class.name.tableize
+  def fields_with_id
+    [:id].concat @fields
   end
 
   def build_has_manys
