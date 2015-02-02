@@ -143,7 +143,7 @@ end
 # Object associations:
 # - All object associations are uni-directional
 # - The end that holds the association is the 'Parent' and the end that
-#   is refered to is the 'Child' or 'Children'
+#   is referred to is the 'Child' or 'Children'
 #
 # Relational associations:
 # - Local end: has FK
