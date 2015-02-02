@@ -110,15 +110,15 @@ module TreeRepository
   extend self
   
   @repository = Vorpal.define do
-    map Tree do
+    map Tree, to: ARTree do
       fields :name
       belongs_to :gardener, owned: false
       has_many :branches
     end
 
-    map Gardener
+    map Gardener, to: Gardener
   
-    map Branch do
+    map Branch, to: ARBranch do
       fields :length, :diameter
       belongs_to :tree
     end

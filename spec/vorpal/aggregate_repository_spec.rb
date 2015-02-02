@@ -643,7 +643,7 @@ private
         belongs_to :environment, owned: false, fk: :environment_id, fk_type: :environment_type, child_class: Swamp
       end
 
-      map Swamp
+      map Swamp, to: Swamp
     end
   end
 
@@ -727,7 +727,7 @@ private
         fields :length
       end
 
-      map Fissure
+      map Fissure, to: Fissure
     end
   end
 

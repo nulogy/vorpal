@@ -39,7 +39,7 @@ end
 
 # @private
 class ClassConfig
-  attr_reader :serializer, :deserializer, :domain_class, :table_name
+  attr_reader :serializer, :deserializer, :domain_class, :db_class
   attr_accessor :has_manys, :belongs_tos, :has_ones
 
   def initialize(attrs)
@@ -55,10 +55,6 @@ class ClassConfig
   def get_primary_keys(count)
     result = ActiveRecord::Base.connection.execute("select nextval('#{sequence_name}') from generate_series(1,#{count});")
     result.column_values(0).map(&:to_i)
-  end
-
-  def db_class
-    @db_class ||= ActiveRecord::Base.descendants.detect { |ar| ar.table_name == table_name }
   end
 
   def find_in_db(object)
@@ -119,7 +115,7 @@ class ClassConfig
   private
 
   def sequence_name
-    "#{table_name}_id_seq"
+    "#{db_class.table_name}_id_seq"
   end
 end
 
