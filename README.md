@@ -209,7 +209,7 @@ For example:
 
 ```ruby
   def find_all
-    ARTree.pluck(:id) # use an AR query to determine the aggregate ids
+    ids = ARTree.pluck(:id) # use an AR query to determine the aggregate ids
     @repository.load_all(ids, Tree) # use the repository to load all the aggregates
   end
 ```
