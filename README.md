@@ -184,12 +184,12 @@ It also does not do some things that you might expect from other ORMs:
 
 ## Future Enhancements
 * Aggregate updated_at.
-* Support for other DBMSs.
+* Support for other DBMSs (no MySQL support until ids can be generated without inserting into a table!)
 * Support for other ORMs.
 * Value objects.
-* Remove dependency on ActiveRecord (optimistic locking? updated_at, created_at support? Data type conversions?)
-* More efficient object loading (use fewer queries.)
-* Different fields names in domain models than in the DB.
+* Remove dependency on ActiveRecord (optimistic locking? updated_at, created_at support? Data type conversions? TimeZone support?)
+* More efficient object loading and persisting (use fewer queries.)
+* Nicer DSL for specifying field that have different names in the domain model than in the DB.
  
 ## FAQ
 
