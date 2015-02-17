@@ -58,7 +58,7 @@ class ClassConfig
   end
 
   def find_in_db(object)
-    db_class.find(object.id)
+    load_by_id(object.id)
   end
 
   def load_by_id(id)
