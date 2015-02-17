@@ -52,8 +52,7 @@ class AggregateRepository
   #   operation.
   # @return [Object] Entity with the given primary key value and type.
   def load(id, domain_class, identity_map=IdentityMap.new)
-    db_object = @configs.config_for(domain_class).load_by_id(id)
-    hydrate(db_object, identity_map)
+    load_all([id], domain_class, identity_map).first
   end
 
   # Like {#load} but operates on multiple ids.
@@ -66,7 +65,10 @@ class AggregateRepository
   #   operation.
   # @return [[Object]] Entities with the given primary key values and type.
   def load_all(ids, domain_class, identity_map=IdentityMap.new)
-    ids.map { |id| load(id, domain_class, identity_map) }
+    ids.map do |id|
+      db_object = @configs.config_for(domain_class).load_by_id(id)
+      hydrate(db_object, identity_map)
+    end
   end
 
   # Removes an aggregate from the DB. Even if the aggregate contains unsaved
