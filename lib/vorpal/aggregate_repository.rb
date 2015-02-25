@@ -66,10 +66,9 @@ class AggregateRepository
   #   operation.
   # @return [[Object]] Entities with the given primary key values and type.
   def load_all(ids, domain_class, identity_map=IdentityMap.new)
-    ids.map do |id|
-      db_object = @configs.config_for(domain_class).load_by_id(id)
-      hydrate(db_object, identity_map)
-    end
+    db_objects = load_from_db(ids, domain_class)
+    hydrate(db_objects, identity_map)
+    identity_map.map_raw(ids, @configs.config_for(domain_class).db_class)
   end
 
   # Removes an aggregate from the DB. Even if the aggregate contains unsaved
@@ -95,15 +94,83 @@ class AggregateRepository
 
   private
 
+  def load_from_db(ids, domain_class)
+    ids.flat_map do |id|
+      config = @configs.config_for(domain_class)
+      db_object = config.load_by_id(id)
+      load_from_db_visitor = LoadFromDBVisitor.new(db_object)
+      @traversal.accept_for_db(db_object, load_from_db_visitor)
+      load_from_db_visitor.db_objects
+    end
+  end
+
+  def hydrate(db_objects, identity_map)
+    db_objects.each do |db_object|
+      identity_map.get_and_set(db_object) { @configs.config_for_db(db_object.class).deserialize(db_object) }
+    end
+
+    db_objects.each do |db_object|
+      config = @configs.config_for_db(db_object.class)
+      config.has_manys.each do |has_many_config|
+        child_config = @configs.config_for(has_many_config.child_class)
+        db_children = db_objects.find_all do |db_child|
+          if child_config.db_class == db_child.class
+            fk_value = db_child.send(has_many_config.fk)
+            fk_value_matches = fk_value == db_object.id
+            # if has_many_config.fk_type
+            #   fk_type = db_child.send(has_many_config.fk_type)
+            #   fk_type_matches = fk_type ==
+          end
+        end
+        associate_one_to_many(db_object, db_children, has_many_config, identity_map)
+      end
+
+      config.has_ones.each do |has_one_config|
+        child_config = @configs.config_for(has_one_config.child_class)
+        db_children = db_objects.find_all do |db_child|
+          if child_config.db_class == db_child.class
+            fk_value = db_child.send(has_one_config.fk)
+            fk_value_matches = fk_value == db_object.id
+          end
+        end
+        associate_one_to_one(db_object, db_children.first, has_one_config, identity_map)
+      end
+
+      config.belongs_tos.each do |belongs_to_config|
+        child_config = nil
+        if belongs_to_config.fk_type.nil?
+          child_config = @configs.config_for(belongs_to_config.child_classes.first)
+        else
+          child_class = db_object.send(belongs_to_config.fk_type).constantize
+          child_config = @configs.config_for(child_class)
+        end
+        db_children = db_objects.find_all do |db_child|
+          if child_config.db_class == db_child.class # scary how commenting out this line causes no tests to fail
+            fk_value = db_object.send(belongs_to_config.fk)
+            fk_value_matches = fk_value == db_child.id
+          end
+        end
+        associate_one_to_one(db_object, db_children.first, belongs_to_config, identity_map)
+      end
+
+    end
+  end
+
+  def associate_one_to_many(db_object, db_children, one_to_many, identity_map)
+    parent = identity_map.get(db_object)
+    children = identity_map.map(db_children)
+    one_to_many.set_children(parent, children)
+  end
+
+  def associate_one_to_one(db_parent, db_child, one_to_one_config, identity_map)
+    parent = identity_map.get(db_parent)
+    child = identity_map.get(db_child)
+    one_to_one_config.set_child(parent, child)
+  end
+
   def configure(class_configs)
     @configs = MasterConfig.new(class_configs)
     @traversal = Traversal.new(@configs)
-  end
-
-  def hydrate(db_object, identity_map)
-    deserialize(db_object, identity_map)
-    set_associations(db_object, identity_map)
-    identity_map.get(db_object)
   end
 
   def serialize(object, mapping)
@@ -133,10 +200,6 @@ class AggregateRepository
 
   def deserialize(db_object, identity_map)
     @traversal.accept_for_db(db_object, DeserializeVisitor.new(identity_map))
-  end
-
-  def set_associations(db_object, identity_map)
-    @traversal.accept_for_db(db_object, DomainAssociationVisitor.new(identity_map))
   end
 
   def get_unsaved_objects(objects)
@@ -283,56 +346,26 @@ class AggregateDiffVisitor
 end
 
 # @private
-class DeserializeVisitor
+class LoadFromDBVisitor
   include AggregateVisitorTemplate
 
-  def initialize(identity_map)
-    @identity_map = identity_map
+  def initialize(db_object)
+    @db_objects = []
+    add(db_object)
   end
 
   def visit_object(db_object, config)
-    deserialize_db_object(db_object, config)
+    add(db_object)
+  end
+
+  def db_objects
+    @db_objects
   end
 
   private
 
-  def deserialize_db_object(db_object, config)
-    @identity_map.get_and_set(db_object) { config.deserialize(db_object) }
-  end
-end
-
-# @private
-class DomainAssociationVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(identity_map)
-    @identity_map = identity_map
-  end
-
-  def visit_belongs_to(db_object, db_child, belongs_to_config)
-    associate_one_to_one(db_object, db_child, belongs_to_config)
-  end
-
-  def visit_has_one(db_parent, db_child, has_one_config)
-    associate_one_to_one(db_parent, db_child, has_one_config)
-  end
-
-  def visit_has_many(db_object, db_children, has_many_config)
-    associate_one_to_many(db_object, db_children, has_many_config)
-  end
-
-  private
-
-  def associate_one_to_many(db_object, db_children, has_many_config)
-    parent = @identity_map.get(db_object)
-    children = @identity_map.map(db_children)
-    has_many_config.set_children(parent, children)
-  end
-
-  def associate_one_to_one(db_parent, db_child, belongs_to_config)
-    parent = @identity_map.get(db_parent)
-    child = @identity_map.get(db_child)
-    belongs_to_config.set_child(parent, child)
+  def add(db_object)
+    @db_objects << db_object
   end
 end
 

@@ -112,10 +112,14 @@ class ClassConfig
     db_object.send(field)
   end
 
+  def table_name
+    db_class.table_name
+  end
+
   private
 
   def sequence_name
-    "#{db_class.table_name}_id_seq"
+    "#{table_name}_id_seq"
   end
 end
 
