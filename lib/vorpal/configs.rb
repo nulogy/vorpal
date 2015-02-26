@@ -174,20 +174,21 @@ class RelationalAssociation
     remote_config.load_by_id(get_foreign_key(local_db_model))
   end
 
-  private
+  def remote_config_for_local_db_object(local_db_model)
+    class_name = local_config.get_field(local_db_model, fk_type)
+    remote_configs.detect { |config| config.domain_class.name == class_name }
+  end
 
   def polymorphic?
     !fk_type.nil?
   end
 
+  private
+
   def foreign_key_info(class_config)
     ForeignKeyInfo.new(fk, fk_type, class_config.domain_class.name, polymorphic?)
   end
 
-  def remote_config_for_local_db_object(local_db_model)
-    class_name = local_config.get_field(local_db_model, fk_type)
-    remote_configs.detect { |config| config.domain_class.name == class_name }
-  end
 
   def get_foreign_key(local_db_model)
     local_config.get_field(local_db_model, fk)
@@ -218,6 +219,10 @@ class HasManyConfig
   def load_children(db_parent)
     @relational_association.load_locals(db_parent)
   end
+
+  def child_config
+    @relational_association.local_config
+  end
 end
 
 # @private
@@ -244,6 +249,14 @@ class BelongsToConfig
   def load_child(db_parent)
     @relational_association.load_remote(db_parent)
   end
+
+  def child_config(db_owner)
+    if @relational_association.polymorphic?
+      @relational_association.remote_config_for_local_db_object(db_owner)
+    else
+      @relational_association.remote_configs.first
+    end
+  end
 end
 
 # @private
@@ -269,6 +282,10 @@ class HasOneConfig
 
   def load_child(db_parent)
     @relational_association.load_locals(db_parent).first
+  end
+
+  def child_config
+    @relational_association.local_config
   end
 end
 end
