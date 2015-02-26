@@ -112,48 +112,41 @@ class AggregateRepository
     db_objects.each do |db_object|
       config = @configs.config_for_db(db_object.class)
       config.has_manys.each do |has_many_config|
-        child_config = @configs.config_for(has_many_config.child_class)
-        db_children = db_objects.find_all do |db_child|
-          if child_config.db_class == db_child.class
-            fk_value = db_child.send(has_many_config.fk)
-            fk_value_matches = fk_value == db_object.id
-            # if has_many_config.fk_type
-            #   fk_type = db_child.send(has_many_config.fk_type)
-            #   fk_type_matches = fk_type ==
-          end
-        end
+        db_children = find_local_associated(db_object, has_many_config, db_objects)
         associate_one_to_many(db_object, db_children, has_many_config, identity_map)
       end
 
       config.has_ones.each do |has_one_config|
-        child_config = @configs.config_for(has_one_config.child_class)
-        db_children = db_objects.find_all do |db_child|
-          if child_config.db_class == db_child.class
-            fk_value = db_child.send(has_one_config.fk)
-            fk_value_matches = fk_value == db_object.id
-          end
-        end
+        db_children = find_local_associated(db_object, has_one_config, db_objects)
         associate_one_to_one(db_object, db_children.first, has_one_config, identity_map)
       end
 
       config.belongs_tos.each do |belongs_to_config|
-        child_config = nil
-        if belongs_to_config.fk_type.nil?
-          child_config = @configs.config_for(belongs_to_config.child_classes.first)
-        else
-          child_class = db_object.send(belongs_to_config.fk_type).constantize
-          child_config = @configs.config_for(child_class)
-        end
-        db_children = db_objects.find_all do |db_child|
-          if child_config.db_class == db_child.class # scary how commenting out this line causes no tests to fail
-            fk_value = db_object.send(belongs_to_config.fk)
-            fk_value_matches = fk_value == db_child.id
-          end
-        end
+        db_children = find_remote_associated(db_object, belongs_to_config, db_objects)
         associate_one_to_one(db_object, db_children.first, belongs_to_config, identity_map)
       end
-
     end
+  end
+
+  def find_remote_associated(db_object, belongs_to_config, db_objects)
+    db_objects.find_all do |db_child|
+      if belongs_to_config.child_config(db_object).db_class == db_child.class # scary how commenting out this line causes no belongs_to tests to fail
+        associated?(db_object, db_child, belongs_to_config)
+      end
+    end
+  end
+
+  def find_local_associated(db_object, association_config, db_objects)
+    db_objects.find_all do |db_child|
+      if association_config.child_config.db_class == db_child.class
+        associated?(db_child, db_object, association_config)
+      end
+    end
+  end
+
+  def associated?(db_local, db_remote, association_config)
+    fk_value = db_local.send(association_config.fk)
+    fk_value_matches = fk_value == db_remote.id
   end
 
   def associate_one_to_many(db_object, db_children, one_to_many, identity_map)
