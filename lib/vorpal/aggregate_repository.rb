@@ -130,7 +130,7 @@ class AggregateRepository
 
   def find_remote_associated(db_object, belongs_to_config, db_objects)
     db_objects.find_all do |db_child|
-      if belongs_to_config.child_config(db_object).db_class == db_child.class # scary how commenting out this line causes no belongs_to tests to fail
+      if belongs_to_config.child_config(db_object).db_class == db_child.class
         associated?(db_object, db_child, belongs_to_config)
       end
     end
