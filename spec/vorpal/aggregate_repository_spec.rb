@@ -486,9 +486,15 @@ describe 'Aggregate Repository' do
     it 'restores with belongs_tos' do
       test_repository = configure_polymorphic_belongs_to
 
-      trunk_db = TrunkDB.create!(length: 99)
+      # makes sure that we are using the fk_type to discriminate against
+      # two entities with the same primary key value
+      trunk_db = TrunkDB.new(length: 99)
+      trunk_db.id = 99
+      trunk_db.save!
       trunk_bug_db = BugDB.create!(lives_on_id: trunk_db.id, lives_on_type: Trunk.name)
-      branch_db = BranchDB.create!(length: 5)
+      branch_db = BranchDB.new(length: 5)
+      branch_db.id = 99
+      branch_db.save!
       branch_bug_db = BugDB.create!(lives_on_id: branch_db.id, lives_on_type: Branch.name)
 
       trunk_bug, branch_bug = test_repository.load_all([trunk_bug_db.id, branch_bug_db.id], Bug)
