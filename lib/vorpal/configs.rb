@@ -220,6 +220,13 @@ class HasManyConfig
     @relational_association.load_locals(db_parent)
   end
 
+  def associated?(db_parent, db_child)
+    return false if child_config.db_class != db_child.class
+    db_child.send(fk) == db_parent.id
+  end
+
+  private
+
   def child_config
     @relational_association.local_config
   end
@@ -249,6 +256,13 @@ class BelongsToConfig
   def load_child(db_parent)
     @relational_association.load_remote(db_parent)
   end
+
+  def associated?(db_parent, db_child)
+    return false if child_config(db_parent).db_class != db_child.class
+    db_parent.send(fk) == db_child.id
+  end
+
+  private
 
   def child_config(db_owner)
     if @relational_association.polymorphic?
@@ -283,6 +297,13 @@ class HasOneConfig
   def load_child(db_parent)
     @relational_association.load_locals(db_parent).first
   end
+
+  def associated?(db_parent, db_child)
+    return false if child_config.db_class != db_child.class
+    db_child.send(fk) == db_parent.id
+  end
+
+  private
 
   def child_config
     @relational_association.local_config
