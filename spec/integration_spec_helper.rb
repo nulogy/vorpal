@@ -1,5 +1,6 @@
 require 'active_record'
 require 'pg' # or 'mysql2' or 'sqlite3'
+# require 'logger'
 
 # Change the following to reflect your database settings
 ActiveRecord::Base.establish_connection(
@@ -12,10 +13,11 @@ ActiveRecord::Base.establish_connection(
 )
 
 RSpec.configure do |config|
-  # implements use_transactional_fixtures = true
+  # implements `use_transactional_fixtures = true`
   # from lib/active_record/fixtures.rb
   # works with Rails 3.2. Probably not with Rails 4
   config.before(:each) do
+    # ActiveRecord::Base.logger = Logger.new(STDOUT)
     connection = ActiveRecord::Base.connection
     connection.increment_open_transactions
     connection.transaction_joinable = false
