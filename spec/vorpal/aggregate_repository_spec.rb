@@ -582,6 +582,55 @@ describe 'Aggregate Repository' do
     end
   end
 
+  describe 'lots of data' do
+    it 'avoids N+1s on load' do
+      test_repository = Vorpal.define do
+        map Tree do
+          fields :name
+          belongs_to :trunk
+          # has_many :fissures
+          has_many :branches
+        end
+
+        map Trunk do
+          fields :length
+          has_one :tree
+          has_many :bugs, fk: :lives_on_id, fk_type: :lives_on_type
+        end
+
+        map Branch do
+          fields :length
+          belongs_to :tree
+          has_many :bugs, fk: :lives_on_id, fk_type: :lives_on_type
+          has_many :branches
+        end
+
+        map Bug do
+          fields :name
+          belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
+        end
+        # map Fissure, to: Fissure
+      end
+
+      ids = (1..3).map do
+        trunk_db = TrunkDB.create!
+        tree_db = TreeDB.create!(trunk_id: trunk_db.id)
+        branch_db1 = BranchDB.create!(tree_id: tree_db.id)
+        branch_db2 = BranchDB.create!(tree_id: tree_db.id)
+        branch_db3 = BranchDB.create!(branch_id: branch_db2.id)
+        BugDB.create!(name: 'trunk bug', lives_on_id: trunk_db.id, lives_on_type: Trunk.name)
+        BugDB.create!(name: 'branch bug!', lives_on_id: branch_db1.id, lives_on_type: Branch.name)
+        tree_db.id
+      end
+
+      puts '*************************'
+      puts '*************************'
+      puts '*************************'
+      puts '*************************'
+      test_repository.load_all(ids, Tree)
+    end
+  end
+
   # when you change a table's columns, set force to true to re-generate the table in the DB
   def define_table(table_name, columns, force)
     if !ActiveRecord::Base.connection.table_exists?(table_name) || force

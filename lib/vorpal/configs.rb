@@ -1,4 +1,5 @@
 require 'vorpal/hash_initialization'
+require 'equalizer'
 
 module Vorpal
 
@@ -39,6 +40,7 @@ end
 
 # @private
 class ClassConfig
+  include Equalizer.new(:domain_class, :db_class)
   attr_reader :serializer, :deserializer, :domain_class, :db_class
   attr_accessor :has_manys, :belongs_tos, :has_ones
 
@@ -63,6 +65,10 @@ class ClassConfig
 
   def load_by_id(id)
     db_class.where(id: id).first
+  end
+
+  def load_all_by_id(ids)
+    db_class.where(id: ids)
   end
 
   def load_by_foreign_key(id, foreign_key_info)
@@ -125,6 +131,8 @@ end
 
 # @private
 class ForeignKeyInfo
+  include Equalizer.new(:fk_column, :fk_type_column, :fk_type)
+
   attr_reader :fk_column, :fk_type_column, :fk_type, :polymorphic
 
   def initialize(fk_column, fk_type_column, fk_type, polymorphic)
@@ -183,12 +191,11 @@ class RelationalAssociation
     !fk_type.nil?
   end
 
-  private
-
-  def foreign_key_info(class_config)
-    ForeignKeyInfo.new(fk, fk_type, class_config.domain_class.name, polymorphic?)
+  def foreign_key_info(remote_class_config)
+    ForeignKeyInfo.new(fk, fk_type, remote_class_config.domain_class.name, polymorphic?)
   end
 
+  private
 
   def get_foreign_key(local_db_model)
     local_config.get_field(local_db_model, fk)
@@ -201,6 +208,7 @@ class HasManyConfig
   attr_reader :name, :owned, :fk, :fk_type, :child_class
 
   def init_relational_association(child_config, parent_config)
+    @parent_config = parent_config
     @relational_association = RelationalAssociation.new(fk: fk, fk_type: fk_type, local_config: child_config, remote_configs: [parent_config])
   end
 
@@ -225,10 +233,12 @@ class HasManyConfig
     db_child.send(fk) == db_parent.id
   end
 
-  private
-
   def child_config
     @relational_association.local_config
+  end
+
+  def foreign_key_info
+    @relational_association.foreign_key_info(@parent_config)
   end
 end
 
@@ -259,17 +269,19 @@ class BelongsToConfig
 
   def associated?(db_parent, db_child)
     return false if child_config(db_parent).db_class != db_child.class
-    db_parent.send(fk) == db_child.id
+    fk_value(db_parent) == db_child.id
   end
 
-  private
-
-  def child_config(db_owner)
+  def child_config(db_parent)
     if @relational_association.polymorphic?
-      @relational_association.remote_config_for_local_db_object(db_owner)
+      @relational_association.remote_config_for_local_db_object(db_parent)
     else
       @relational_association.remote_configs.first
     end
+  end
+
+  def fk_value(db_parent)
+    db_parent.send(fk)
   end
 end
 
@@ -279,6 +291,7 @@ class HasOneConfig
   attr_reader :name, :owned, :fk, :fk_type, :child_class
 
   def init_relational_association(child_config, parent_config)
+    @parent_config = parent_config
     @relational_association = RelationalAssociation.new(fk: fk, fk_type: fk_type, local_config: child_config, remote_configs: [parent_config])
   end
 
@@ -303,10 +316,12 @@ class HasOneConfig
     db_child.send(fk) == db_parent.id
   end
 
-  private
-
   def child_config
     @relational_association.local_config
+  end
+
+  def foreign_key_info
+    @relational_association.foreign_key_info(@parent_config)
   end
 end
 end
