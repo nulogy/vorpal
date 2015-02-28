@@ -1,5 +1,6 @@
 require 'vorpal/identity_map'
 require 'vorpal/traversal'
+require 'vorpal/db_loader'
 
 module Vorpal
 class AggregateRepository
@@ -95,6 +96,11 @@ class AggregateRepository
   private
 
   def load_from_db(ids, domain_class)
+    DbLoader.new(@configs).load_from_db(ids, domain_class)
+    # old_load_from_db(ids, domain_class)
+  end
+
+  def old_load_from_db(ids, domain_class)
     ids.flat_map do |id|
       config = @configs.config_for(domain_class)
       db_object = config.load_by_id(id)

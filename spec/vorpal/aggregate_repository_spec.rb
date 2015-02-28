@@ -581,7 +581,7 @@ describe 'Aggregate Repository' do
       expect(BranchDB.count).to eq 1
     end
   end
-
+  
 private
 
   def configure_polymorphic_has_many
