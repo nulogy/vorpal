@@ -1,4 +1,5 @@
 module Vorpal
+
 class DbLoader
   def initialize(configs)
     @configs = configs
@@ -6,77 +7,124 @@ class DbLoader
 
   def load_from_db(ids, domain_class)
     config = @configs.config_for(domain_class)
-    unloaded_objects = UnloadedObjects.new
-    unloaded_objects.lookup_by_id(config, ids)
+    @loaded_objects = LoadedObjects.new
+    @unloaded_objects = UnloadedObjects.new
+    @unloaded_objects.lookup_by_id(config, ids)
     objects_to_explore = []
-    loaded_objects = []
 
-    while(!unloaded_objects.empty? || !objects_to_explore.empty?)
-      new_objects = load_objects(unloaded_objects)
-      loaded_objects.concat(new_objects)
+    until @unloaded_objects.empty? && objects_to_explore.empty?
+      new_objects = load_objects
       objects_to_explore.concat(new_objects)
 
-      explore_objects(objects_to_explore, unloaded_objects)
+      explore_objects(objects_to_explore)
     end
 
-    loaded_objects
+    @loaded_objects.all_objects
   end
 
   private
 
-  def load_objects(unloaded_objects)
-    lookup = unloaded_objects.next_lookup
+  def load_objects
+    lookup = @unloaded_objects.next_lookup
     new_objects = lookup.load_all
-    unloaded_objects.register_new_objects(lookup.config, new_objects)
+    @loaded_objects.add(lookup.config, new_objects)
     new_objects
   end
 
-  def explore_objects(objects_to_explore, unloaded_objects)
+  def explore_objects(objects_to_explore)
     objects_to_explore.each do |db_object|
       config = @configs.config_for_db(db_object.class)
       config.has_manys.each do |has_many_config|
-        unloaded_objects.lookup_by_fk(
-          has_many_config.child_config,
-          has_many_config.foreign_key_info,
-          db_object.id
-        )
+        lookup_by_fk(db_object, has_many_config)
       end
 
       config.has_ones.each do |has_one_config|
-        unloaded_objects.lookup_by_fk(
-          has_one_config.child_config,
-          has_one_config.foreign_key_info,
-          db_object.id
-        )
+        lookup_by_fk(db_object, has_one_config)
       end
 
       config.belongs_tos.each do |belongs_to_config|
-        unloaded_objects.lookup_by_id(
-          belongs_to_config.child_config(db_object),
-          belongs_to_config.fk_value(db_object)
-        )
+        lookup_by_id(db_object, belongs_to_config)
       end
     end
     objects_to_explore.clear
   end
+
+  def lookup_by_id(db_object, belongs_to_config)
+    child_config = belongs_to_config.child_config(db_object)
+    id = belongs_to_config.fk_value(db_object)
+    return if @loaded_objects.id_lookup_done?(child_config, id)
+    @unloaded_objects.lookup_by_id(child_config, id)
+  end
+
+  def lookup_by_fk(db_object, has_many_config)
+    child_config = has_many_config.child_config
+    fk_info = has_many_config.foreign_key_info
+    fk_value = db_object.id
+    return if @loaded_objects.fk_lookup_done?(child_config, fk_info, fk_value)
+    @unloaded_objects.lookup_by_fk(child_config, fk_info, fk_value)
+  end
+end
+
+module ArrayHash
+  def add_to_hash(h, key, values)
+    if h[key].nil? || h[key].empty?
+      h[key] = []
+    end
+    h[key].concat(Array(values))
+  end
+end
+
+class LoadedObjects
+  include ArrayHash
+
+  def initialize
+    @objects = Hash.new([])
+  end
+
+  def add(config, objects)
+    add_to_hash(@objects, config, objects)
+  end
+
+  def loaded_ids(config)
+    @objects[config].map(&:id)
+  end
+
+  def loaded_fk_values(config, fk_info)
+    if fk_info.polymorphic?
+      @objects[config].
+        find_all { |db_object| fk_info.matches_polymorphic_type?(db_object) }.
+        map(&(fk_info.fk_column.to_sym))
+    else
+      @objects[config].map(&(fk_info.fk_column.to_sym))
+    end
+  end
+
+  def all_objects
+    @objects.values.flatten
+  end
+
+  def id_lookup_done?(config, id)
+    loaded_ids(config).include?(id)
+  end
+
+  def fk_lookup_done?(config, fk_info, fk_value)
+    loaded_fk_values(config, fk_info).include?(fk_value)
+  end
 end
 
 class UnloadedObjects
+  include ArrayHash
   def initialize
     @lookup_by_id = {}
     @lookup_by_fk = {}
-    @already_loaded = {}
   end
 
   def lookup_by_id(config, ids)
-    ids = Array(ids) - already_loaded_ids(config)
-    add_to_hash(@lookup_by_id, config, ids)
+    add_to_hash(@lookup_by_id, config, Array(ids))
   end
 
-  def lookup_by_fk(config, fk_info, fk_values)
-    fk_values = Array(fk_values) - already_loaded_fk_values(config, fk_info)
-
-    add_to_hash(@lookup_by_fk, [config, fk_info], fk_values)
+  def lookup_by_fk(config, fk_info, fk_value)
+    add_to_hash(@lookup_by_fk, [config, fk_info], fk_value)
   end
 
   def next_lookup
@@ -91,37 +139,10 @@ class UnloadedObjects
     end
   end
 
-  def register_new_objects(config, db_objects)
-    add_to_hash(@already_loaded, config, db_objects)
-  end
-
   def empty?
     @lookup_by_id.empty? && @lookup_by_fk.empty?
   end
-
-  private
-
-  def already_loaded_ids(config)
-    (@already_loaded[config] || []).map(&:id)
-  end
-
-  def already_loaded_fk_values(config, fk_info)
-    if fk_info.polymorphic?
-      (@already_loaded[config] || []).
-        find_all { |db_object| db_object.send(fk_info.fk_type_column) == fk_info.fk_type }.
-        map(&(fk_info.fk_column.to_sym))
-    else
-      (@already_loaded[config] || []).map(&(fk_info.fk_column.to_sym))
-    end
-  end
-
-  def add_to_hash(h, key, values)
-    current_values = h[key] || []
-    current_values.concat(Array(values))
-    h[key] = current_values
-  end
 end
-
 
 class LookupById
   attr_reader :config
