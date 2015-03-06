@@ -1,5 +1,5 @@
-require 'simple_serializer/simple_serializer'
-require 'simple_serializer/simple_deserializer'
+require 'simple_serializer/serializer'
+require 'simple_serializer/deserializer'
 require 'vorpal/configs'
 
 module Vorpal
@@ -134,13 +134,13 @@ class ConfigBuilder
   end
 
   def serializer(attrs)
-    Class.new(SimpleSerializer) do
+    Class.new(SimpleSerializer::Serializer) do
       attributes *attrs
     end
   end
 
   def deserializer(attrs)
-    Class.new(SimpleDeserializer) do
+    Class.new(SimpleSerializer::Deserializer) do
       data_attributes *attrs
     end
   end

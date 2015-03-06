@@ -230,7 +230,7 @@ For example:
 
 **Q.** How do I get serialization?
 
-**A.** You can use [ActiveModel::Serialization](http://api.rubyonrails.org/classes/ActiveModel/Serialization.html) or [ActiveModel::Serializers](https://github.com/rails-api/active_model_serializers) but they are not heartily recommended. The former is too coupled to the model and the latter is too coupled to Rails controllers. Vorpal includes the [SimpleSerializer](http://rubydoc.info/github/nulogy/vorpal/master/SimpleSerializer) and [SimpleDeserializer](http://rubydoc.info/github/nulogy/vorpal/master/SimpleDeserializer) for this purpose.
+**A.** You can use [ActiveModel::Serialization](http://api.rubyonrails.org/classes/ActiveModel/Serialization.html) or [ActiveModel::Serializers](https://github.com/rails-api/active_model_serializers) but they are not heartily recommended. The former is too coupled to the model and the latter is too coupled to Rails controllers. Vorpal uses [SimpleSerializer](https://github.com/nulogy/simple_serializer) for this purpose.
 
 ## Running Tests
 
