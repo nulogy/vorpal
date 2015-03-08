@@ -1,6 +1,7 @@
 require 'vorpal/identity_map'
 require 'vorpal/traversal'
 require 'vorpal/db_loader'
+require 'vorpal/naive_db_loader'
 
 module Vorpal
 class AggregateRepository
@@ -104,22 +105,11 @@ class AggregateRepository
 
   def load_from_db(ids, domain_class, only_owned=false)
     DbLoader.new(@configs, only_owned).load_from_db(ids, domain_class)
-    # old_load_from_db(ids, domain_class, only_owned)
+    # NaiveDbLoader.new(@configs, @traversal, only_owned).load_from_db(ids, domain_class)
   end
 
   def load_owned_from_db(ids, domain_class)
     load_from_db(ids, domain_class, true)
-  end
-
-  def old_load_from_db(ids, domain_class, only_owned)
-    loaded_objects = LoadedObjects.new
-    Array(ids).each do |id|
-      config = @configs.config_for(domain_class)
-      db_object = config.load_by_id(id)
-      load_from_db_visitor = LoadFromDBVisitor.new(only_owned, loaded_objects)
-      @traversal.accept_for_db(db_object, load_from_db_visitor)
-    end
-    loaded_objects
   end
 
   def hydrate(db_objects, identity_map)
@@ -315,24 +305,6 @@ class SaveVisitor
 
   def continue_traversal?(association_config)
     association_config.owned
-  end
-end
-
-# @private
-class LoadFromDBVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(only_owned, loaded_objects)
-    @only_owned = only_owned
-    @loaded_objects = loaded_objects
-  end
-
-  def visit_object(db_object, config)
-    @loaded_objects.add(config, db_object)
-  end
-
-  def continue_traversal?(association_config)
-    !@only_owned || association_config.owned == true
   end
 end
 
