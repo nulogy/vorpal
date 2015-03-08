@@ -196,10 +196,6 @@ class AggregateRepository
     orphans.each { |o| @configs.config_for_db(o.class).destroy(o) }
   end
 
-  def deserialize(db_object, identity_map)
-    @traversal.accept_for_db(db_object, DeserializeVisitor.new(identity_map))
-  end
-
   def get_unsaved_objects(objects)
     objects.find_all { |object| object.id.nil? }
   end
