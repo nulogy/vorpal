@@ -86,10 +86,7 @@ class AggregateRepository
   # @param object [Object] Root of the aggregate to be destroyed.
   # @return [Object] Root that was passed in.
   def destroy(object)
-    config = @configs.config_for(object.class)
-    db_object = config.find_in_db(object)
-    @traversal.accept_for_db(db_object, DestroyVisitor.new())
-    object
+    destroy_all(Array(object)).first
   end
 
   # Like {#destroy} but operates on multiple aggregates. Roots do not need to
@@ -98,7 +95,12 @@ class AggregateRepository
   # @param objects [[Object]] Array of roots of the aggregates to be destroyed.
   # @return [[Object]] Roots that were passed in.
   def destroy_all(objects)
-    objects.map(&method(:destroy))
+    objects.each do |object|
+      config = @configs.config_for(object.class)
+      db_object = config.find_in_db(object)
+      @traversal.accept_for_db(db_object, DestroyVisitor.new())
+    end
+    objects
   end
 
   private
