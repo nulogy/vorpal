@@ -1,4 +1,6 @@
 module Vorpal
+
+# @private
 module ArrayHash
   def add_to_hash(h, key, values)
     if h[key].nil? || h[key].empty?
@@ -7,4 +9,5 @@ module ArrayHash
     h[key].concat(Array(values))
   end
 end
+
 end
