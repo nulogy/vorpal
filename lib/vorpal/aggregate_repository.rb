@@ -20,27 +20,32 @@ class AggregateRepository
   # @param object [Object] Root of the aggregate to be saved.
   # @return [Object] Root of the aggregate.
   def persist(object)
-    mapping = {}
-    loaded_db_objects = load_owned_from_db(object.id, object.class)
-    serialize(object, mapping, loaded_db_objects)
-    new_objects = get_unsaved_objects(mapping.keys)
-    set_primary_keys(object, mapping)
-    set_foreign_keys(object, mapping)
-    remove_orphans(mapping, loaded_db_objects)
-    save(object, mapping)
-    object
-  rescue
-    nil_out_object_ids(new_objects)
-    raise
+    persist_all(Array(object)).first
   end
 
-  # Like {#persist} but operates on multiple aggregates. Roots do not need to
+  # Like {#persist} but operates on multiple aggregates. Roots do need to
   # be of the same type.
   #
   # @param objects [[Object]] array of aggregate roots to be saved.
   # @return [[Object]] array of aggregate roots.
   def persist_all(objects)
-    objects.map(&method(:persist))
+    return objects if objects.empty?
+
+    mapping = {}
+    new_objects = []
+    loaded_db_objects = load_owned_from_db(objects.map(&:id), objects.first.class)
+    objects.each do |object|
+      serialize(object, mapping, loaded_db_objects)
+      new_objects.concat(get_unsaved_objects(mapping.keys))
+      set_primary_keys(object, mapping)
+      set_foreign_keys(object, mapping)
+    end
+    remove_orphans(mapping, loaded_db_objects)
+    save(objects, mapping)
+    return objects
+  rescue
+    nil_out_object_ids(new_objects)
+    raise
   end
 
   # Loads an aggregate from the DB. Will eagerly load all objects in the
@@ -177,8 +182,10 @@ class AggregateRepository
     @traversal.accept_for_domain(object, PersistenceAssociationVisitor.new(mapping))
   end
 
-  def save(object, mapping)
-    @traversal.accept_for_domain(object, SaveVisitor.new(mapping))
+  def save(objects, mapping)
+    objects.each do |object|
+      @traversal.accept_for_domain(object, SaveVisitor.new(mapping))
+    end
   end
 
   def remove_orphans(mapping, loaded_db_objects)
