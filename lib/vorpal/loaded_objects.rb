@@ -1,6 +1,8 @@
 require 'vorpal/array_hash'
 
 module Vorpal
+
+# @private
 class LoadedObjects
   include ArrayHash
 

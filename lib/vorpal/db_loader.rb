@@ -3,6 +3,7 @@ require 'vorpal/array_hash'
 
 module Vorpal
 
+# @private
 class DbLoader
   def initialize(configs, only_owned)
     @configs = configs
@@ -66,6 +67,7 @@ class DbLoader
   end
 end
 
+# @private
 class LookupInstructions
   include ArrayHash
   def initialize
@@ -98,6 +100,7 @@ class LookupInstructions
   end
 end
 
+# @private
 class LookupById
   attr_reader :config
   def initialize(config, ids)
@@ -111,6 +114,7 @@ class LookupById
   end
 end
 
+# @private
 class LookupByFk
   attr_reader :config
   def initialize(config, fk_info, fk_values)
