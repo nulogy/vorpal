@@ -1,8 +1,9 @@
 module Vorpal
 
 class DbLoader
-  def initialize(configs)
+  def initialize(configs, only_owned)
     @configs = configs
+    @only_owned = only_owned
   end
 
   def load_from_db(ids, domain_class)
@@ -18,7 +19,7 @@ class DbLoader
       explore_objects(new_objects)
     end
 
-    @loaded_objects.all_objects
+    @loaded_objects
   end
 
   private
@@ -27,15 +28,21 @@ class DbLoader
     objects_to_explore.each do |db_object|
       config = @configs.config_for_db(db_object.class)
       config.has_manys.each do |has_many_config|
-        lookup_by_fk(db_object, has_many_config)
+        if !@only_owned || has_many_config.owned == true
+          lookup_by_fk(db_object, has_many_config)
+        end
       end
 
       config.has_ones.each do |has_one_config|
-        lookup_by_fk(db_object, has_one_config)
+        if !@only_owned || has_one_config.owned == true
+          lookup_by_fk(db_object, has_one_config)
+        end
       end
 
       config.belongs_tos.each do |belongs_to_config|
-        lookup_by_id(db_object, belongs_to_config)
+        if !@only_owned || belongs_to_config.owned == true
+          lookup_by_id(db_object, belongs_to_config)
+        end
       end
     end
   end
@@ -74,6 +81,10 @@ class LoadedObjects
 
   def add(config, objects)
     add_to_hash(@objects, config, objects)
+  end
+
+  def find_by_id(object, config)
+    @objects[config].detect { |obj| obj.id == object.id }
   end
 
   def loaded_ids(config)
