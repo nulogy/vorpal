@@ -21,11 +21,12 @@ class AggregateRepository
   # @return [Object] Root of the aggregate.
   def persist(object)
     mapping = {}
-    serialize(object, mapping)
+    loaded_db_objects = load_owned_from_db(object.id, object.class)
+    serialize(object, mapping, loaded_db_objects)
     new_objects = get_unsaved_objects(mapping.keys)
     set_primary_keys(object, mapping)
     set_foreign_keys(object, mapping)
-    remove_orphans(object, mapping)
+    remove_orphans(mapping, loaded_db_objects)
     save(object, mapping)
     object
   rescue
@@ -67,7 +68,8 @@ class AggregateRepository
   #   operation.
   # @return [[Object]] Entities with the given primary key values and type.
   def load_all(ids, domain_class, identity_map=IdentityMap.new)
-    db_objects = load_from_db(ids, domain_class)
+    db_objects = load_from_db(ids, domain_class).all_objects
+
     hydrate(db_objects, identity_map)
     identity_map.map_raw(ids, @configs.config_for(domain_class).db_class)
   end
@@ -95,19 +97,24 @@ class AggregateRepository
 
   private
 
-  def load_from_db(ids, domain_class)
-    DbLoader.new(@configs).load_from_db(ids, domain_class)
-    # old_load_from_db(ids, domain_class)
+  def load_from_db(ids, domain_class, only_owned=false)
+    DbLoader.new(@configs, only_owned).load_from_db(ids, domain_class)
+    # old_load_from_db(ids, domain_class, only_owned)
   end
 
-  def old_load_from_db(ids, domain_class)
-    ids.flat_map do |id|
+  def load_owned_from_db(ids, domain_class)
+    load_from_db(ids, domain_class, true)
+  end
+
+  def old_load_from_db(ids, domain_class, only_owned)
+    loaded_objects = LoadedObjects.new
+    Array(ids).each do |id|
       config = @configs.config_for(domain_class)
       db_object = config.load_by_id(id)
-      load_from_db_visitor = LoadFromDBVisitor.new(db_object)
+      load_from_db_visitor = LoadFromDBVisitor.new(only_owned, loaded_objects)
       @traversal.accept_for_db(db_object, load_from_db_visitor)
-      load_from_db_visitor.db_objects
     end
+    loaded_objects
   end
 
   def hydrate(db_objects, identity_map)
@@ -157,8 +164,8 @@ class AggregateRepository
     @traversal = Traversal.new(@configs)
   end
 
-  def serialize(object, mapping)
-    @traversal.accept_for_domain(object, SerializeVisitor.new(mapping))
+  def serialize(object, mapping, loaded_db_objects)
+    @traversal.accept_for_domain(object, SerializeVisitor.new(mapping, loaded_db_objects))
   end
 
   def set_primary_keys(object, mapping)
@@ -174,11 +181,11 @@ class AggregateRepository
     @traversal.accept_for_domain(object, SaveVisitor.new(mapping))
   end
 
-  def remove_orphans(object, mapping)
-    diff_visitor = AggregateDiffVisitor.new(mapping.values)
-    @traversal.accept_for_db(mapping[object], diff_visitor)
+  def remove_orphans(mapping, loaded_db_objects)
+    db_objects_in_aggregate = mapping.values
+    db_objects_in_db = loaded_db_objects.all_objects
+    orphans = db_objects_in_db - db_objects_in_aggregate
 
-    orphans = diff_visitor.orphans
     orphans.each { |o| @configs.config_for_db(o.class).destroy(o) }
   end
 
@@ -200,8 +207,9 @@ end
 class SerializeVisitor
   include AggregateVisitorTemplate
 
-  def initialize(mapping)
+  def initialize(mapping, loaded_db_objects)
     @mapping = mapping
+    @loaded_db_objects = loaded_db_objects
   end
 
   def visit_object(object, config)
@@ -223,7 +231,7 @@ class SerializeVisitor
       if object.id.nil?
         config.build_db_object(attributes)
       else
-        db_object = config.find_in_db(object)
+        db_object = @loaded_db_objects.find_by_id(object, config)
         config.set_db_object_attributes(db_object, attributes)
         db_object
       end
@@ -308,48 +316,20 @@ class SaveVisitor
 end
 
 # @private
-class AggregateDiffVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(db_objects_in_aggregate)
-    @db_objects_in_aggregate = db_objects_in_aggregate
-    @db_objects_in_db = []
-  end
-
-  def visit_object(db_object, config)
-    @db_objects_in_db << db_object
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
-  end
-
-  def orphans
-    @db_objects_in_db - @db_objects_in_aggregate
-  end
-end
-
-# @private
 class LoadFromDBVisitor
   include AggregateVisitorTemplate
 
-  def initialize(db_object)
-    @db_objects = []
-    add(db_object)
+  def initialize(only_owned, loaded_objects)
+    @only_owned = only_owned
+    @loaded_objects = loaded_objects
   end
 
   def visit_object(db_object, config)
-    add(db_object)
+    @loaded_objects.add(config, db_object)
   end
 
-  def db_objects
-    @db_objects
-  end
-
-  private
-
-  def add(db_object)
-    @db_objects << db_object
+  def continue_traversal?(association_config)
+    !@only_owned || association_config.owned == true
   end
 end
 
