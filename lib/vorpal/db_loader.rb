@@ -8,28 +8,20 @@ class DbLoader
   def load_from_db(ids, domain_class)
     config = @configs.config_for(domain_class)
     @loaded_objects = LoadedObjects.new
-    @unloaded_objects = UnloadedObjects.new
-    @unloaded_objects.lookup_by_id(config, ids)
-    objects_to_explore = []
+    @lookup_instructions = LookupInstructions.new
+    @lookup_instructions.lookup_by_id(config, ids)
 
-    until @unloaded_objects.empty? && objects_to_explore.empty?
-      new_objects = load_objects
-      objects_to_explore.concat(new_objects)
-
-      explore_objects(objects_to_explore)
+    until @lookup_instructions.empty?
+      lookup = @lookup_instructions.next_lookup
+      new_objects = lookup.load_all
+      @loaded_objects.add(lookup.config, new_objects)
+      explore_objects(new_objects)
     end
 
     @loaded_objects.all_objects
   end
 
   private
-
-  def load_objects
-    lookup = @unloaded_objects.next_lookup
-    new_objects = lookup.load_all
-    @loaded_objects.add(lookup.config, new_objects)
-    new_objects
-  end
 
   def explore_objects(objects_to_explore)
     objects_to_explore.each do |db_object|
@@ -46,14 +38,13 @@ class DbLoader
         lookup_by_id(db_object, belongs_to_config)
       end
     end
-    objects_to_explore.clear
   end
 
   def lookup_by_id(db_object, belongs_to_config)
     child_config = belongs_to_config.child_config(db_object)
     id = belongs_to_config.fk_value(db_object)
     return if @loaded_objects.id_lookup_done?(child_config, id)
-    @unloaded_objects.lookup_by_id(child_config, id)
+    @lookup_instructions.lookup_by_id(child_config, id)
   end
 
   def lookup_by_fk(db_object, has_many_config)
@@ -61,7 +52,7 @@ class DbLoader
     fk_info = has_many_config.foreign_key_info
     fk_value = db_object.id
     return if @loaded_objects.fk_lookup_done?(child_config, fk_info, fk_value)
-    @unloaded_objects.lookup_by_fk(child_config, fk_info, fk_value)
+    @lookup_instructions.lookup_by_fk(child_config, fk_info, fk_value)
   end
 end
 
@@ -112,7 +103,7 @@ class LoadedObjects
   end
 end
 
-class UnloadedObjects
+class LookupInstructions
   include ArrayHash
   def initialize
     @lookup_by_id = {}
