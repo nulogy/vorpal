@@ -1,4 +1,4 @@
-require 'vorpal/hash_initialization'
+require 'vorpal/util/hash_initialization'
 require 'equalizer'
 
 module Vorpal

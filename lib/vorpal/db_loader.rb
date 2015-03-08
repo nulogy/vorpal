@@ -1,5 +1,5 @@
 require 'vorpal/loaded_objects'
-require 'vorpal/array_hash'
+require 'vorpal/util/array_hash'
 
 module Vorpal
 
