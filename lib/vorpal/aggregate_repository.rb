@@ -95,10 +95,11 @@ class AggregateRepository
   # @param objects [[Object]] Array of roots of the aggregates to be destroyed.
   # @return [[Object]] Roots that were passed in.
   def destroy_all(objects)
-    objects.each do |object|
-      config = @configs.config_for(object.class)
-      db_object = config.find_in_db(object)
-      @traversal.accept_for_db(db_object, DestroyVisitor.new())
+    return objects if objects.empty?
+    config = @configs.config_for(objects.first.class)
+    loaded_db_objects = load_owned_from_db(objects.map(&:id), objects.first.class)
+    loaded_db_objects.all_objects.each do |object|
+      config.destroy(object)
     end
     objects
   end
@@ -303,19 +304,6 @@ class SaveVisitor
 
   def visit_object(object, config)
     config.save(@mapping[object])
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
-  end
-end
-
-# @private
-class DestroyVisitor
-  include AggregateVisitorTemplate
-
-  def visit_object(object, config)
-    config.destroy(object)
   end
 
   def continue_traversal?(association_config)
