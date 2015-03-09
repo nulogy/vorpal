@@ -108,16 +108,18 @@ class AggregateRepository
   private
 
   def all_owned_objects(roots)
+    traversal = Traversal.new(@configs)
+
     roots.flat_map do |root|
       owned_object_visitor = OwnedObjectVisitor.new
-      @traversal.accept_for_domain(root, owned_object_visitor)
+      traversal.accept_for_domain(root, owned_object_visitor)
       owned_object_visitor.owned_objects
     end
   end
 
   def load_from_db(ids, domain_class, only_owned=false)
     DbLoader.new(@configs, only_owned).load_from_db(ids, domain_class)
-    # NaiveDbLoader.new(@configs, @traversal, only_owned).load_from_db(ids, domain_class)
+    # NaiveDbLoader.new(@configs, only_owned).load_from_db(ids, domain_class)
   end
 
   def load_owned_from_db(ids, domain_class)
@@ -171,7 +173,6 @@ class AggregateRepository
 
   def configure(class_configs)
     @configs = MasterConfig.new(class_configs)
-    @traversal = Traversal.new(@configs)
   end
 
   def serialize(owned_objects, mapping, loaded_db_objects)

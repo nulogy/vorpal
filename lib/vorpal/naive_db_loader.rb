@@ -3,9 +3,9 @@ require 'vorpal/loaded_objects'
 module Vorpal
 
 class NaiveDbLoader
-  def initialize(configs, traversal, only_owned)
+  def initialize(configs, only_owned)
     @configs = configs
-    @traversal = traversal
+    @traversal = Traversal.new(@configs)
     @only_owned = only_owned
   end
 
