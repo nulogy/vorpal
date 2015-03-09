@@ -9,9 +9,7 @@ module DbDriver
   end
 
   def destroy(config, db_objects)
-    db_objects.each do |db_object|
-      db_object.destroy
-    end
+    config.db_class.delete_all(id: db_objects.map(&:id))
   end
 
   def load_by_id(config, ids)
