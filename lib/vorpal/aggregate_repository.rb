@@ -75,8 +75,9 @@ class AggregateRepository
   # @return [[Object]] Entities with the given primary key values and type.
   def load_all(ids, domain_class, identity_map=IdentityMap.new)
     db_objects = load_from_db(ids, domain_class).all_objects
+    deserialize(db_objects, identity_map)
+    set_associations(db_objects, identity_map)
 
-    hydrate(db_objects, identity_map)
     identity_map.map_raw(ids, @configs.config_for(domain_class).db_class)
   end
 
@@ -113,7 +114,7 @@ class AggregateRepository
       owned_object_visitor.owned_objects
     end
   end
-  
+
   def load_from_db(ids, domain_class, only_owned=false)
     DbLoader.new(@configs, only_owned).load_from_db(ids, domain_class)
     # NaiveDbLoader.new(@configs, @traversal, only_owned).load_from_db(ids, domain_class)
@@ -123,11 +124,14 @@ class AggregateRepository
     load_from_db(ids, domain_class, true)
   end
 
-  def hydrate(db_objects, identity_map)
+  def deserialize(db_objects, identity_map)
     db_objects.each do |db_object|
+      # TODO: There is probably a bug here when you have something in the IdentityMap that is stale.
       identity_map.get_and_set(db_object) { @configs.config_for_db(db_object.class).deserialize(db_object) }
     end
+  end
 
+  def set_associations(db_objects, identity_map)
     db_objects.each do |db_object|
       config = @configs.config_for_db(db_object.class)
       config.has_manys.each do |has_many_config|
