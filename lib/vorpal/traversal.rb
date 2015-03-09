@@ -1,4 +1,4 @@
-
+module Vorpal
 # @private
 class Traversal
   def initialize(configs)
@@ -44,4 +44,5 @@ module AggregateVisitorTemplate
   def continue_traversal?(association_config)
     true
   end
+end
 end
