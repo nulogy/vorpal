@@ -77,14 +77,6 @@ class ClassConfig
     arel.order(:id).all
   end
 
-  def destroy(db_object)
-    db_object.destroy
-  end
-
-  def save(db_object)
-    db_object.save!
-  end
-
   def build_db_object(attributes)
     db_class.new(attributes)
   end
