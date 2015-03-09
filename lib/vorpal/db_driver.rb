@@ -14,11 +14,7 @@ module DbDriver
     end
   end
 
-  def load_by_id(config, id)
-    config.db_class.where(id: id).first
-  end
-
-  def load_all_by_id(config, ids)
+  def load_by_id(config, ids)
     config.db_class.where(id: ids)
   end
 

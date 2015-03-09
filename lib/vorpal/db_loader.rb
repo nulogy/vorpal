@@ -109,7 +109,7 @@ class LookupById
 
   def load_all
     return [] if @ids.empty?
-    DbDriver.load_all_by_id(@config, @ids)
+    DbDriver.load_by_id(@config, @ids)
   end
 end
 
