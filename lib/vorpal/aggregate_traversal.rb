@@ -1,11 +1,13 @@
 module Vorpal
 # @private
-class Traversal
+class AggregateTraversal
   def initialize(configs)
     @configs = configs
   end
 
-  def accept_for_domain(object, visitor, already_visited=[])
+  # Traversal should always begin with an object that is known to be
+  # able to reach all other objects in the aggregate (like the root!)
+  def accept(object, visitor, already_visited=[])
     return if object.nil?
 
     config = @configs.config_for(object.class)
@@ -18,18 +20,18 @@ class Traversal
 
     config.belongs_tos.each do |belongs_to_config|
       child = belongs_to_config.get_child(object)
-      accept_for_domain(child, visitor, already_visited) if visitor.continue_traversal?(belongs_to_config)
+      accept(child, visitor, already_visited) if visitor.continue_traversal?(belongs_to_config)
     end
 
     config.has_ones.each do |has_one_config|
       child = has_one_config.get_child(object)
-      accept_for_domain(child, visitor, already_visited) if visitor.continue_traversal?(has_one_config)
+      accept(child, visitor, already_visited) if visitor.continue_traversal?(has_one_config)
     end
 
     config.has_manys.each do |has_many_config|
       children = has_many_config.get_children(object)
       children.each do |child|
-        accept_for_domain(child, visitor, already_visited) if visitor.continue_traversal?(has_many_config)
+        accept(child, visitor, already_visited) if visitor.continue_traversal?(has_many_config)
       end
     end
   end
