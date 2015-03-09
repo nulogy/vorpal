@@ -86,8 +86,8 @@ class AggregateRepository
   #
   # @param object [Object] Root of the aggregate to be destroyed.
   # @return [Object] Root that was passed in.
-  def destroy(object)
-    destroy_all(Array(object)).first
+  def destroy(root)
+    destroy_all(Array(root)).first
   end
 
   # Like {#destroy} but operates on multiple aggregates. Roots do not need to
@@ -95,14 +95,14 @@ class AggregateRepository
   #
   # @param objects [[Object]] Array of roots of the aggregates to be destroyed.
   # @return [[Object]] Roots that were passed in.
-  def destroy_all(objects)
-    return objects if objects.empty?
-    config = @configs.config_for(objects.first.class)
-    loaded_db_objects = load_owned_from_db(objects.map(&:id), objects.first.class)
-    loaded_db_objects.all_objects.each do |object|
-      config.destroy(object)
+  def destroy_all(roots)
+    return roots if roots.empty?
+    config = @configs.config_for(roots.first.class)
+    loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
+    loaded_db_objects.all_objects.each do |root|
+      config.destroy(root)
     end
-    objects
+    roots
   end
 
   private
