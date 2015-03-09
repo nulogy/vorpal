@@ -1,10 +1,16 @@
 require 'vorpal/util/array_hash'
+require 'forwardable'
 
 module Vorpal
 
 # @private
 class LoadedObjects
   include ArrayHash
+  extend Forwardable
+  include Enumerable
+
+  attr_reader :objects
+  def_delegators :objects, :each
 
   def initialize
     @objects = Hash.new([])
