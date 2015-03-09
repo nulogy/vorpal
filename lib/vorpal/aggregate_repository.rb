@@ -42,7 +42,7 @@ class AggregateRepository
       set_primary_keys(all_owned_objects, mapping)
       set_foreign_keys(all_owned_objects, mapping)
       remove_orphans(mapping, loaded_db_objects)
-      save(all_owned_objects, mapping)
+      save(all_owned_objects, new_objects, mapping)
 
       return roots
     rescue
@@ -240,10 +240,16 @@ class AggregateRepository
     end
   end
 
-  def save(owned_objects, mapping)
+  def save(owned_objects, new_objects, mapping)
+    grouped_new_objects = new_objects.group_by { |obj| @configs.config_for(obj.class) }
     owned_objects.each do |config, objects|
-      db_objects = objects.map { |obj| mapping[obj] }
-      DbDriver.save(config, db_objects)
+      objects_to_insert = grouped_new_objects[config] || []
+      db_objects_to_insert = objects_to_insert.map { |obj| mapping[obj] }
+      DbDriver.insert(config, db_objects_to_insert)
+
+      objects_to_update = objects - objects_to_insert
+      db_objects_to_update = objects_to_update.map { |obj| mapping[obj] }
+      DbDriver.update(config, db_objects_to_update)
     end
   end
 

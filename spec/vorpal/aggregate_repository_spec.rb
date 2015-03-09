@@ -1,8 +1,7 @@
 require 'integration_spec_helper'
-
 require 'vorpal'
-
 require 'virtus'
+require 'activerecord-import/base'
 
 describe 'Aggregate Repository' do
 
@@ -109,10 +108,9 @@ describe 'Aggregate Repository' do
 
       tree_db = TreeDB.create!
 
+      expect(Vorpal::DbDriver).to receive(:update).and_raise('not so good')
+
       fissure = Fissure.new
-      def fissure.save!
-        raise 'something bad happened!'
-      end
       tree = Tree.new(id: tree_db.id, fissures: [fissure])
 
       expect {
