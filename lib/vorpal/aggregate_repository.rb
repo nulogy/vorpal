@@ -24,7 +24,7 @@ class AggregateRepository
     persist_all(Array(root)).first
   end
 
-  # Like {#persist} but operates on multiple aggregates. Roots do need to
+  # Like {#persist} but operates on multiple aggregates. Roots must
   # be of the same type.
   #
   # @param objects [[Object]] array of aggregate roots to be saved.
@@ -33,15 +33,12 @@ class AggregateRepository
     return roots if roots.empty?
 
     all_owned_objects = all_owned_objects(roots)
-
-    grouped = all_owned_objects.group_by { |obj| @configs.config_for(obj.class) }
-
     mapping = {}
     loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
 
-    serialize(grouped, mapping, loaded_db_objects)
+    serialize(all_owned_objects, mapping, loaded_db_objects)
     new_objects = get_unsaved_objects(mapping.keys)
-    set_primary_keys(grouped, mapping)
+    set_primary_keys(all_owned_objects, mapping)
     set_foreign_keys(all_owned_objects, mapping)
     remove_orphans(mapping, loaded_db_objects)
     save(all_owned_objects, mapping)
@@ -93,7 +90,7 @@ class AggregateRepository
     destroy_all(Array(root)).first
   end
 
-  # Like {#destroy} but operates on multiple aggregates. Roots do not need to
+  # Like {#destroy} but operates on multiple aggregates. Roots must
   # be of the same type.
   #
   # @param objects [[Object]] Array of roots of the aggregates to be destroyed.
@@ -113,11 +110,13 @@ class AggregateRepository
   def all_owned_objects(roots)
     traversal = Traversal.new(@configs)
 
-    roots.flat_map do |root|
+    all = roots.flat_map do |root|
       owned_object_visitor = OwnedObjectVisitor.new
       traversal.accept_for_domain(root, owned_object_visitor)
       owned_object_visitor.owned_objects
     end
+
+    all.group_by { |obj| @configs.config_for(obj.class) }
   end
 
   def load_from_db(ids, domain_class, only_owned=false)
@@ -214,36 +213,38 @@ class AggregateRepository
     mapping.rehash # needs to happen because setting the id on an AR::Base model changes its hash value
   end
 
-  def set_foreign_keys(objects, mapping)
-    objects.each do |object|
-      config = @configs.config_for(object.class)
-      config.has_manys.each do |has_many_config|
-        if has_many_config.owned
-          children = has_many_config.get_children(object)
-          children.each do |child|
-            has_many_config.set_foreign_key(mapping[child], object)
+  def set_foreign_keys(owned_objects, mapping)
+    owned_objects.each do |config, objects|
+      objects.each do |object|
+        config.has_manys.each do |has_many_config|
+          if has_many_config.owned
+            children = has_many_config.get_children(object)
+            children.each do |child|
+              has_many_config.set_foreign_key(mapping[child], object)
+            end
           end
         end
-      end
 
-      config.has_ones.each do |has_one_config|
-        if has_one_config.owned
-          child = has_one_config.get_child(object)
-          has_one_config.set_foreign_key(mapping[child], object)
+        config.has_ones.each do |has_one_config|
+          if has_one_config.owned
+            child = has_one_config.get_child(object)
+            has_one_config.set_foreign_key(mapping[child], object)
+          end
         end
-      end
 
-      config.belongs_tos.each do |belongs_to_config|
-        child = belongs_to_config.get_child(object)
-        belongs_to_config.set_foreign_key(mapping[object], child)
+        config.belongs_tos.each do |belongs_to_config|
+          child = belongs_to_config.get_child(object)
+          belongs_to_config.set_foreign_key(mapping[object], child)
+        end
       end
     end
   end
 
-  def save(all_owned_objects, mapping)
-    all_owned_objects.each do |object|
-      config = @configs.config_for(object.class)
-      config.save(mapping[object])
+  def save(owned_objects, mapping)
+    owned_objects.each do |config, objects|
+      objects.each do |object|
+        config.save(mapping[object])
+      end
     end
   end
 
