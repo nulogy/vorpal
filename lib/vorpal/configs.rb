@@ -54,15 +54,6 @@ class ClassConfig
     end
   end
 
-  def get_primary_keys(count)
-    result = ActiveRecord::Base.connection.execute("select nextval('#{sequence_name}') from generate_series(1,#{count});")
-    result.column_values(0).map(&:to_i)
-  end
-
-  def find_in_db(object)
-    load_by_id(object.id)
-  end
-
   def load_by_id(id)
     db_class.where(id: id).first
   end
@@ -112,12 +103,6 @@ class ClassConfig
 
   def table_name
     db_class.table_name
-  end
-
-  private
-
-  def sequence_name
-    "#{table_name}_id_seq"
   end
 end
 

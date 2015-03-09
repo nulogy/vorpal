@@ -203,7 +203,7 @@ class AggregateRepository
   def set_primary_keys(owned_objects, mapping)
     owned_objects.each do |config, objects|
       in_need_of_primary_keys = objects.find_all { |obj| obj.id.nil? }
-      primary_keys = config.get_primary_keys(in_need_of_primary_keys.length)
+      primary_keys = DbDriver.get_primary_keys(config, in_need_of_primary_keys.length)
       in_need_of_primary_keys.zip(primary_keys).each do |object, primary_key|
         mapping[object].id = primary_key
         object.id = primary_key
@@ -279,6 +279,17 @@ module DbDriver
     db_objects.each do |db_object|
       db_object.destroy
     end
+  end
+
+  def get_primary_keys(config, count)
+    result = ActiveRecord::Base.connection.execute("select nextval('#{sequence_name(config)}') from generate_series(1,#{count});")
+    result.column_values(0).map(&:to_i)
+  end
+
+  private
+
+  def sequence_name(config)
+    "#{config.table_name}_id_seq"
   end
 end
 
