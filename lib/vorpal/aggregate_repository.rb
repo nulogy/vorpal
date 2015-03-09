@@ -1,5 +1,5 @@
 require 'vorpal/identity_map'
-require 'vorpal/aggregate_traversal'
+require 'vorpal/aggregate_utils'
 require 'vorpal/db_loader'
 require 'vorpal/db_driver'
 
@@ -109,15 +109,7 @@ class AggregateRepository
   private
 
   def all_owned_objects(roots)
-    traversal = AggregateTraversal.new(@configs)
-
-    all = roots.flat_map do |root|
-      owned_object_visitor = OwnedObjectVisitor.new
-      traversal.accept(root, owned_object_visitor)
-      owned_object_visitor.owned_objects
-    end
-
-    all.group_by { |obj| @configs.config_for(obj.class) }
+    AggregateUtils.group_by_type(roots, @configs)
   end
 
   def load_from_db(ids, domain_class, only_owned=false)
@@ -270,24 +262,6 @@ class AggregateRepository
   def nil_out_object_ids(objects)
     objects ||= []
     objects.each { |object| object.id = nil }
-  end
-end
-
-# @private
-class OwnedObjectVisitor
-  include AggregateVisitorTemplate
-  attr_reader :owned_objects
-
-  def initialize
-    @owned_objects =[]
-  end
-
-  def visit_object(object, config)
-    @owned_objects << object
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
   end
 end
 
