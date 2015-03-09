@@ -35,18 +35,26 @@ class AggregateRepository
     mapping = {}
     new_objects = []
     loaded_db_objects = load_owned_from_db(objects.map(&:id), objects.first.class)
-    objects.each do |object|
-      serialize(object, mapping, loaded_db_objects)
-      new_objects.concat(get_unsaved_objects(mapping.keys))
-      set_primary_keys(object, mapping)
-      set_foreign_keys(object, mapping)
-    end
+    all_owned_objects = all_owned_objects(objects)
+    serialize(all_owned_objects, mapping, loaded_db_objects)
+    new_objects.concat(get_unsaved_objects(mapping.keys))
+    set_primary_keys(all_owned_objects, mapping)
+    set_foreign_keys(all_owned_objects, mapping)
     remove_orphans(mapping, loaded_db_objects)
-    save(objects, mapping)
+    save(all_owned_objects, mapping)
+
     return objects
   rescue
     nil_out_object_ids(new_objects)
     raise
+  end
+
+  def all_owned_objects(objects)
+    objects.flat_map do |object|
+      owned_object_visitor = OwnedObjectVisitor.new
+      @traversal.accept_for_domain(object, owned_object_visitor)
+      owned_object_visitor.owned_objects
+    end
   end
 
   # Loads an aggregate from the DB. Will eagerly load all objects in the
@@ -162,22 +170,75 @@ class AggregateRepository
     @traversal = Traversal.new(@configs)
   end
 
-  def serialize(object, mapping, loaded_db_objects)
-    @traversal.accept_for_domain(object, SerializeVisitor.new(mapping, loaded_db_objects))
+  def serialize(owned_objects, mapping, loaded_db_objects)
+    owned_objects.each do |object|
+      config = @configs.config_for(object.class)
+      db_object = serialize_object(object, config, loaded_db_objects)
+      mapping[object] = db_object
+    end
   end
 
-  def set_primary_keys(object, mapping)
-    @traversal.accept_for_domain(object, IdentityVisitor.new(mapping))
+  def serialize_object(object, config, loaded_db_objects)
+    if config.serialization_required?
+      attributes = config.serialize(object)
+      if object.id.nil?
+        config.build_db_object(attributes)
+      else
+        db_object = loaded_db_objects.find_by_id(object, config)
+        config.set_db_object_attributes(db_object, attributes)
+        db_object
+      end
+    else
+      object
+    end
+  end
+
+  def set_primary_keys(owned_objects, mapping)
+    owned_objects.each do |object|
+      set_primary_key(object, @configs.config_for(object.class), mapping)
+    end
     mapping.rehash # needs to happen because setting the id on an AR::Base model changes its hash value
   end
 
-  def set_foreign_keys(object, mapping)
-    @traversal.accept_for_domain(object, PersistenceAssociationVisitor.new(mapping))
+  def set_primary_key(object, config, mapping)
+    return unless object.id.nil?
+
+    primary_key = config.get_primary_keys(1).first
+
+    mapping[object].id = primary_key
+    object.id = primary_key
   end
 
-  def save(objects, mapping)
+  def set_foreign_keys(objects, mapping)
     objects.each do |object|
-      @traversal.accept_for_domain(object, SaveVisitor.new(mapping))
+      config = @configs.config_for(object.class)
+      config.has_manys.each do |has_many_config|
+        if has_many_config.owned
+          children = has_many_config.get_children(object)
+          children.each do |child|
+            has_many_config.set_foreign_key(mapping[child], object)
+          end
+        end
+      end
+
+      config.has_ones.each do |has_one_config|
+        child = has_one_config.get_child(object)
+        if has_one_config.owned
+          has_one_config.set_foreign_key(mapping[child], object)
+        end
+      end
+
+      config.belongs_tos.each do |belongs_to_config|
+        child = belongs_to_config.get_child(object)
+        belongs_to_config.set_foreign_key(mapping[object], child)
+      end
+    end
+  end
+
+  def save(all_owned_objects, mapping)
+    all_owned_objects.each do |object|
+      config = @configs.config_for(object.class)
+      config.save(mapping[object])
     end
   end
 
@@ -200,110 +261,16 @@ class AggregateRepository
 end
 
 # @private
-class SerializeVisitor
+class OwnedObjectVisitor
   include AggregateVisitorTemplate
+  attr_reader :owned_objects
 
-  def initialize(mapping, loaded_db_objects)
-    @mapping = mapping
-    @loaded_db_objects = loaded_db_objects
+  def initialize
+    @owned_objects =[]
   end
 
   def visit_object(object, config)
-    serialize(object, config)
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
-  end
-
-  def serialize(object, config)
-    db_object = serialize_object(object, config)
-    @mapping[object] = db_object
-  end
-
-  def serialize_object(object, config)
-    if config.serialization_required?
-      attributes = config.serialize(object)
-      if object.id.nil?
-        config.build_db_object(attributes)
-      else
-        db_object = @loaded_db_objects.find_by_id(object, config)
-        config.set_db_object_attributes(db_object, attributes)
-        db_object
-      end
-    else
-      object
-    end
-  end
-end
-
-# @private
-class IdentityVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(mapping)
-    @mapping = mapping
-  end
-
-  def visit_object(object, config)
-    set_primary_key(object, config)
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
-  end
-
-  private
-
-  def set_primary_key(object, config)
-    return unless object.id.nil?
-
-    primary_key = config.get_primary_keys(1).first
-
-    @mapping[object].id = primary_key
-    object.id = primary_key
-  end
-end
-
-# @private
-class PersistenceAssociationVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(mapping)
-    @mapping = mapping
-  end
-
-  def visit_belongs_to(parent, child, belongs_to_config)
-    belongs_to_config.set_foreign_key(@mapping[parent], child)
-  end
-
-  def visit_has_one(parent, child, has_one_config)
-    return unless has_one_config.owned
-    has_one_config.set_foreign_key(@mapping[child], parent)
-  end
-
-  def visit_has_many(parent, children, has_many_config)
-    return unless has_many_config.owned
-    children.each do |child|
-      has_many_config.set_foreign_key(@mapping[child], parent)
-    end
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
-  end
-end
-
-# @private
-class SaveVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(mapping)
-    @mapping = mapping
-  end
-
-  def visit_object(object, config)
-    config.save(@mapping[object])
+    @owned_objects << object
   end
 
   def continue_traversal?(association_config)
