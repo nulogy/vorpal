@@ -33,12 +33,15 @@ class AggregateRepository
     return roots if roots.empty?
 
     all_owned_objects = all_owned_objects(roots)
+
+    grouped = all_owned_objects.group_by { |obj| @configs.config_for(obj.class) }
+
     mapping = {}
     loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
 
-    serialize(all_owned_objects, mapping, loaded_db_objects)
+    serialize(grouped, mapping, loaded_db_objects)
     new_objects = get_unsaved_objects(mapping.keys)
-    set_primary_keys(all_owned_objects, mapping)
+    set_primary_keys(grouped, mapping)
     set_foreign_keys(all_owned_objects, mapping)
     remove_orphans(mapping, loaded_db_objects)
     save(all_owned_objects, mapping)
@@ -176,10 +179,11 @@ class AggregateRepository
   end
 
   def serialize(owned_objects, mapping, loaded_db_objects)
-    owned_objects.each do |object|
-      config = @configs.config_for(object.class)
-      db_object = serialize_object(object, config, loaded_db_objects)
-      mapping[object] = db_object
+    owned_objects.each do |config, objects|
+      objects.each do |object|
+        db_object = serialize_object(object, config, loaded_db_objects)
+        mapping[object] = db_object
+      end
     end
   end
 
@@ -199,19 +203,15 @@ class AggregateRepository
   end
 
   def set_primary_keys(owned_objects, mapping)
-    owned_objects.each do |object|
-      set_primary_key(object, @configs.config_for(object.class), mapping)
+    owned_objects.each do |config, objects|
+      in_need_of_primary_keys = objects.find_all { |obj| obj.id.nil? }
+      primary_keys = config.get_primary_keys(in_need_of_primary_keys.length)
+      in_need_of_primary_keys.zip(primary_keys).each do |object, primary_key|
+        mapping[object].id = primary_key
+        object.id = primary_key
+      end
     end
     mapping.rehash # needs to happen because setting the id on an AR::Base model changes its hash value
-  end
-
-  def set_primary_key(object, config, mapping)
-    return unless object.id.nil?
-
-    primary_key = config.get_primary_keys(1).first
-
-    mapping[object].id = primary_key
-    object.id = primary_key
   end
 
   def set_foreign_keys(objects, mapping)
