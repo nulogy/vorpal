@@ -32,23 +32,21 @@ class DbLoader
     objects_to_explore.each do |db_object|
       config = @configs.config_for_db(db_object.class)
       config.has_manys.each do |has_many_config|
-        if !@only_owned || has_many_config.owned == true
-          lookup_by_fk(db_object, has_many_config)
-        end
+        lookup_by_fk(db_object, has_many_config) if explore_association?(has_many_config)
       end
 
       config.has_ones.each do |has_one_config|
-        if !@only_owned || has_one_config.owned == true
-          lookup_by_fk(db_object, has_one_config)
-        end
+        lookup_by_fk(db_object, has_one_config) if explore_association?(has_one_config)
       end
 
       config.belongs_tos.each do |belongs_to_config|
-        if !@only_owned || belongs_to_config.owned == true
-          lookup_by_id(db_object, belongs_to_config)
-        end
+        lookup_by_id(db_object, belongs_to_config) if explore_association?(belongs_to_config)
       end
     end
+  end
+
+  def explore_association?(association_config)
+    !@only_owned || association_config.owned == true
   end
 
   def lookup_by_id(db_object, belongs_to_config)
