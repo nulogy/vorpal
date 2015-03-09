@@ -1,5 +1,6 @@
 require 'vorpal/loaded_objects'
 require 'vorpal/util/array_hash'
+require 'vorpal/db_driver'
 
 module Vorpal
 
@@ -108,7 +109,7 @@ class LookupById
 
   def load_all
     return [] if @ids.empty?
-    @config.load_all_by_id(@ids)
+    DbDriver.load_all_by_id(@config, @ids)
   end
 end
 
@@ -123,7 +124,7 @@ class LookupByFk
 
   def load_all
     return [] if @fk_values.empty?
-    @config.load_by_foreign_key(@fk_values, @fk_info)
+    DbDriver.load_by_foreign_key(@config, @fk_values, @fk_info)
   end
 end
 
