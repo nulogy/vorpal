@@ -97,10 +97,9 @@ class AggregateRepository
   # @return [[Object]] Roots that were passed in.
   def destroy_all(roots)
     return roots if roots.empty?
-    config = @configs.config_for(roots.first.class)
     loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
-    loaded_db_objects.all_objects.each do |root|
-      config.destroy(root)
+    loaded_db_objects.each do |config, db_objects|
+      DbDriver.destroy(config, db_objects)
     end
     roots
   end
@@ -242,18 +241,19 @@ class AggregateRepository
 
   def save(owned_objects, mapping)
     owned_objects.each do |config, objects|
-      objects.each do |object|
-        config.save(mapping[object])
-      end
+      db_objects = objects.map { |obj| mapping[obj] }
+      DbDriver.save(config, db_objects)
     end
   end
 
   def remove_orphans(mapping, loaded_db_objects)
     db_objects_in_aggregate = mapping.values
     db_objects_in_db = loaded_db_objects.all_objects
-    orphans = db_objects_in_db - db_objects_in_aggregate
-
-    orphans.each { |o| @configs.config_for_db(o.class).destroy(o) }
+    all_orphans = db_objects_in_db - db_objects_in_aggregate
+    grouped_orphans = all_orphans.group_by { |o| @configs.config_for_db(o.class) }
+    grouped_orphans.each do |config, orphans|
+      DbDriver.destroy(config, orphans)
+    end
   end
 
   def get_unsaved_objects(objects)
@@ -263,6 +263,22 @@ class AggregateRepository
   def nil_out_object_ids(objects)
     objects ||= []
     objects.each { |object| object.id = nil }
+  end
+end
+
+module DbDriver
+  extend self
+
+  def save(config, db_objects)
+    db_objects.each do |db_object|
+      db_object.save!
+    end
+  end
+
+  def destroy(config, db_objects)
+    db_objects.each do |db_object|
+      db_object.destroy
+    end
   end
 end
 
