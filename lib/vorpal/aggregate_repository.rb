@@ -20,8 +20,8 @@ class AggregateRepository
   #
   # @param object [Object] Root of the aggregate to be saved.
   # @return [Object] Root of the aggregate.
-  def persist(object)
-    persist_all(Array(object)).first
+  def persist(root)
+    persist_all(Array(root)).first
   end
 
   # Like {#persist} but operates on multiple aggregates. Roots do need to
@@ -29,32 +29,24 @@ class AggregateRepository
   #
   # @param objects [[Object]] array of aggregate roots to be saved.
   # @return [[Object]] array of aggregate roots.
-  def persist_all(objects)
-    return objects if objects.empty?
+  def persist_all(roots)
+    return roots if roots.empty?
 
+    all_owned_objects = all_owned_objects(roots)
     mapping = {}
-    new_objects = []
-    loaded_db_objects = load_owned_from_db(objects.map(&:id), objects.first.class)
-    all_owned_objects = all_owned_objects(objects)
+    loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
+
     serialize(all_owned_objects, mapping, loaded_db_objects)
-    new_objects.concat(get_unsaved_objects(mapping.keys))
+    new_objects = get_unsaved_objects(mapping.keys)
     set_primary_keys(all_owned_objects, mapping)
     set_foreign_keys(all_owned_objects, mapping)
     remove_orphans(mapping, loaded_db_objects)
     save(all_owned_objects, mapping)
 
-    return objects
+    return roots
   rescue
     nil_out_object_ids(new_objects)
     raise
-  end
-
-  def all_owned_objects(objects)
-    objects.flat_map do |object|
-      owned_object_visitor = OwnedObjectVisitor.new
-      @traversal.accept_for_domain(object, owned_object_visitor)
-      owned_object_visitor.owned_objects
-    end
   end
 
   # Loads an aggregate from the DB. Will eagerly load all objects in the
@@ -114,6 +106,14 @@ class AggregateRepository
 
   private
 
+  def all_owned_objects(roots)
+    roots.flat_map do |root|
+      owned_object_visitor = OwnedObjectVisitor.new
+      @traversal.accept_for_domain(root, owned_object_visitor)
+      owned_object_visitor.owned_objects
+    end
+  end
+  
   def load_from_db(ids, domain_class, only_owned=false)
     DbLoader.new(@configs, only_owned).load_from_db(ids, domain_class)
     # NaiveDbLoader.new(@configs, @traversal, only_owned).load_from_db(ids, domain_class)
