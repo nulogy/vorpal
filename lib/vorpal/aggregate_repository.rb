@@ -1,5 +1,5 @@
 require 'vorpal/identity_map'
-require 'vorpal/traversal'
+require 'vorpal/aggregate_traversal'
 require 'vorpal/db_loader'
 require 'vorpal/db_driver'
 
@@ -109,11 +109,11 @@ class AggregateRepository
   private
 
   def all_owned_objects(roots)
-    traversal = Traversal.new(@configs)
+    traversal = AggregateTraversal.new(@configs)
 
     all = roots.flat_map do |root|
       owned_object_visitor = OwnedObjectVisitor.new
-      traversal.accept_for_domain(root, owned_object_visitor)
+      traversal.accept(root, owned_object_visitor)
       owned_object_visitor.owned_objects
     end
 
