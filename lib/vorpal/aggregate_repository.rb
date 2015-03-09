@@ -38,15 +38,17 @@ class AggregateRepository
 
     serialize(all_owned_objects, mapping, loaded_db_objects)
     new_objects = get_unsaved_objects(mapping.keys)
-    set_primary_keys(all_owned_objects, mapping)
-    set_foreign_keys(all_owned_objects, mapping)
-    remove_orphans(mapping, loaded_db_objects)
-    save(all_owned_objects, mapping)
+    begin
+      set_primary_keys(all_owned_objects, mapping)
+      set_foreign_keys(all_owned_objects, mapping)
+      remove_orphans(mapping, loaded_db_objects)
+      save(all_owned_objects, mapping)
 
-    return roots
-  rescue
-    nil_out_object_ids(new_objects)
-    raise
+      return roots
+    rescue
+      nil_out_object_ids(new_objects)
+      raise
+    end
   end
 
   # Loads an aggregate from the DB. Will eagerly load all objects in the
