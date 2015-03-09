@@ -227,8 +227,8 @@ class AggregateRepository
       end
 
       config.has_ones.each do |has_one_config|
-        child = has_one_config.get_child(object)
         if has_one_config.owned
+          child = has_one_config.get_child(object)
           has_one_config.set_foreign_key(mapping[child], object)
         end
       end
