@@ -18,7 +18,7 @@ class AggregateRepository
   # be inserted, updated, or deleted. However, the relationships to these
   # objects (provided they are stored within the aggregate) will be saved.
   #
-  # @param object [Object] Root of the aggregate to be saved.
+  # @param root [Object] Root of the aggregate to be saved.
   # @return [Object] Root of the aggregate.
   def persist(root)
     persist_all(Array(root)).first
@@ -27,7 +27,7 @@ class AggregateRepository
   # Like {#persist} but operates on multiple aggregates. Roots must
   # be of the same type.
   #
-  # @param objects [[Object]] array of aggregate roots to be saved.
+  # @param roots [[Object]] array of aggregate roots to be saved.
   # @return [[Object]] array of aggregate roots.
   def persist_all(roots)
     return roots if roots.empty?
@@ -84,7 +84,7 @@ class AggregateRepository
   # Removes an aggregate from the DB. Even if the aggregate contains unsaved
   # changes this method will correctly remove everything.
   #
-  # @param object [Object] Root of the aggregate to be destroyed.
+  # @param root [Object] Root of the aggregate to be destroyed.
   # @return [Object] Root that was passed in.
   def destroy(root)
     destroy_all(Array(root)).first
@@ -93,7 +93,7 @@ class AggregateRepository
   # Like {#destroy} but operates on multiple aggregates. Roots must
   # be of the same type.
   #
-  # @param objects [[Object]] Array of roots of the aggregates to be destroyed.
+  # @param roots [[Object]] Array of roots of the aggregates to be destroyed.
   # @return [[Object]] Roots that were passed in.
   def destroy_all(roots)
     return roots if roots.empty?
