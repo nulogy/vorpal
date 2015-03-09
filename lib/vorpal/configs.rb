@@ -136,19 +136,6 @@ class RelationalAssociation
     local_config.set_field(local_db_model, fk_type, remote_model.class.name) if polymorphic?
   end
 
-  def load_locals(remote_db_model)
-    id = remote_db_model.id
-    # TODO: this method should probably be able to determine the config for the remote models
-    raise "Only supports having one remote configuration when navigating from the remote side to the local side of an association." if remote_configs.size != 1
-    remote_config = remote_configs.first
-    DbDriver.load_by_foreign_key(local_config, id, foreign_key_info(remote_config))
-  end
-
-  def load_remote(local_db_model)
-    remote_config = polymorphic? ? remote_config_for_local_db_object(local_db_model) : remote_configs.first
-    DbDriver.load_by_id(remote_config, get_foreign_key(local_db_model))
-  end
-
   def remote_config_for_local_db_object(local_db_model)
     class_name = local_config.get_field(local_db_model, fk_type)
     remote_configs.detect { |config| config.domain_class.name == class_name }
@@ -191,10 +178,6 @@ class HasManyConfig
     @relational_association.set_foreign_key(db_child, parent)
   end
 
-  def load_children(db_parent)
-    @relational_association.load_locals(db_parent)
-  end
-
   def associated?(db_parent, db_child)
     return false if child_config.db_class != db_child.class
     db_child.send(fk) == db_parent.id
@@ -227,10 +210,6 @@ end
 
     def set_foreign_key(db_parent, child)
       @relational_association.set_foreign_key(db_parent, child)
-    end
-
-    def load_child(db_parent)
-      @relational_association.load_remote(db_parent)
     end
 
     def associated?(db_parent, db_child)
@@ -271,10 +250,6 @@ class HasOneConfig
 
   def set_foreign_key(db_child, parent)
     @relational_association.set_foreign_key(db_child, parent)
-  end
-
-  def load_child(db_parent)
-    @relational_association.load_locals(db_parent).first
   end
 
   def associated?(db_parent, db_child)

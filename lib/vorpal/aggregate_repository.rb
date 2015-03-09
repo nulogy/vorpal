@@ -1,7 +1,6 @@
 require 'vorpal/identity_map'
 require 'vorpal/traversal'
 require 'vorpal/db_loader'
-require 'vorpal/naive_db_loader'
 require 'vorpal/db_driver'
 
 module Vorpal
@@ -121,7 +120,6 @@ class AggregateRepository
 
   def load_from_db(ids, domain_class, only_owned=false)
     DbLoader.new(@configs, only_owned).load_from_db(ids, domain_class)
-    # NaiveDbLoader.new(@configs, only_owned).load_from_db(ids, domain_class)
   end
 
   def load_owned_from_db(ids, domain_class)
