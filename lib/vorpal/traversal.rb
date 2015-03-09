@@ -19,15 +19,11 @@ class Traversal
     config.belongs_tos.each do |belongs_to_config|
       child = belongs_to_config.get_child(object)
       accept_for_domain(child, visitor, already_visited) if visitor.continue_traversal?(belongs_to_config)
-
-      visitor.visit_belongs_to(object, child, belongs_to_config)
     end
 
     config.has_ones.each do |has_one_config|
       child = has_one_config.get_child(object)
       accept_for_domain(child, visitor, already_visited) if visitor.continue_traversal?(has_one_config)
-
-      visitor.visit_has_one(object, child, has_one_config)
     end
 
     config.has_manys.each do |has_many_config|
@@ -35,7 +31,6 @@ class Traversal
       children.each do |child|
         accept_for_domain(child, visitor, already_visited) if visitor.continue_traversal?(has_many_config)
       end
-      visitor.visit_has_many(object, children, has_many_config)
     end
   end
 end
@@ -43,18 +38,6 @@ end
 # @private
 module AggregateVisitorTemplate
   def visit_object(object, config)
-    # override me!
-  end
-
-  def visit_belongs_to(parent, child, belongs_to_config)
-    # override me!
-  end
-
-  def visit_has_one(parent, child, has_one_config)
-    # override me!
-  end
-
-  def visit_has_many(parent, children, has_many_config)
     # override me!
   end
 
