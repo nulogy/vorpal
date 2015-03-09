@@ -54,20 +54,6 @@ class ClassConfig
     end
   end
 
-  def load_by_id(id)
-    db_class.where(id: id).first
-  end
-
-  def load_all_by_id(ids)
-    db_class.where(id: ids)
-  end
-
-  def load_by_foreign_key(id, foreign_key_info)
-    arel = db_class.where(foreign_key_info.fk_column => id)
-    arel = arel.where(foreign_key_info.fk_type_column => foreign_key_info.fk_type) if foreign_key_info.polymorphic?
-    arel.order(:id).all
-  end
-
   def build_db_object(attributes)
     db_class.new(attributes)
   end
@@ -155,12 +141,12 @@ class RelationalAssociation
     # TODO: this method should probably be able to determine the config for the remote models
     raise "Only supports having one remote configuration when navigating from the remote side to the local side of an association." if remote_configs.size != 1
     remote_config = remote_configs.first
-    local_config.load_by_foreign_key(id, foreign_key_info(remote_config))
+    DbDriver.load_by_foreign_key(local_config, id, foreign_key_info(remote_config))
   end
 
   def load_remote(local_db_model)
     remote_config = polymorphic? ? remote_config_for_local_db_object(local_db_model) : remote_configs.first
-    remote_config.load_by_id(get_foreign_key(local_db_model))
+    DbDriver.load_by_id(remote_config, get_foreign_key(local_db_model))
   end
 
   def remote_config_for_local_db_object(local_db_model)

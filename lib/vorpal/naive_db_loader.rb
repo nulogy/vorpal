@@ -13,7 +13,7 @@ class NaiveDbLoader
     loaded_objects = LoadedObjects.new
     Array(ids).each do |id|
       config = @configs.config_for(domain_class)
-      db_object = config.load_by_id(id)
+      db_object = DbDriver.load_by_id(config, id)
       load_from_db_visitor = LoadFromDBVisitor.new(@only_owned, loaded_objects)
       @traversal.accept_for_db(db_object, load_from_db_visitor)
     end

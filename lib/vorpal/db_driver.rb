@@ -14,6 +14,20 @@ module DbDriver
     end
   end
 
+  def load_by_id(config, id)
+    config.db_class.where(id: id).first
+  end
+
+  def load_all_by_id(config, ids)
+    config.db_class.where(id: ids)
+  end
+
+  def load_by_foreign_key(config, id, foreign_key_info)
+    arel = config.db_class.where(foreign_key_info.fk_column => id)
+    arel = arel.where(foreign_key_info.fk_type_column => foreign_key_info.fk_type) if foreign_key_info.polymorphic?
+    arel.order(:id).all
+  end
+
   def get_primary_keys(config, count)
     result = ActiveRecord::Base.connection.execute("select nextval('#{sequence_name(config)}') from generate_series(1,#{count});")
     result.column_values(0).map(&:to_i)
