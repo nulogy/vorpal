@@ -135,13 +135,13 @@ class ConfigBuilder
 
   def serializer(attrs)
     Class.new(SimpleSerializer::Serializer) do
-      attributes *attrs
+      hash_attributes *attrs
     end
   end
 
   def deserializer(attrs)
     Class.new(SimpleSerializer::Deserializer) do
-      data_attributes *attrs
+      object_attributes *attrs
     end
   end
 end
