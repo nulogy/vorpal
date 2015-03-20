@@ -23,10 +23,6 @@ class IdentityMap
     key_objects.map { |k| @entities[key(k)] }
   end
 
-  def map_raw(key_ids, key_class)
-    key_ids.map { |key_id| @entities[[key_id, key_class.name]] }
-  end
-
   private
 
   def key(key_object)

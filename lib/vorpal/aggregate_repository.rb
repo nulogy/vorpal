@@ -77,10 +77,10 @@ class AggregateRepository
   # @return [[Object]] Entities with the given primary key values and type.
   def load_all(ids, domain_class, identity_map=IdentityMap.new)
     db_objects = load_from_db(ids, domain_class).all_objects
-    deserialize(db_objects, identity_map)
+    objects = deserialize(db_objects, identity_map)
     set_associations(db_objects, identity_map)
 
-    identity_map.map_raw(ids, @configs.config_for(domain_class).db_class)
+    objects.select { |obj| obj.class == domain_class }
   end
 
   # Removes an aggregate from the DB. Even if the aggregate contains unsaved
@@ -121,7 +121,7 @@ class AggregateRepository
   end
 
   def deserialize(db_objects, identity_map)
-    db_objects.each do |db_object|
+    db_objects.map do |db_object|
       # TODO: There is probably a bug here when you have something in the IdentityMap that is stale.
       identity_map.get_and_set(db_object) { @configs.config_for_db_object(db_object).deserialize(db_object) }
     end
