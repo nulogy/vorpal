@@ -84,18 +84,28 @@ class LookupInstructions
 
   def next_lookup
     if @lookup_by_id.empty?
-      config, fk_info = @lookup_by_fk.first.first
-      fk_values = @lookup_by_fk.delete([config, fk_info])
-      LookupByFk.new(config, fk_info, fk_values)
+      pop_fk_lookup
     else
-      config = @lookup_by_id.first.first
-      ids = @lookup_by_id.delete(config)
-      LookupById.new(config, ids)
+      pop_id_lookup
     end
   end
 
   def empty?
     @lookup_by_id.empty? && @lookup_by_fk.empty?
+  end
+
+  private
+
+  def pop_id_lookup
+    config, ids = pop(@lookup_by_id)
+    LookupById.new(config, ids)
+  end
+
+  def pop_fk_lookup
+    key, fk_values = pop(@lookup_by_fk)
+    config = key.first
+    fk_info = key.last
+    LookupByFk.new(config, fk_info, fk_values)
   end
 end
 
