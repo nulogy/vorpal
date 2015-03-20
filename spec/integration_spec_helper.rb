@@ -11,8 +11,12 @@ ActiveRecord::Base.establish_connection(
   min_messages: 'error'
 )
 
+require 'helpers/db_helpers'
+
 RSpec.configure do |config|
-  # implements use_transactional_fixtures = true
+  config.include DbHelpers
+
+  # implements `use_transactional_fixtures = true`
   # from lib/active_record/fixtures.rb
   # works with Rails 3.2. Probably not with Rails 4
   config.before(:each) do
