@@ -101,7 +101,7 @@ class AggregateRepository
     return roots if roots.empty?
     loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
     loaded_db_objects.each do |config, db_objects|
-      DbDriver.destroy(config, db_objects)
+      DbDriver.destroy(config.db_class, db_objects)
     end
     roots
   end
@@ -196,7 +196,7 @@ class AggregateRepository
   def set_primary_keys(owned_objects, mapping)
     owned_objects.each do |config, objects|
       in_need_of_primary_keys = objects.find_all { |obj| obj.id.nil? }
-      primary_keys = DbDriver.get_primary_keys(config, in_need_of_primary_keys.length)
+      primary_keys = DbDriver.get_primary_keys(config.db_class, in_need_of_primary_keys.length)
       in_need_of_primary_keys.zip(primary_keys).each do |object, primary_key|
         mapping[object].id = primary_key
         object.id = primary_key
@@ -237,11 +237,11 @@ class AggregateRepository
     owned_objects.each do |config, objects|
       objects_to_insert = grouped_new_objects[config] || []
       db_objects_to_insert = objects_to_insert.map { |obj| mapping[obj] }
-      DbDriver.insert(config, db_objects_to_insert)
+      DbDriver.insert(config.db_class, db_objects_to_insert)
 
       objects_to_update = objects - objects_to_insert
       db_objects_to_update = objects_to_update.map { |obj| mapping[obj] }
-      DbDriver.update(config, db_objects_to_update)
+      DbDriver.update(config.db_class, db_objects_to_update)
     end
   end
 
@@ -251,7 +251,7 @@ class AggregateRepository
     all_orphans = db_objects_in_db - db_objects_in_aggregate
     grouped_orphans = all_orphans.group_by { |o| @configs.config_for_db(o.class) }
     grouped_orphans.each do |config, orphans|
-      DbDriver.destroy(config, orphans)
+      DbDriver.destroy(config.db_class, orphans)
     end
   end
 

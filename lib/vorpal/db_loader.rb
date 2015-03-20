@@ -109,7 +109,7 @@ class LookupById
 
   def load_all
     return [] if @ids.empty?
-    DbDriver.load_by_id(@config, @ids)
+    DbDriver.load_by_id(@config.db_class, @ids)
   end
 end
 
@@ -124,7 +124,7 @@ class LookupByFk
 
   def load_all
     return [] if @fk_values.empty?
-    DbDriver.load_by_foreign_key(@config, @fk_values, @fk_info)
+    DbDriver.load_by_foreign_key(@config.db_class, @fk_values, @fk_info)
   end
 end
 
