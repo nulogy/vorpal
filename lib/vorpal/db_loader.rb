@@ -31,7 +31,7 @@ class DbLoader
 
   def explore_objects(objects_to_explore)
     objects_to_explore.each do |db_object|
-      config = @configs.config_for_db(db_object.class)
+      config = @configs.config_for_db_object(db_object)
       config.has_manys.each do |has_many_config|
         lookup_by_fk(db_object, has_many_config) if explore_association?(has_many_config)
       end

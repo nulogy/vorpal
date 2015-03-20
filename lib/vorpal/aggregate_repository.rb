@@ -123,13 +123,13 @@ class AggregateRepository
   def deserialize(db_objects, identity_map)
     db_objects.each do |db_object|
       # TODO: There is probably a bug here when you have something in the IdentityMap that is stale.
-      identity_map.get_and_set(db_object) { @configs.config_for_db(db_object.class).deserialize(db_object) }
+      identity_map.get_and_set(db_object) { @configs.config_for_db_object(db_object).deserialize(db_object) }
     end
   end
 
   def set_associations(db_objects, identity_map)
     db_objects.each do |db_object|
-      config = @configs.config_for_db(db_object.class)
+      config = @configs.config_for_db_object(db_object)
       config.has_manys.each do |has_many_config|
         db_children = find_associated(db_object, has_many_config, db_objects)
         associate_one_to_many(db_object, db_children, has_many_config, identity_map)
@@ -249,7 +249,7 @@ class AggregateRepository
     db_objects_in_aggregate = mapping.values
     db_objects_in_db = loaded_db_objects.all_objects
     all_orphans = db_objects_in_db - db_objects_in_aggregate
-    grouped_orphans = all_orphans.group_by { |o| @configs.config_for_db(o.class) }
+    grouped_orphans = all_orphans.group_by { |o| @configs.config_for_db_object(o) }
     grouped_orphans.each do |config, orphans|
       DbDriver.destroy(config.db_class, orphans)
     end

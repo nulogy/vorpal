@@ -14,8 +14,8 @@ class MasterConfig
     @class_configs.detect { |conf| conf.domain_class == clazz }
   end
 
-  def config_for_db(clazz)
-    @class_configs.detect { |conf| conf.db_class == clazz }
+  def config_for_db_object(db_object)
+    @class_configs.detect { |conf| conf.db_class == db_object.class }
   end
 
   private
