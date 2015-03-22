@@ -4,11 +4,14 @@ require 'vorpal/db_driver'
 
 module Vorpal
 
+# Handles loading of objects from the database.
+#
 # @private
 class DbLoader
-  def initialize(configs, only_owned)
+  def initialize(configs, only_owned, driver=DbDriver)
     @configs = configs
     @only_owned = only_owned
+    @driver = driver
   end
 
   def load_from_db(ids, domain_class)
@@ -19,7 +22,7 @@ class DbLoader
 
     until @lookup_instructions.empty?
       lookup = @lookup_instructions.next_lookup
-      new_objects = lookup.load_all
+      new_objects = lookup.load_all(@driver)
       @loaded_objects.add(lookup.config, new_objects)
       explore_objects(new_objects)
     end
@@ -117,9 +120,9 @@ class LookupById
     @ids = ids
   end
 
-  def load_all
+  def load_all(driver)
     return [] if @ids.empty?
-    DbDriver.load_by_id(@config.db_class, @ids)
+    driver.load_by_id(@config.db_class, @ids)
   end
 end
 
@@ -132,9 +135,9 @@ class LookupByFk
     @fk_values = fk_values
   end
 
-  def load_all
+  def load_all(driver)
     return [] if @fk_values.empty?
-    DbDriver.load_by_foreign_key(@config.db_class, @fk_values, @fk_info)
+    driver.load_by_foreign_key(@config.db_class, @fk_values, @fk_info)
   end
 end
 
