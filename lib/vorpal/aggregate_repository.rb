@@ -6,8 +6,8 @@ require 'vorpal/db_driver'
 module Vorpal
 class AggregateRepository
   # @private
-  def initialize(class_configs)
-    configure(class_configs)
+  def initialize(master_config)
+    @configs = master_config
   end
 
   # Saves an aggregate to the DB. Inserts objects that are new to the
@@ -163,10 +163,6 @@ class AggregateRepository
     parent = identity_map.get(db_parent)
     child = identity_map.get(db_child)
     one_to_one_config.set_child(parent, child)
-  end
-
-  def configure(class_configs)
-    @configs = MasterConfig.new(class_configs)
   end
 
   def serialize(owned_objects, mapping, loaded_db_objects)

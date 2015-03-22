@@ -9,9 +9,8 @@ module Configuration
   #
   # @return [Vorpal::AggregateRepository] Repository instance.
   def define(&block)
-    @class_configs = []
-    self.instance_exec(&block)
-    AggregateRepository.new(@class_configs)
+    master_config = build_config(&block)
+    AggregateRepository.new(master_config)
   end
 
   # Maps a domain class to a relational table.
@@ -34,6 +33,13 @@ module Configuration
     builder.instance_exec(&block) if block_given?
 
     @class_configs << builder.build
+  end
+
+  # @private
+  def build_config(&block)
+    @class_configs = []
+    self.instance_exec(&block)
+    MasterConfig.new(@class_configs)
   end
 end
 end
