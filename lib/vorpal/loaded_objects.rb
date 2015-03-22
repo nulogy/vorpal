@@ -20,8 +20,8 @@ class LoadedObjects
     add_to_hash(@objects, config, objects)
   end
 
-  def find_by_id(object, config)
-    @objects[config].detect { |obj| obj.id == object.id }
+  def find_by_id(config, id)
+    @objects[config].detect { |obj| obj.id == id }
   end
 
   def loaded_ids(config)

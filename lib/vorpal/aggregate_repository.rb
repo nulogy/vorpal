@@ -180,7 +180,7 @@ class AggregateRepository
       if object.id.nil?
         config.build_db_object(attributes)
       else
-        db_object = loaded_db_objects.find_by_id(object, config)
+        db_object = loaded_db_objects.find_by_id(config, object.id)
         config.set_db_object_attributes(db_object, attributes)
         db_object
       end
