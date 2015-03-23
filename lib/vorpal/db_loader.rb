@@ -60,9 +60,9 @@ class DbLoader
     @lookup_instructions.lookup_by_id(child_config, id)
   end
 
-  def lookup_by_fk(db_object, has_many_config)
-    child_config = has_many_config.child_config
-    fk_info = has_many_config.foreign_key_info
+  def lookup_by_fk(db_object, has_some_config)
+    child_config = has_some_config.child_config
+    fk_info = has_some_config.foreign_key_info
     fk_value = db_object.id
     @lookup_instructions.lookup_by_fk(child_config, fk_info, fk_value)
   end

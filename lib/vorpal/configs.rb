@@ -210,12 +210,6 @@ class RelationalAssociation
   def foreign_key_info(remote_class_config)
     ForeignKeyInfo.new(fk, fk_type, remote_class_config.domain_class.name, polymorphic?)
   end
-
-  private
-
-  def get_foreign_key(local_db_model)
-    local_config.get_field(local_db_model, fk)
-  end
 end
 
 # @private
@@ -232,13 +226,9 @@ class HasManyConfig
     parent.send(name)
   end
 
-  def set_children(parent, children)
-    parent.send("#{name}=", children)
-  end
-
   def add_child(parent, child)
     if get_children(parent).nil?
-      set_children(parent, [])
+      parent.send("#{name}=", [])
     end
     get_children(parent) << child
   end
@@ -260,6 +250,7 @@ class HasManyConfig
     @relational_association.foreign_key_info(@parent_config)
   end
 end
+
 # @private
   class BelongsToConfig
     include HashInitialization
@@ -279,11 +270,6 @@ end
 
     def set_foreign_key(db_parent, child)
       @relational_association.set_foreign_key(db_parent, child)
-    end
-
-    def associated?(db_parent, db_child)
-      return false if child_config(db_parent).db_class != db_child.class
-      fk_value(db_parent) == db_child.id
     end
 
     def child_config(db_parent)
@@ -313,21 +299,12 @@ class HasOneConfig
     parent.send(name)
   end
 
-  def set_child(parent, child)
-    parent.send("#{name}=", child)
-  end
-
   def add_child(parent, child)
-    set_child(parent, child)
+    parent.send("#{name}=", child)
   end
 
   def set_foreign_key(db_child, parent)
     @relational_association.set_foreign_key(db_child, parent)
-  end
-
-  def associated?(db_parent, db_child)
-    return false if child_config.db_class != db_child.class
-    db_child.send(fk) == db_parent.id
   end
 
   def child_config
