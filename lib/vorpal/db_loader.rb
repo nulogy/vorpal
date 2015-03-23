@@ -64,7 +64,6 @@ class DbLoader
     child_config = has_many_config.child_config
     fk_info = has_many_config.foreign_key_info
     fk_value = db_object.id
-    return if @loaded_objects.fk_lookup_done?(child_config, fk_info, fk_value)
     @lookup_instructions.lookup_by_fk(child_config, fk_info, fk_value)
   end
 end

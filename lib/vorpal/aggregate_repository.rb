@@ -76,9 +76,9 @@ class AggregateRepository
   #   operation.
   # @return [[Object]] Entities with the given primary key values and type.
   def load_all(ids, domain_class, identity_map=IdentityMap.new)
-    db_objects = load_from_db(ids, domain_class).all_objects
-    objects = deserialize(db_objects, identity_map)
-    set_associations(db_objects, identity_map)
+    loaded_db_objects = load_from_db(ids, domain_class)
+    objects = deserialize(loaded_db_objects, identity_map)
+    set_associations(loaded_db_objects, identity_map)
 
     objects.select { |obj| obj.class == domain_class }
   end
@@ -120,49 +120,27 @@ class AggregateRepository
     load_from_db(ids, domain_class, true)
   end
 
-  def deserialize(db_objects, identity_map)
-    db_objects.map do |db_object|
-      # TODO: There is probably a bug here when you have something in the IdentityMap that is stale.
-      identity_map.get_and_set(db_object) { @configs.config_for_db_object(db_object).deserialize(db_object) }
-    end
-  end
-
-  def set_associations(db_objects, identity_map)
-    db_objects.each do |db_object|
-      config = @configs.config_for_db_object(db_object)
-      config.has_manys.each do |has_many_config|
-        db_children = find_associated(db_object, has_many_config, db_objects)
-        associate_one_to_many(db_object, db_children, has_many_config, identity_map)
-      end
-
-      config.has_ones.each do |has_one_config|
-        db_children = find_associated(db_object, has_one_config, db_objects)
-        associate_one_to_one(db_object, db_children.first, has_one_config, identity_map)
-      end
-
-      config.belongs_tos.each do |belongs_to_config|
-        db_children = find_associated(db_object, belongs_to_config, db_objects)
-        associate_one_to_one(db_object, db_children.first, belongs_to_config, identity_map)
+  def deserialize(loaded_db_objects, identity_map)
+    loaded_db_objects.flat_map do |config, db_objects|
+      db_objects.map do |db_object|
+        # TODO: There is a bug here when you have something in the IdentityMap that is stale and needs to be updated.
+        identity_map.get_and_set(db_object) { config.deserialize(db_object) }
       end
     end
   end
 
-  def find_associated(db_object, association_config, db_objects)
-    db_objects.find_all do |db_child|
-      association_config.associated?(db_object, db_child)
+  def set_associations(loaded_db_objects, identity_map)
+    loaded_db_objects.each do |config, db_objects|
+      db_objects.each do |db_object|
+        config.local_association_configs.each do |association_config|
+          db_remote = loaded_db_objects.find_by_id(
+            association_config.remote_class_config(db_object),
+            association_config.fk_value(db_object)
+          )
+          association_config.associate(identity_map.get(db_object), identity_map.get(db_remote))
+        end
+      end
     end
-  end
-
-  def associate_one_to_many(db_object, db_children, one_to_many, identity_map)
-    parent = identity_map.get(db_object)
-    children = identity_map.map(db_children)
-    one_to_many.set_children(parent, children)
-  end
-
-  def associate_one_to_one(db_parent, db_child, one_to_one_config, identity_map)
-    parent = identity_map.get(db_parent)
-    child = identity_map.get(db_child)
-    one_to_one_config.set_child(parent, child)
   end
 
   def serialize(owned_objects, mapping, loaded_db_objects)

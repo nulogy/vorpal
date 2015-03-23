@@ -14,40 +14,27 @@ class LoadedObjects
 
   def initialize
     @objects = Hash.new([])
+    @objects_by_id = Hash.new
   end
 
   def add(config, objects)
     add_to_hash(@objects, config, objects)
-  end
 
-  def find_by_id(config, id)
-    @objects[config].detect { |obj| obj.id == id }
-  end
-
-  def loaded_ids(config)
-    @objects[config].map(&:id)
-  end
-
-  def loaded_fk_values(config, fk_info)
-    if fk_info.polymorphic?
-      @objects[config].
-        find_all { |db_object| fk_info.matches_polymorphic_type?(db_object) }.
-        map(&(fk_info.fk_column.to_sym))
-    else
-      @objects[config].map(&(fk_info.fk_column.to_sym))
+    objects.each do |object|
+      @objects_by_id[[config.domain_class.name, object.id]] = object
     end
   end
 
+  def find_by_id(config, id)
+    @objects_by_id[[config.domain_class.name, id]]
+  end
+
   def all_objects
-    @objects.values.flatten
+    @objects_by_id.values
   end
 
   def id_lookup_done?(config, id)
-    loaded_ids(config).include?(id)
-  end
-
-  def fk_lookup_done?(config, fk_info, fk_value)
-    loaded_fk_values(config, fk_info).include?(fk_value)
+    !find_by_id(config, id).nil?
   end
 end
 end
