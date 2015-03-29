@@ -75,6 +75,8 @@ class AssociationConfig
   attr_reader :local_class_config, :remote_class_configs, :fk
 
   # Only one of these two fields needs to be specified
+  # If one is specified, then the association is uni-directional.
+  # If both are specified, then the association is bi-directional.
   attr_accessor :local_end_config, :remote_end_config
 
   def initialize(local_class_config, fk, fk_type)
