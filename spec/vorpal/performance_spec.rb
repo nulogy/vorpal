@@ -1,6 +1,7 @@
 require 'integration_spec_helper'
 require 'vorpal'
 require 'virtus'
+require 'activerecord-import/base'
 
 describe 'performance' do
 
@@ -75,15 +76,23 @@ describe 'performance' do
 
   let(:test_repository) { build_repository }
 
+  # Vorpal 0.0.5:
   #               user     system      total        real
-  # persist   4.160000   0.440000   4.600000 (  6.071752)
+  # create    4.160000   0.440000   4.600000 (  6.071752)
   # update    7.990000   0.730000   8.720000 ( 15.281017)
   # load     10.120000   0.730000  10.850000 ( 21.087785)
   # destroy   6.090000   0.620000   6.710000 ( 12.541420)
+  #
+  # Vorpal 0.0.6:
+  #               user     system      total        real
+  # create    1.490000   0.090000   1.580000 (  1.909274)
+  # update    2.750000   0.180000   2.930000 (  3.268736)
+  # load      2.150000   0.030000   2.180000 (  2.245594)
+  # destroy   0.940000   0.010000   0.950000 (  1.048264)
   it 'benchmarks all operations' do
     trees = build_trees(1000)
     Benchmark.bm(7) do |x|
-      x.report("persist") { test_repository.persist_all(trees) }
+      x.report("create") { test_repository.persist_all(trees) }
       x.report("update") { test_repository.persist_all(trees) }
       x.report("load") { ids = trees.map(&:id); test_repository.load_all(ids, Tree) }
       x.report("destroy") { test_repository.destroy_all(trees) }
