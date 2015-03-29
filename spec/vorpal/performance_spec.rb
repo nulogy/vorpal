@@ -31,6 +31,12 @@ describe 'performance' do
     attribute :tree, Tree
     attribute :branches, Array[Branch]
     attribute :bugs, Array[Bug]
+
+    def add_branch(branch_options)
+      branch = Branch.new(branch_options.merge(branch: self))
+      branches << branch
+      branch
+    end
   end
 
   class Tree
@@ -40,6 +46,17 @@ describe 'performance' do
     attribute :name, String
     attribute :trunk, Trunk
     attribute :branches, Array[Branch]
+
+    def set_trunk(trunk)
+      trunk.tree = self
+      self.trunk = trunk
+    end
+
+    def add_branch(branch_options)
+      branch = Branch.new(branch_options.merge(tree: self))
+      branches << branch
+      branch
+    end
   end
 
   before(:all) do
@@ -56,8 +73,88 @@ describe 'performance' do
     TrunkDB = defineAr('trunks_perf')
   end
 
-  it 'loads complex aggregates quickly' do
-    test_repository = Vorpal.define do
+  let(:test_repository) { build_repository }
+
+  #               user     system      total        real
+  # persist   4.160000   0.440000   4.600000 (  6.071752)
+  # update    7.990000   0.730000   8.720000 ( 15.281017)
+  # load     10.120000   0.730000  10.850000 ( 21.087785)
+  # destroy   6.090000   0.620000   6.710000 ( 12.541420)
+  it 'benchmarks all operations' do
+    trees = build_trees(1000)
+    Benchmark.bm(7) do |x|
+      x.report("persist") { test_repository.persist_all(trees) }
+      x.report("update") { test_repository.persist_all(trees) }
+      x.report("load") { ids = trees.map(&:id); test_repository.load_all(ids, Tree) }
+      x.report("destroy") { test_repository.destroy_all(trees) }
+    end
+  end
+
+  it 'persists aggregates quickly' do
+    trees = build_trees(1000)
+
+    puts 'starting persistence benchmark'
+    puts Benchmark.measure {
+      test_repository.persist_all(trees)
+    }
+  end
+
+  it 'updates aggregates quickly' do
+    trees = build_trees(1000)
+
+    test_repository.persist_all(trees)
+
+    puts 'starting update benchmark'
+    puts Benchmark.measure {
+      test_repository.persist_all(trees)
+    }
+  end
+
+  it 'loads aggregates quickly' do
+    trees = build_trees(1000)
+    test_repository.persist_all(trees)
+    ids = trees.map(&:id)
+
+    puts 'starting loading benchmark'
+    puts Benchmark.measure {
+      test_repository.load_all(ids, Tree)
+    }
+  end
+
+  it 'destroys aggregates quickly' do
+    trees = build_trees(1000)
+    test_repository.persist_all(trees)
+
+    puts 'starting destruction benchmark'
+    puts Benchmark.measure {
+      test_repository.destroy_all(trees)
+    }
+  end
+
+  def build_trees(count)
+    (1..count).map do |i|
+      tree = Tree.new
+      trunk = Trunk.new(length: i)
+      tree.set_trunk(trunk)
+
+      branch1 = tree.add_branch(length: i * 10)
+      branch2 = tree.add_branch(length: i * 20)
+      branch2.add_branch(length: i * 30)
+
+      build_bug(trunk)
+      build_bug(branch1)
+
+      tree
+    end
+  end
+
+  def build_bug(bug_home)
+    bug = Bug.new(lives_on: bug_home)
+    bug_home.bugs = [bug]
+  end
+
+  def build_repository
+    Vorpal.define do
       map Tree do
         fields :name
         belongs_to :trunk
@@ -82,21 +179,5 @@ describe 'performance' do
         belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
       end
     end
-
-    ids = (1..1000).map do
-      trunk_db = TrunkDB.create!
-      tree_db = TreeDB.create!(trunk_id: trunk_db.id)
-      branch_db1 = BranchDB.create!(tree_id: tree_db.id)
-      branch_db2 = BranchDB.create!(tree_id: tree_db.id)
-      branch_db3 = BranchDB.create!(branch_id: branch_db2.id)
-      BugDB.create!(name: 'trunk bug', lives_on_id: trunk_db.id, lives_on_type: Trunk.name)
-      BugDB.create!(name: 'branch bug!', lives_on_id: branch_db1.id, lives_on_type: Branch.name)
-      tree_db.id
-    end
-
-    puts 'starting loading benchmark'
-    puts Benchmark.measure {
-        test_repository.load_all(ids, Tree)
-      }
   end
 end
