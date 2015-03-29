@@ -4,17 +4,17 @@ module DbDriver
 
   def insert(db_class, db_objects)
     if defined? ActiveRecord::Import
-      db_class.import db_objects
+      db_class.import(db_objects, validate: false)
     else
       db_objects.each do |db_object|
-        db_object.save!
+        db_object.save!(validate: false)
       end
     end
   end
 
   def update(db_class, db_objects)
     db_objects.each do |db_object|
-      db_object.save!
+      db_object.save!(validate: false)
     end
   end
 

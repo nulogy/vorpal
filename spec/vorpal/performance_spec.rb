@@ -85,10 +85,10 @@ describe 'performance' do
   #
   # Vorpal 0.0.6:
   #               user     system      total        real
-  # create    1.490000   0.090000   1.580000 (  1.909274)
-  # update    2.750000   0.180000   2.930000 (  3.268736)
-  # load      2.150000   0.030000   2.180000 (  2.245594)
-  # destroy   0.940000   0.010000   0.950000 (  1.048264)
+  # create    0.990000   0.100000   1.090000 (  1.415715)
+  # update    2.240000   0.180000   2.420000 (  2.745321)
+  # load      2.130000   0.020000   2.150000 (  2.223182)
+  # destroy   0.930000   0.010000   0.940000 (  1.038624)
   it 'benchmarks all operations' do
     trees = build_trees(1000)
     Benchmark.bm(7) do |x|
