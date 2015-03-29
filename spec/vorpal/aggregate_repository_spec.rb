@@ -104,11 +104,12 @@ describe 'Aggregate Repository' do
 
   describe 'on error' do
     it 'nils ids of new objects' do
-      test_repository = configure
+      db_driver = Vorpal::DbDriver.new
+      test_repository = configure(db_driver: db_driver)
 
       tree_db = TreeDB.create!
 
-      expect(Vorpal::DbDriver).to receive(:update).and_raise('not so good')
+      expect(db_driver).to receive(:update).and_raise('not so good')
 
       fissure = Fissure.new
       tree = Tree.new(id: tree_db.id, fissures: [fissure])
@@ -697,8 +698,8 @@ private
     end
   end
   
-  def configure
-    Vorpal.define do
+  def configure(options={})
+    Vorpal.define(options) do
       map Tree do
         fields :name
         belongs_to :trunk

@@ -1,6 +1,5 @@
 module Vorpal
-module DbDriver
-  extend self
+class DbDriver
 
   def insert(db_class, db_objects)
     if defined? ActiveRecord::Import

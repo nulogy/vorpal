@@ -8,7 +8,7 @@ module Vorpal
 #
 # @private
 class DbLoader
-  def initialize(configs, only_owned, driver=DbDriver)
+  def initialize(configs, only_owned, driver)
     @configs = configs
     @only_owned = only_owned
     @driver = driver
