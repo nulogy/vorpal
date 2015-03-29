@@ -25,20 +25,21 @@ class MasterConfig
     @class_configs.each do |config|
       (config.has_ones + config.has_manys).each do |association_end_config|
         child_config = config_for(association_end_config.child_class)
-        association_end_config.init_relational_association(child_config, config)
+        association_end_config.set_parent_class_config(config)
 
         association_config = build_association_config(association_configs, child_config, association_end_config.fk, association_end_config.fk_type)
         association_config.remote_end_config = association_end_config
         association_config.add_remote_class_config(config)
+        association_end_config.association_config = association_config
       end
 
       config.belongs_tos.each do |association_end_config|
         child_configs = association_end_config.child_classes.map(&method(:config_for))
-        association_end_config.init_relational_association(child_configs, config)
 
         association_config = build_association_config(association_configs, config, association_end_config.fk, association_end_config.fk_type)
         association_config.local_end_config = association_end_config
         association_config.add_remote_class_config(child_configs)
+        association_end_config.association_config = association_config
       end
     end
 
@@ -59,6 +60,15 @@ class MasterConfig
 end
 
 # @private
+# Object associations:
+# - All object associations are uni-directional
+# - The end that holds the association is the 'Parent' and the end that
+#   is referred to is the 'Child' or 'Children'
+#
+# Relational associations:
+# - Local end: has FK
+# - Remote end: has no FK
+#
 class AssociationConfig
   include Equalizer.new(:local_class_config, :fk)
 
@@ -100,6 +110,15 @@ class AssociationConfig
 
   def polymorphic?
     !@fk_type.nil?
+  end
+
+  def set_foreign_key(local_db_object, remote_object)
+    local_class_config.set_field(local_db_object, @fk, remote_object.try(:id))
+    local_class_config.set_field(local_db_object, @fk_type, remote_object.class.name) if polymorphic?
+  end
+
+  def foreign_key_info(remote_class_config)
+    ForeignKeyInfo.new(@fk, @fk_type, remote_class_config.domain_class.name, polymorphic?)
   end
 end
 
@@ -170,56 +189,16 @@ class ForeignKeyInfo
   def polymorphic?
     @polymorphic
   end
-
-  def matches_polymorphic_type?(db_object)
-    db_object.send(fk_type_column) == fk_type
-  end
-end
-
-# @private
-# Object associations:
-# - All object associations are uni-directional
-# - The end that holds the association is the 'Parent' and the end that
-#   is referred to is the 'Child' or 'Children'
-#
-# Relational associations:
-# - Local end: has FK
-# - Remote end: has no FK
-#
-class RelationalAssociation
-  include HashInitialization
-  attr_reader :fk, :fk_type, :local_config, :remote_configs
-
-  # Can't pass in a remote db model for last param because when saving we only have
-  # a db model if the model is part of the aggregate and not just referenced by the
-  # aggregate
-  def set_foreign_key(local_db_model, remote_model)
-    local_config.set_field(local_db_model, fk, remote_model.try(:id))
-    local_config.set_field(local_db_model, fk_type, remote_model.class.name) if polymorphic?
-  end
-
-  def remote_config_for_local_db_object(local_db_model)
-    class_name = local_config.get_field(local_db_model, fk_type)
-    remote_configs.detect { |config| config.domain_class.name == class_name }
-  end
-
-  def polymorphic?
-    !fk_type.nil?
-  end
-
-  def foreign_key_info(remote_class_config)
-    ForeignKeyInfo.new(fk, fk_type, remote_class_config.domain_class.name, polymorphic?)
-  end
 end
 
 # @private
 class HasManyConfig
   include HashInitialization
   attr_reader :name, :owned, :fk, :fk_type, :child_class
+  attr_accessor :association_config
 
-  def init_relational_association(child_config, parent_config)
+  def set_parent_class_config(parent_config)
     @parent_config = parent_config
-    @relational_association = RelationalAssociation.new(fk: fk, fk_type: fk_type, local_config: child_config, remote_configs: [parent_config])
   end
 
   def get_children(parent)
@@ -234,20 +213,15 @@ class HasManyConfig
   end
 
   def set_foreign_key(db_child, parent)
-    @relational_association.set_foreign_key(db_child, parent)
-  end
-
-  def associated?(db_parent, db_child)
-    return false if child_config.db_class != db_child.class
-    db_child.send(fk) == db_parent.id
+    association_config.set_foreign_key(db_child, parent)
   end
 
   def child_config
-    @relational_association.local_config
+    association_config.local_class_config
   end
 
   def foreign_key_info
-    @relational_association.foreign_key_info(@parent_config)
+    association_config.foreign_key_info(@parent_config)
   end
 end
 
@@ -255,10 +229,7 @@ end
   class BelongsToConfig
     include HashInitialization
     attr_reader :name, :owned, :fk, :fk_type, :child_classes
-
-    def init_relational_association(child_configs, parent_config)
-      @relational_association = RelationalAssociation.new(fk: fk, fk_type: fk_type, local_config: parent_config, remote_configs: child_configs)
-    end
+    attr_accessor :association_config
 
     def get_child(parent)
       parent.send(name)
@@ -269,15 +240,11 @@ end
     end
 
     def set_foreign_key(db_parent, child)
-      @relational_association.set_foreign_key(db_parent, child)
+      association_config.set_foreign_key(db_parent, child)
     end
 
     def child_config(db_parent)
-      if @relational_association.polymorphic?
-        @relational_association.remote_config_for_local_db_object(db_parent)
-      else
-        @relational_association.remote_configs.first
-      end
+      association_config.remote_class_config(db_parent)
     end
 
     def fk_value(db_parent)
@@ -289,10 +256,10 @@ end
 class HasOneConfig
   include HashInitialization
   attr_reader :name, :owned, :fk, :fk_type, :child_class
+  attr_accessor :association_config
 
-  def init_relational_association(child_config, parent_config)
+  def set_parent_class_config(parent_config)
     @parent_config = parent_config
-    @relational_association = RelationalAssociation.new(fk: fk, fk_type: fk_type, local_config: child_config, remote_configs: [parent_config])
   end
 
   def get_child(parent)
@@ -304,15 +271,15 @@ class HasOneConfig
   end
 
   def set_foreign_key(db_child, parent)
-    @relational_association.set_foreign_key(db_child, parent)
+    association_config.set_foreign_key(db_child, parent)
   end
 
   def child_config
-    @relational_association.local_config
+    association_config.local_class_config
   end
 
   def foreign_key_info
-    @relational_association.foreign_key_info(@parent_config)
+    association_config.foreign_key_info(@parent_config)
   end
 end
 
