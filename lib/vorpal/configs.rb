@@ -89,8 +89,8 @@ class AssociationConfig
   end
 
   def associate(local_object, remote_object)
-    local_end_config.set_child(local_object, remote_object) if local_end_config && local_object
-    remote_end_config.add_child(remote_object, local_object) if remote_end_config && remote_object
+    local_end_config.associate(local_object, remote_object) if local_end_config && local_object
+    remote_end_config.associate(remote_object, local_object) if remote_end_config && remote_object
   end
 
   def add_remote_class_config(remote_class_configs)
@@ -191,60 +191,31 @@ class ForeignKeyInfo
   end
 end
 
-# @private
-class HasManyConfig
-  include HashInitialization
-  attr_reader :name, :owned, :fk, :fk_type, :child_class
-  attr_accessor :association_config
-
-  def set_parent_class_config(parent_config)
-    @parent_config = parent_config
-  end
-
-  def get_children(parent)
-    parent.send(name)
-  end
-
-  def add_child(parent, child)
-    if get_children(parent).nil?
-      parent.send("#{name}=", [])
-    end
-    get_children(parent) << child
-  end
-
-  def set_foreign_key(db_child, parent)
-    association_config.set_foreign_key(db_child, parent)
-  end
-
-  def child_config
-    association_config.local_class_config
-  end
-
-  def foreign_key_info
-    association_config.foreign_key_info(@parent_config)
-  end
-end
-
-# @private
-  class BelongsToConfig
-    include HashInitialization
-    attr_reader :name, :owned, :fk, :fk_type, :child_classes
-    attr_accessor :association_config
-
-    def get_child(parent)
-      parent.send(name)
+  module RemoteEndConfig
+    def child_config
+      association_config.local_class_config
     end
 
-    def set_child(parent, child)
-      parent.send("#{name}=", child)
+    def set_foreign_key(db_child, parent)
+      association_config.set_foreign_key(db_child, parent)
+    end
+
+    def set_parent_class_config(parent_config)
+      @parent_config = parent_config
+    end
+
+    def foreign_key_info
+      association_config.foreign_key_info(@parent_config)
+    end
+  end
+
+  module LocalEndConfig
+    def child_config(db_parent)
+      association_config.remote_class_config(db_parent)
     end
 
     def set_foreign_key(db_parent, child)
       association_config.set_foreign_key(db_parent, child)
-    end
-
-    def child_config(db_parent)
-      association_config.remote_class_config(db_parent)
     end
 
     def fk_value(db_parent)
@@ -252,35 +223,58 @@ end
     end
   end
 
+  module ToOneConfig
+    def get_child(parent)
+      parent.send(name)
+    end
+
+    def associate(parent, child)
+      parent.send("#{name}=", child)
+    end
+  end
+
+  module ToManyConfig
+    def get_children(parent)
+      parent.send(name)
+    end
+
+    def associate(parent, child)
+      if get_children(parent).nil?
+        parent.send("#{name}=", [])
+      end
+      get_children(parent) << child
+    end
+  end
+
+# @private
+class HasManyConfig
+  include HashInitialization
+  include RemoteEndConfig
+  include ToManyConfig
+
+  attr_reader :name, :owned, :fk, :fk_type, :child_class
+  attr_accessor :association_config
+end
+
+  # @private
+  class BelongsToConfig
+    include HashInitialization
+    include LocalEndConfig
+    include ToOneConfig
+
+    attr_reader :name, :owned, :fk, :fk_type, :child_classes
+    attr_accessor :association_config
+  end
+
+
 # @private
 class HasOneConfig
   include HashInitialization
+  include RemoteEndConfig
+  include ToOneConfig
+
   attr_reader :name, :owned, :fk, :fk_type, :child_class
   attr_accessor :association_config
-
-  def set_parent_class_config(parent_config)
-    @parent_config = parent_config
-  end
-
-  def get_child(parent)
-    parent.send(name)
-  end
-
-  def add_child(parent, child)
-    parent.send("#{name}=", child)
-  end
-
-  def set_foreign_key(db_child, parent)
-    association_config.set_foreign_key(db_child, parent)
-  end
-
-  def child_config
-    association_config.local_class_config
-  end
-
-  def foreign_key_info
-    association_config.foreign_key_info(@parent_config)
-  end
 end
 
 end
