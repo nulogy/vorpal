@@ -114,7 +114,7 @@ class AggregateRepository
   end
 
   def load_from_db(ids, domain_class, only_owned=false)
-    DbLoader.new(@configs, only_owned, @db_driver).load_from_db(ids, domain_class)
+    DbLoader.new(only_owned, @db_driver).load_from_db(ids, @configs.config_for(domain_class))
   end
 
   def load_owned_from_db(ids, domain_class)

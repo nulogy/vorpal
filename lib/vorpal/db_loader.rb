@@ -8,23 +8,21 @@ module Vorpal
 #
 # @private
 class DbLoader
-  def initialize(configs, only_owned, driver)
-    @configs = configs
+  def initialize(only_owned, db_driver)
     @only_owned = only_owned
-    @driver = driver
+    @db_driver = db_driver
   end
 
-  def load_from_db(ids, domain_class)
-    config = @configs.config_for(domain_class)
+  def load_from_db(ids, config)
     @loaded_objects = LoadedObjects.new
     @lookup_instructions = LookupInstructions.new
     @lookup_instructions.lookup_by_id(config, ids)
 
     until @lookup_instructions.empty?
       lookup = @lookup_instructions.next_lookup
-      new_objects = lookup.load_all(@driver)
+      new_objects = lookup.load_all(@db_driver)
       @loaded_objects.add(lookup.config, new_objects)
-      explore_objects(new_objects)
+      explore_objects(lookup.config, new_objects)
     end
 
     @loaded_objects
@@ -32,9 +30,8 @@ class DbLoader
 
   private
 
-  def explore_objects(objects_to_explore)
+  def explore_objects(config, objects_to_explore)
     objects_to_explore.each do |db_object|
-      config = @configs.config_for_db_object(db_object)
       config.has_manys.each do |has_many_config|
         lookup_by_fk(db_object, has_many_config) if explore_association?(has_many_config)
       end
