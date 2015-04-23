@@ -1,5 +1,9 @@
 module Vorpal
   class DbDriver
+    def initialize
+      @sequence_names = {}
+    end
+
     def insert(class_config, db_objects)
       if defined? ActiveRecord::Import
         class_config.db_class.import(db_objects, validate: false)
@@ -31,18 +35,22 @@ module Vorpal
     end
 
     def get_primary_keys(class_config, count)
-      result = execute("select nextval('#{sequence_name(class_config.db_class)}') from generate_series(1,#{count});")
-      result.column_values(0).map(&:to_i)
+      result = execute("select nextval($1) from generate_series(1,$2);", [sequence_name(class_config), count])
+      result.rows.map(&:first).map(&:to_i)
     end
 
     private
 
-    def execute(sql)
-      ActiveRecord::Base.connection.execute(sql)
+    def sequence_name(class_config)
+      @sequence_names[class_config] ||= execute(
+        "SELECT substring(column_default from '''(.*)''') FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = $1 AND column_name = 'id' LIMIT 1",
+        [class_config.db_class.table_name]
+      ).rows.first.first
     end
 
-    def sequence_name(db_class)
-      "#{db_class.table_name}_id_seq"
+    def execute(sql, binds)
+      binds = binds.map { |row| [nil, row] }
+      ActiveRecord::Base.connection.exec_query(sql, 'SQL', binds)
     end
   end
 end
