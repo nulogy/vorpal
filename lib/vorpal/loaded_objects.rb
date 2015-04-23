@@ -1,0 +1,40 @@
+require 'vorpal/util/array_hash'
+require 'forwardable'
+
+module Vorpal
+
+# @private
+class LoadedObjects
+  include ArrayHash
+  extend Forwardable
+  include Enumerable
+
+  attr_reader :objects
+  def_delegators :objects, :each
+
+  def initialize
+    @objects = Hash.new([])
+    @objects_by_id = Hash.new
+  end
+
+  def add(config, objects)
+    add_to_hash(@objects, config, objects)
+
+    objects.each do |object|
+      @objects_by_id[[config.domain_class.name, object.id]] = object
+    end
+  end
+
+  def find_by_id(config, id)
+    @objects_by_id[[config.domain_class.name, id]]
+  end
+
+  def all_objects
+    @objects_by_id.values
+  end
+
+  def id_lookup_done?(config, id)
+    !find_by_id(config, id).nil?
+  end
+end
+end

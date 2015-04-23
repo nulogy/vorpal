@@ -7,11 +7,15 @@ module Configuration
 
   # Configures and creates a {Vorpal::AggregateRepository} instance.
   #
+  # @param options [Hash] Global configuration options for the repository instance.
+  # @option options [Object] :db_driver (Object that will be used to interact with the DB.)
+  #  Must be duck-type compatible with Vorpal::DbDriver.
+  #
   # @return [Vorpal::AggregateRepository] Repository instance.
-  def define(&block)
-    @class_configs = []
-    self.instance_exec(&block)
-    AggregateRepository.new(@class_configs)
+  def define(options={}, &block)
+    master_config = build_config(&block)
+    db_driver = options.fetch(:db_driver, DbDriver.new)
+    AggregateRepository.new(db_driver, master_config)
   end
 
   # Maps a domain class to a relational table.
@@ -34,6 +38,13 @@ module Configuration
     builder.instance_exec(&block) if block_given?
 
     @class_configs << builder.build
+  end
+
+  # @private
+  def build_config(&block)
+    @class_configs = []
+    self.instance_exec(&block)
+    MasterConfig.new(@class_configs)
   end
 end
 end

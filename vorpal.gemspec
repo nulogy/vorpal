@@ -19,10 +19,12 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency "simple_serializer", "~> 1.0"
+  spec.add_runtime_dependency "equalizer"
 
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0.0"
   spec.add_development_dependency "activerecord", "~> 3.2.0"
   spec.add_development_dependency "pg", "~> 0.17.0"
   spec.add_development_dependency "virtus", "~> 1.0"
+  spec.add_development_dependency "activerecord-import", "~> 0.3.1"
 end

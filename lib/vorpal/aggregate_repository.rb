@@ -1,11 +1,14 @@
 require 'vorpal/identity_map'
-require 'vorpal/traversal'
+require 'vorpal/aggregate_utils'
+require 'vorpal/db_loader'
+require 'vorpal/db_driver'
 
 module Vorpal
 class AggregateRepository
   # @private
-  def initialize(class_configs)
-    configure(class_configs)
+  def initialize(db_driver, master_config)
+    @db_driver = db_driver
+    @configs = master_config
   end
 
   # Saves an aggregate to the DB. Inserts objects that are new to the
@@ -16,29 +19,37 @@ class AggregateRepository
   # be inserted, updated, or deleted. However, the relationships to these
   # objects (provided they are stored within the aggregate) will be saved.
   #
-  # @param object [Object] Root of the aggregate to be saved.
+  # @param root [Object] Root of the aggregate to be saved.
   # @return [Object] Root of the aggregate.
-  def persist(object)
-    mapping = {}
-    serialize(object, mapping)
-    new_objects = get_unsaved_objects(mapping.keys)
-    set_primary_keys(object, mapping)
-    set_foreign_keys(object, mapping)
-    remove_orphans(object, mapping)
-    save(object, mapping)
-    object
-  rescue
-    nil_out_object_ids(new_objects)
-    raise
+  def persist(root)
+    persist_all(Array(root)).first
   end
 
-  # Like {#persist} but operates on multiple aggregates. Roots do not need to
+  # Like {#persist} but operates on multiple aggregates. Roots must
   # be of the same type.
   #
-  # @param objects [[Object]] array of aggregate roots to be saved.
+  # @param roots [[Object]] array of aggregate roots to be saved.
   # @return [[Object]] array of aggregate roots.
-  def persist_all(objects)
-    objects.map(&method(:persist))
+  def persist_all(roots)
+    return roots if roots.empty?
+
+    all_owned_objects = all_owned_objects(roots)
+    mapping = {}
+    loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
+
+    serialize(all_owned_objects, mapping, loaded_db_objects)
+    new_objects = get_unsaved_objects(mapping.keys)
+    begin
+      set_primary_keys(all_owned_objects, mapping)
+      set_foreign_keys(all_owned_objects, mapping)
+      remove_orphans(mapping, loaded_db_objects)
+      save(all_owned_objects, new_objects, mapping)
+
+      return roots
+    rescue
+      nil_out_object_ids(new_objects)
+      raise
+    end
   end
 
   # Loads an aggregate from the DB. Will eagerly load all objects in the
@@ -66,77 +77,157 @@ class AggregateRepository
   #   operation.
   # @return [[Object]] Entities with the given primary key values and type.
   def load_all(ids, domain_class, identity_map=IdentityMap.new)
-    ids.map do |id|
-      db_object = @configs.config_for(domain_class).load_by_id(id)
-      hydrate(db_object, identity_map)
-    end
+    loaded_db_objects = load_from_db(ids, domain_class)
+    objects = deserialize(loaded_db_objects, identity_map)
+    set_associations(loaded_db_objects, identity_map)
+
+    objects.select { |obj| obj.class == domain_class }
   end
 
   # Removes an aggregate from the DB. Even if the aggregate contains unsaved
   # changes this method will correctly remove everything.
   #
-  # @param object [Object] Root of the aggregate to be destroyed.
+  # @param root [Object] Root of the aggregate to be destroyed.
   # @return [Object] Root that was passed in.
-  def destroy(object)
-    config = @configs.config_for(object.class)
-    db_object = config.find_in_db(object)
-    @traversal.accept_for_db(db_object, DestroyVisitor.new())
-    object
+  def destroy(root)
+    destroy_all(Array(root)).first
   end
 
-  # Like {#destroy} but operates on multiple aggregates. Roots do not need to
+  # Like {#destroy} but operates on multiple aggregates. Roots must
   # be of the same type.
   #
-  # @param objects [[Object]] Array of roots of the aggregates to be destroyed.
+  # @param roots [[Object]] Array of roots of the aggregates to be destroyed.
   # @return [[Object]] Roots that were passed in.
-  def destroy_all(objects)
-    objects.map(&method(:destroy))
+  def destroy_all(roots)
+    return roots if roots.empty?
+    loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
+    loaded_db_objects.each do |config, db_objects|
+      @db_driver.destroy(config, db_objects)
+    end
+    roots
   end
 
   private
 
-  def configure(class_configs)
-    @configs = MasterConfig.new(class_configs)
-    @traversal = Traversal.new(@configs)
+  def all_owned_objects(roots)
+    AggregateUtils.group_by_type(roots, @configs)
   end
 
-  def hydrate(db_object, identity_map)
-    deserialize(db_object, identity_map)
-    set_associations(db_object, identity_map)
-    identity_map.get(db_object)
+  def load_from_db(ids, domain_class, only_owned=false)
+    DbLoader.new(only_owned, @db_driver).load_from_db(ids, @configs.config_for(domain_class))
   end
 
-  def serialize(object, mapping)
-    @traversal.accept_for_domain(object, SerializeVisitor.new(mapping))
+  def load_owned_from_db(ids, domain_class)
+    load_from_db(ids, domain_class, true)
   end
 
-  def set_primary_keys(object, mapping)
-    @traversal.accept_for_domain(object, IdentityVisitor.new(mapping))
+  def deserialize(loaded_db_objects, identity_map)
+    loaded_db_objects.flat_map do |config, db_objects|
+      db_objects.map do |db_object|
+        # TODO: There is a bug here when you have something in the IdentityMap that is stale and needs to be updated.
+        identity_map.get_and_set(db_object) { config.deserialize(db_object) }
+      end
+    end
+  end
+
+  def set_associations(loaded_db_objects, identity_map)
+    loaded_db_objects.each do |config, db_objects|
+      db_objects.each do |db_object|
+        config.local_association_configs.each do |association_config|
+          db_remote = loaded_db_objects.find_by_id(
+            association_config.remote_class_config(db_object),
+            association_config.fk_value(db_object)
+          )
+          association_config.associate(identity_map.get(db_object), identity_map.get(db_remote))
+        end
+      end
+    end
+  end
+
+  def serialize(owned_objects, mapping, loaded_db_objects)
+    owned_objects.each do |config, objects|
+      objects.each do |object|
+        db_object = serialize_object(object, config, loaded_db_objects)
+        mapping[object] = db_object
+      end
+    end
+  end
+
+  def serialize_object(object, config, loaded_db_objects)
+    if config.serialization_required?
+      attributes = config.serialize(object)
+      if object.id.nil?
+        config.build_db_object(attributes)
+      else
+        db_object = loaded_db_objects.find_by_id(config, object.id)
+        config.set_db_object_attributes(db_object, attributes)
+        db_object
+      end
+    else
+      object
+    end
+  end
+
+  def set_primary_keys(owned_objects, mapping)
+    owned_objects.each do |config, objects|
+      in_need_of_primary_keys = objects.find_all { |obj| obj.id.nil? }
+      primary_keys = @db_driver.get_primary_keys(config, in_need_of_primary_keys.length)
+      in_need_of_primary_keys.zip(primary_keys).each do |object, primary_key|
+        mapping[object].id = primary_key
+        object.id = primary_key
+      end
+    end
     mapping.rehash # needs to happen because setting the id on an AR::Base model changes its hash value
   end
 
-  def set_foreign_keys(object, mapping)
-    @traversal.accept_for_domain(object, PersistenceAssociationVisitor.new(mapping))
+  def set_foreign_keys(owned_objects, mapping)
+    owned_objects.each do |config, objects|
+      objects.each do |object|
+        config.has_manys.each do |has_many_config|
+          if has_many_config.owned
+            children = has_many_config.get_children(object)
+            children.each do |child|
+              has_many_config.set_foreign_key(mapping[child], object)
+            end
+          end
+        end
+
+        config.has_ones.each do |has_one_config|
+          if has_one_config.owned
+            child = has_one_config.get_child(object)
+            has_one_config.set_foreign_key(mapping[child], object)
+          end
+        end
+
+        config.belongs_tos.each do |belongs_to_config|
+          child = belongs_to_config.get_child(object)
+          belongs_to_config.set_foreign_key(mapping[object], child)
+        end
+      end
+    end
   end
 
-  def save(object, mapping)
-    @traversal.accept_for_domain(object, SaveVisitor.new(mapping))
+  def save(owned_objects, new_objects, mapping)
+    grouped_new_objects = new_objects.group_by { |obj| @configs.config_for(obj.class) }
+    owned_objects.each do |config, objects|
+      objects_to_insert = grouped_new_objects[config] || []
+      db_objects_to_insert = objects_to_insert.map { |obj| mapping[obj] }
+      @db_driver.insert(config, db_objects_to_insert)
+
+      objects_to_update = objects - objects_to_insert
+      db_objects_to_update = objects_to_update.map { |obj| mapping[obj] }
+      @db_driver.update(config, db_objects_to_update)
+    end
   end
 
-  def remove_orphans(object, mapping)
-    diff_visitor = AggregateDiffVisitor.new(mapping.values)
-    @traversal.accept_for_db(mapping[object], diff_visitor)
-
-    orphans = diff_visitor.orphans
-    orphans.each { |o| @configs.config_for_db(o.class).destroy(o) }
-  end
-
-  def deserialize(db_object, identity_map)
-    @traversal.accept_for_db(db_object, DeserializeVisitor.new(identity_map))
-  end
-
-  def set_associations(db_object, identity_map)
-    @traversal.accept_for_db(db_object, DomainAssociationVisitor.new(identity_map))
+  def remove_orphans(mapping, loaded_db_objects)
+    db_objects_in_aggregate = mapping.values
+    db_objects_in_db = loaded_db_objects.all_objects
+    all_orphans = db_objects_in_db - db_objects_in_aggregate
+    grouped_orphans = all_orphans.group_by { |o| @configs.config_for_db_object(o) }
+    grouped_orphans.each do |config, orphans|
+      @db_driver.destroy(config, orphans)
+    end
   end
 
   def get_unsaved_objects(objects)
@@ -146,206 +237,6 @@ class AggregateRepository
   def nil_out_object_ids(objects)
     objects ||= []
     objects.each { |object| object.id = nil }
-  end
-end
-
-# @private
-class SerializeVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(mapping)
-    @mapping = mapping
-  end
-
-  def visit_object(object, config)
-    serialize(object, config)
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
-  end
-
-  def serialize(object, config)
-    db_object = serialize_object(object, config)
-    @mapping[object] = db_object
-  end
-
-  def serialize_object(object, config)
-    if config.serialization_required?
-      attributes = config.serialize(object)
-      if object.id.nil?
-        config.build_db_object(attributes)
-      else
-        db_object = config.find_in_db(object)
-        config.set_db_object_attributes(db_object, attributes)
-        db_object
-      end
-    else
-      object
-    end
-  end
-end
-
-# @private
-class IdentityVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(mapping)
-    @mapping = mapping
-  end
-
-  def visit_object(object, config)
-    set_primary_key(object, config)
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
-  end
-
-  private
-
-  def set_primary_key(object, config)
-    return unless object.id.nil?
-
-    primary_key = config.get_primary_keys(1).first
-
-    @mapping[object].id = primary_key
-    object.id = primary_key
-  end
-end
-
-# @private
-class PersistenceAssociationVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(mapping)
-    @mapping = mapping
-  end
-
-  def visit_belongs_to(parent, child, belongs_to_config)
-    belongs_to_config.set_foreign_key(@mapping[parent], child)
-  end
-
-  def visit_has_one(parent, child, has_one_config)
-    return unless has_one_config.owned
-    has_one_config.set_foreign_key(@mapping[child], parent)
-  end
-
-  def visit_has_many(parent, children, has_many_config)
-    return unless has_many_config.owned
-    children.each do |child|
-      has_many_config.set_foreign_key(@mapping[child], parent)
-    end
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
-  end
-end
-
-# @private
-class SaveVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(mapping)
-    @mapping = mapping
-  end
-
-  def visit_object(object, config)
-    config.save(@mapping[object])
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
-  end
-end
-
-# @private
-class AggregateDiffVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(db_objects_in_aggregate)
-    @db_objects_in_aggregate = db_objects_in_aggregate
-    @db_objects_in_db = []
-  end
-
-  def visit_object(db_object, config)
-    @db_objects_in_db << db_object
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
-  end
-
-  def orphans
-    @db_objects_in_db - @db_objects_in_aggregate
-  end
-end
-
-# @private
-class DeserializeVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(identity_map)
-    @identity_map = identity_map
-  end
-
-  def visit_object(db_object, config)
-    deserialize_db_object(db_object, config)
-  end
-
-  private
-
-  def deserialize_db_object(db_object, config)
-    @identity_map.get_and_set(db_object) { config.deserialize(db_object) }
-  end
-end
-
-# @private
-class DomainAssociationVisitor
-  include AggregateVisitorTemplate
-
-  def initialize(identity_map)
-    @identity_map = identity_map
-  end
-
-  def visit_belongs_to(db_object, db_child, belongs_to_config)
-    associate_one_to_one(db_object, db_child, belongs_to_config)
-  end
-
-  def visit_has_one(db_parent, db_child, has_one_config)
-    associate_one_to_one(db_parent, db_child, has_one_config)
-  end
-
-  def visit_has_many(db_object, db_children, has_many_config)
-    associate_one_to_many(db_object, db_children, has_many_config)
-  end
-
-  private
-
-  def associate_one_to_many(db_object, db_children, has_many_config)
-    parent = @identity_map.get(db_object)
-    children = @identity_map.map(db_children)
-    has_many_config.set_children(parent, children)
-  end
-
-  def associate_one_to_one(db_parent, db_child, belongs_to_config)
-    parent = @identity_map.get(db_parent)
-    child = @identity_map.get(db_child)
-    belongs_to_config.set_child(parent, child)
-  end
-end
-
-# @private
-class DestroyVisitor
-  include AggregateVisitorTemplate
-
-  def visit_object(object, config)
-    config.destroy(object)
-  end
-
-  def continue_traversal?(association_config)
-    association_config.owned
   end
 end
 

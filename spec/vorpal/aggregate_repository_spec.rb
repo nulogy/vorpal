@@ -1,8 +1,7 @@
 require 'integration_spec_helper'
-
 require 'vorpal'
-
 require 'virtus'
+require 'activerecord-import/base'
 
 describe 'Aggregate Repository' do
 
@@ -105,14 +104,14 @@ describe 'Aggregate Repository' do
 
   describe 'on error' do
     it 'nils ids of new objects' do
-      test_repository = configure
+      db_driver = Vorpal::DbDriver.new
+      test_repository = configure(db_driver: db_driver)
 
       tree_db = TreeDB.create!
 
+      expect(db_driver).to receive(:update).and_raise('not so good')
+
       fissure = Fissure.new
-      def fissure.save!
-        raise 'something bad happened!'
-      end
       tree = Tree.new(id: tree_db.id, fissures: [fissure])
 
       expect {
@@ -486,9 +485,15 @@ describe 'Aggregate Repository' do
     it 'restores with belongs_tos' do
       test_repository = configure_polymorphic_belongs_to
 
-      trunk_db = TrunkDB.create!(length: 99)
+      # makes sure that we are using the fk_type to discriminate against
+      # two entities with the same primary key value
+      trunk_db = TrunkDB.new(length: 99)
+      trunk_db.id = 99
+      trunk_db.save!
       trunk_bug_db = BugDB.create!(lives_on_id: trunk_db.id, lives_on_type: Trunk.name)
-      branch_db = BranchDB.create!(length: 5)
+      branch_db = BranchDB.new(length: 5)
+      branch_db.id = 99
+      branch_db.save!
       branch_bug_db = BugDB.create!(lives_on_id: branch_db.id, lives_on_type: Branch.name)
 
       trunk_bug, branch_bug = test_repository.load_all([trunk_bug_db.id, branch_bug_db.id], Bug)
@@ -693,8 +698,8 @@ private
     end
   end
   
-  def configure
-    Vorpal.define do
+  def configure(options={})
+    Vorpal.define(options) do
       map Tree do
         fields :name
         belongs_to :trunk
