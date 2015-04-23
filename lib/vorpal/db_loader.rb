@@ -119,9 +119,9 @@ class LookupById
     @ids = ids
   end
 
-  def load_all(driver)
+  def load_all(db_driver)
     return [] if @ids.empty?
-    driver.load_by_id(@config.db_class, @ids)
+    db_driver.load_by_id(@config, @ids)
   end
 end
 
@@ -134,9 +134,9 @@ class LookupByFk
     @fk_values = fk_values
   end
 
-  def load_all(driver)
+  def load_all(db_driver)
     return [] if @fk_values.empty?
-    driver.load_by_foreign_key(@config.db_class, @fk_values, @fk_info)
+    db_driver.load_by_foreign_key(@config, @fk_values, @fk_info)
   end
 end
 
