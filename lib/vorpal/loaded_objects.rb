@@ -18,11 +18,12 @@ class LoadedObjects
   end
 
   def add(config, objects)
-    add_to_hash(@objects, config, objects)
-
-    objects.each do |object|
-      @objects_by_id[[config.domain_class.name, object.id]] = object
+    objects_to_add = objects.map do |object|
+      if !already_loaded?(config, object.id)
+        @objects_by_id[[config.domain_class.name, object.id]] = object
+      end
     end
+    add_to_hash(@objects, config, objects_to_add.compact)
   end
 
   def find_by_id(config, id)
@@ -33,7 +34,7 @@ class LoadedObjects
     @objects_by_id.values
   end
 
-  def id_lookup_done?(config, id)
+  def already_loaded?(config, id)
     !find_by_id(config, id).nil?
   end
 end

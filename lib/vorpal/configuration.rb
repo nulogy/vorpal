@@ -34,10 +34,14 @@ module Configuration
   #
   #   Must have a `(Object) deserialize(Object, Hash)` method.
   def map(domain_class, options={}, &block)
+    @class_configs << build_class_config(domain_class, options, &block)
+  end
+
+  # @private
+  def build_class_config(domain_class, options={}, &block)
     builder = ConfigBuilder.new(domain_class, options)
     builder.instance_exec(&block) if block_given?
-
-    @class_configs << builder.build
+    builder.build
   end
 
   # @private

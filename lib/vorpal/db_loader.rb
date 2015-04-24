@@ -53,7 +53,7 @@ class DbLoader
   def lookup_by_id(db_object, belongs_to_config)
     child_config = belongs_to_config.child_config(db_object)
     id = belongs_to_config.fk_value(db_object)
-    return if @loaded_objects.id_lookup_done?(child_config, id)
+    return if @loaded_objects.already_loaded?(child_config, id)
     @lookup_instructions.lookup_by_id(child_config, id)
   end
 
