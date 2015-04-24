@@ -1,6 +1,7 @@
 require 'vorpal/aggregate_traversal'
 
 module Vorpal
+  # @private
   module AggregateUtils
     extend self
 

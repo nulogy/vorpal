@@ -9,7 +9,7 @@ module Configuration
   #
   # @param options [Hash] Global configuration options for the repository instance.
   # @option options [Object] :db_driver (Object that will be used to interact with the DB.)
-  #  Must be duck-type compatible with Vorpal::DbDriver.
+  #  Must be duck-type compatible with {Vorpal::DbDriver}.
   #
   # @return [Vorpal::AggregateRepository] Repository instance.
   def define(options={}, &block)

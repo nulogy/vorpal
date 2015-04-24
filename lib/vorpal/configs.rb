@@ -192,6 +192,7 @@ module Vorpal
     end
   end
 
+  # @private
   module RemoteEndConfig
     def child_config
       association_config.local_class_config
@@ -210,6 +211,7 @@ module Vorpal
     end
   end
 
+  # @private
   module LocalEndConfig
     def child_config(db_parent)
       association_config.remote_class_config(db_parent)
@@ -224,6 +226,7 @@ module Vorpal
     end
   end
 
+  # @private
   module ToOneConfig
     def get_child(parent)
       parent.send(name)
@@ -234,6 +237,7 @@ module Vorpal
     end
   end
 
+  # @private
   module ToManyConfig
     def get_children(parent)
       parent.send(name)
