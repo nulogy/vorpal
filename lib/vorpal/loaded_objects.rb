@@ -3,39 +3,39 @@ require 'forwardable'
 
 module Vorpal
 
-# @private
-class LoadedObjects
-  include ArrayHash
-  extend Forwardable
-  include Enumerable
+  # @private
+  class LoadedObjects
+    include ArrayHash
+    extend Forwardable
+    include Enumerable
 
-  attr_reader :objects
-  def_delegators :objects, :each
+    attr_reader :objects
+    def_delegators :objects, :each
 
-  def initialize
-    @objects = Hash.new([])
-    @objects_by_id = Hash.new
-  end
-
-  def add(config, objects)
-    objects_to_add = objects.map do |object|
-      if !already_loaded?(config, object.id)
-        @objects_by_id[[config.domain_class.name, object.id]] = object
-      end
+    def initialize
+      @objects = Hash.new([])
+      @objects_by_id = Hash.new
     end
-    add_to_hash(@objects, config, objects_to_add.compact)
-  end
 
-  def find_by_id(config, id)
-    @objects_by_id[[config.domain_class.name, id]]
-  end
+    def add(config, objects)
+      objects_to_add = objects.map do |object|
+        if !already_loaded?(config, object.id)
+          @objects_by_id[[config.domain_class.name, object.id]] = object
+        end
+      end
+      add_to_hash(@objects, config, objects_to_add.compact)
+    end
 
-  def all_objects
-    @objects_by_id.values
-  end
+    def find_by_id(config, id)
+      @objects_by_id[[config.domain_class.name, id]]
+    end
 
-  def already_loaded?(config, id)
-    !find_by_id(config, id).nil?
+    def all_objects
+      @objects_by_id.values
+    end
+
+    def already_loaded?(config, id)
+      !find_by_id(config, id).nil?
+    end
   end
-end
 end
