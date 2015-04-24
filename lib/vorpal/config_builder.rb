@@ -1,6 +1,7 @@
 require 'simple_serializer/serializer'
 require 'simple_serializer/deserializer'
 require 'vorpal/configs'
+require 'active_support/inflector/methods'
 
 module Vorpal
 class ConfigBuilder
@@ -84,7 +85,7 @@ class ConfigBuilder
   end
 
   def db_class
-    "#{@domain_class.name}DB".constantize
+    ActiveSupport::Inflector.constantize("#{@domain_class.name}DB")
   end
 
   def fields_with_id
@@ -103,11 +104,11 @@ class ConfigBuilder
   end
 
   def foreign_key(name)
-    name.to_s.underscore + '_id'
+    ActiveSupport::Inflector.underscore(name.to_s) + '_id'
   end
 
   def child_class(association_name)
-    association_name.to_s.classify.constantize
+    ActiveSupport::Inflector.constantize(ActiveSupport::Inflector.classify(association_name.to_s))
   end
 
   def build_has_ones

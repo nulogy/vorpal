@@ -149,7 +149,7 @@ module Vorpal
     end
 
     def get_db_object_attributes(db_object)
-      db_object.attributes.symbolize_keys
+      symbolize_keys(db_object.attributes)
     end
 
     def serialization_required?
@@ -171,6 +171,16 @@ module Vorpal
 
     def get_field(db_object, field)
       db_object.send(field)
+    end
+
+    private
+
+    def symbolize_keys(hash)
+      result = {}
+      hash.each_key do |key|
+        result[key.to_sym] = hash[key]
+      end
+      result
     end
   end
 
