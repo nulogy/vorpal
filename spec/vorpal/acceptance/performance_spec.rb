@@ -92,10 +92,10 @@ describe 'performance' do
   it 'benchmarks all operations' do
     trees = build_trees(1000)
     Benchmark.bm(7) do |x|
-      x.report("create") { test_repository.persist_all(trees) }
-      x.report("update") { test_repository.persist_all(trees) }
-      x.report("load") { ids = trees.map(&:id); test_repository.load_all(ids, Tree) }
-      x.report("destroy") { test_repository.destroy_all(trees) }
+      x.report('create') { test_repository.persist_all(trees) }
+      x.report('update') { test_repository.persist_all(trees) }
+      x.report('load') { ids = trees.map(&:id); test_repository.load_all(ids, Tree) }
+      x.report('destroy') { test_repository.destroy_all(trees) }
     end
   end
 
