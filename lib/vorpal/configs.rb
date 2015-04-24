@@ -272,22 +272,22 @@ module Vorpal
   end
 
   # @private
-  class BelongsToConfig
-    include HashInitialization
-    include LocalEndConfig
-    include ToOneConfig
-
-    attr_reader :name, :owned, :fk, :fk_type, :child_classes
-    attr_accessor :association_config
-  end
-
-  # @private
   class HasOneConfig
     include HashInitialization
     include RemoteEndConfig
     include ToOneConfig
 
     attr_reader :name, :owned, :fk, :fk_type, :child_class
+    attr_accessor :association_config
+  end
+
+  # @private
+  class BelongsToConfig
+    include HashInitialization
+    include LocalEndConfig
+    include ToOneConfig
+
+    attr_reader :name, :owned, :fk, :fk_type, :child_classes
     attr_accessor :association_config
   end
 end
