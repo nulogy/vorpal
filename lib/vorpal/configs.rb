@@ -153,7 +153,7 @@ module Vorpal
     end
 
     def serialization_required?
-      !(domain_class < ActiveRecord::Base)
+      domain_class.superclass.name != 'ActiveRecord::Base'
     end
 
     def serialize(object)
