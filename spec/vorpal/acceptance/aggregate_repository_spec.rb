@@ -225,7 +225,7 @@ describe 'Aggregate Repository' do
     end
 
     it 'hydrates' do
-     test_repository = configure_with_cycle
+      test_repository = configure_with_cycle
 
       tree_db = TreeDB.create!
       BranchDB.create!(length: 50, tree_id: tree_db.id)
