@@ -211,7 +211,7 @@ describe 'Aggregate Repository' do
     expect(tree.fissures.first.length).to eq 21
   end
 
-  describe "cycles" do
+  describe 'cycles' do
     it 'persists' do
      test_repository = configure_with_cycle
 
