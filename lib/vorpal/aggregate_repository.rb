@@ -105,11 +105,33 @@ module Vorpal
       return roots if roots.empty?
       raise InvalidAggregateRoot, 'Nil aggregate roots are not allowed.' if roots.any?(&:nil?)
 
-      loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
+      destroy_all_by_id(roots.map(&:id), roots.first.class)
+      roots
+    end
+
+    # Removes an aggregate from the DB given its primary key.
+    #
+    # @param id [Integer] Id of root of the aggregate to be destroyed.
+    # @param domain_class [Class] Type of the root of the aggregate to
+    #   be destroyed.
+    def destroy_by_id(id, domain_class)
+      destroy_all_by_id([id], domain_class)
+    end
+
+    # Like {#destroy_by_id} but operates on multiple ids. Roots must
+    # be of the same type.
+    #
+    # @param ids [[Integer]] Ids of roots of the aggregates to be destroyed.
+    # @param domain_class [Class] Type of the roots of the aggregates to
+    #   be destroyed.
+    def destroy_all_by_id(ids, domain_class)
+      raise InvalidPrimaryKeyValue, 'Nil primary key values are not allowed.' if ids.any?(&:nil?)
+
+      loaded_db_objects = load_owned_from_db(ids, domain_class)
       loaded_db_objects.each do |config, db_objects|
         @db_driver.destroy(config, db_objects.map(&:id))
       end
-      roots
+      ids
     end
 
     private

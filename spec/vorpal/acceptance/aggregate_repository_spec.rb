@@ -667,6 +667,35 @@ describe 'Aggregate Repository' do
         test_repository.destroy_all([nil])
       }.to raise_error(Vorpal::InvalidAggregateRoot, "Nil aggregate roots are not allowed.")
     end
+
+    it 'destroy_all_by_id ignores empty arrays' do
+      test_repository = configure
+
+      results = test_repository.destroy_all_by_id([], Tree)
+      expect(results).to eq []
+    end
+
+    it 'destroy_all_by_id ignores ids that do not exist' do
+      test_repository = configure
+
+      test_repository.destroy_all_by_id([99], Tree)
+    end
+
+    it 'destroy_all_by_id throws an exception when given a nil id' do
+      test_repository = configure
+
+      expect {
+        test_repository.destroy_all_by_id([nil], Tree)
+      }.to raise_error(Vorpal::InvalidPrimaryKeyValue, "Nil primary key values are not allowed.")
+    end
+
+    it 'destroy_by_id throws an exception when given a nil id' do
+      test_repository = configure
+
+      expect {
+        test_repository.destroy_by_id(nil, Tree)
+      }.to raise_error(Vorpal::InvalidPrimaryKeyValue, "Nil primary key values are not allowed.")
+    end
   end
 
 private
