@@ -22,7 +22,7 @@ module Vorpal
     # @param root [Object] Root of the aggregate to be saved.
     # @return [Object] Root of the aggregate.
     def persist(root)
-      persist_all(Array(root)).first
+      persist_all([root]).first
     end
 
     # Like {#persist} but operates on multiple aggregates. Roots must
@@ -32,10 +32,11 @@ module Vorpal
     # @return [[Object]] array of aggregate roots.
     def persist_all(roots)
       return roots if roots.empty?
+      raise InvalidAggregateRoot, 'Nil aggregate roots are not allowed.' if roots.any?(&:nil?)
 
       all_owned_objects = all_owned_objects(roots)
       mapping = {}
-      loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
+      loaded_db_objects = load_owned_from_db(roots.map(&:id).compact, roots.first.class)
 
       serialize(all_owned_objects, mapping, loaded_db_objects)
       new_objects = get_unsaved_objects(mapping.keys)
@@ -46,7 +47,7 @@ module Vorpal
         save(all_owned_objects, new_objects, mapping)
 
         return roots
-      rescue
+      rescue Exception
         nil_out_object_ids(new_objects)
         raise
       end
@@ -77,6 +78,8 @@ module Vorpal
     #   operation.
     # @return [[Object]] Entities with the given primary key values and type.
     def load_all(ids, domain_class, identity_map=IdentityMap.new)
+      raise InvalidPrimaryKeyValue, 'Nil primary key values are not allowed.' if ids.any?(&:nil?)
+
       loaded_db_objects = load_from_db(ids, domain_class)
       objects = deserialize(loaded_db_objects, identity_map)
       set_associations(loaded_db_objects, identity_map)
@@ -90,7 +93,7 @@ module Vorpal
     # @param root [Object] Root of the aggregate to be destroyed.
     # @return [Object] Root that was passed in.
     def destroy(root)
-      destroy_all(Array(root)).first
+      destroy_all([root]).first
     end
 
     # Like {#destroy} but operates on multiple aggregates. Roots must
@@ -100,9 +103,11 @@ module Vorpal
     # @return [[Object]] Roots that were passed in.
     def destroy_all(roots)
       return roots if roots.empty?
+      raise InvalidAggregateRoot, 'Nil aggregate roots are not allowed.' if roots.any?(&:nil?)
+
       loaded_db_objects = load_owned_from_db(roots.map(&:id), roots.first.class)
       loaded_db_objects.each do |config, db_objects|
-        @db_driver.destroy(config, db_objects)
+        @db_driver.destroy(config, db_objects.map(&:id))
       end
       roots
     end
@@ -238,5 +243,10 @@ module Vorpal
       objects ||= []
       objects.each { |object| object.id = nil }
     end
+  end
+
+  class InvalidPrimaryKeyValue < StandardError
+  end
+  class InvalidAggregateRoot < StandardError
   end
 end

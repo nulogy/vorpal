@@ -23,8 +23,8 @@ module Vorpal
       end
     end
 
-    def destroy(class_config, db_objects)
-      class_config.db_class.delete_all(id: db_objects.map(&:id))
+    def destroy(class_config, ids)
+      class_config.db_class.delete_all(id: ids)
     end
 
     # Loads instances of the given class by primary key.
