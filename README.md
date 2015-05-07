@@ -72,7 +72,7 @@ class Tree
 end
 ```
 
-In this aggregate, the Tree is the root and the Branches are inside the aggregate boundary. The Gardener is not technically part of the aggregate but is required for the aggregate to make sense so we say that it is on the aggregate boundary.
+In this aggregate, the Tree is the root and the Branches are inside the aggregate boundary. The Gardener is not technically part of the aggregate but is required for the aggregate to make sense so we say that it is on the aggregate boundary. Only objects that are inside the aggregate boundary will be saved, updated, or destroyed by Vorpal.
 
 POROs must have setters and getters for all fields and associations that are to be persisted. They must also provide a no argument constructor.
 
@@ -143,6 +143,10 @@ module TreeRepository
   def destroy(tree)
     @repository.destroy(tree)
   end
+
+  def destroy_by_id(tree_id)
+    @repository.destroy_by_id(tree_id, Tree)
+  end
 end
 ```
 
@@ -162,6 +166,9 @@ small_tree = TreeRepository.find(small_tree_id)
 # Destroys the given Tree as well as all Branches referenced by it,
 # but not Gardeners.
 TreeRepository.destroy(dead_tree)
+
+# Or
+TreeRepository.destroy_by_id(dead_tree_id)
 ```
 
 ## API Documentation
@@ -188,9 +195,9 @@ It also does not do some things that you might expect from other ORMs:
 * Support for other ORMs.
 * Value objects.
 * Remove dependency on ActiveRecord (optimistic locking? updated_at, created_at support? Data type conversions? TimeZone support?)
-* More efficient object loading and persisting (use fewer queries.)
+* More efficient updates (use fewer queries.)
 * Nicer DSL for specifying field that have different names in the domain model than in the DB.
- 
+
 ## FAQ
 
 **Q.** Why do I care about separating my persistence mechanism from my domain models?
