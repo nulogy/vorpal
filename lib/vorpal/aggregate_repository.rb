@@ -84,7 +84,7 @@ module Vorpal
       objects = deserialize(loaded_db_objects, identity_map)
       set_associations(loaded_db_objects, identity_map)
 
-      objects.select { |obj| obj.class == domain_class }
+      sorted_roots(ids, objects, domain_class)
     end
 
     # Removes an aggregate from the DB. Even if the aggregate contains unsaved
@@ -169,6 +169,12 @@ module Vorpal
           end
         end
       end
+    end
+
+    def sorted_roots(ids, objects, domain_class)
+      roots = objects.select { |obj| obj.class == domain_class }
+      roots_by_id = roots.reduce({}) { |h, root| h[root.id] = root; h }
+      ids.map { |id| roots_by_id[id] }.compact
     end
 
     def serialize(owned_objects, mapping, loaded_db_objects)

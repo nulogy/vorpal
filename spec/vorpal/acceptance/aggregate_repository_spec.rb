@@ -514,6 +514,20 @@ describe 'Aggregate Repository' do
     end
   end
 
+  describe 'load_all' do
+    it 'returns objects in the same order as the ids' do
+      test_repository = configure
+
+      tree_db1 = TreeDB.create!
+      tree_db2 = TreeDB.create!
+      tree_db3 = TreeDB.create!
+
+      trees = test_repository.load_all([tree_db2.id, tree_db1.id, tree_db3.id], Tree)
+
+      expect(trees.map(&:id)).to eq [tree_db2.id, tree_db1.id, tree_db3.id]
+    end
+  end
+
   describe 'destroy' do
     it 'removes the entity from the database' do
       test_repository = configure
