@@ -1,3 +1,3 @@
 module Vorpal
-  VERSION = "0.0.6.rc4"
+  VERSION = "0.0.6"
 end
