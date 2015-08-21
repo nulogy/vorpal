@@ -19,7 +19,7 @@ module Vorpal
     # Maps the given attributes to and from the domain object and the DB. Not needed
     # if a serializer and deserializer were provided.
     def attributes(*attributes)
-      @attributes = attributes
+      @attributes.concat(attributes)
     end
 
     # Defines a one-to-many association with a list of objects of the same type.
@@ -73,6 +73,11 @@ module Vorpal
       class_config
     end
 
+    # @private
+    def attributes_with_id
+      [:id].concat @attributes
+    end
+
     private
 
     def build_class_config
@@ -86,10 +91,6 @@ module Vorpal
 
     def db_class
       ActiveSupport::Inflector.constantize("#{@domain_class.name}DB")
-    end
-
-    def attributes_with_id
-      [:id].concat @attributes
     end
 
     def build_has_manys

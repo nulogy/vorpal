@@ -5,13 +5,14 @@ require 'vorpal/config_builder'
 describe Vorpal::ConfigBuilder do
   class Tester; end
 
-  it 'includes the primary key in the list of attributes' do
-    # builder = Vorpal::ConfigBuilder.new(Tester, {})
-    # config = builder.build
-    # config.attribute
-  end
+  let(:builder) { Vorpal::ConfigBuilder.new(Tester, {}, nil) }
 
   describe 'mapping attributes' do
-    it ''
+    it 'allows the \'attributes\' method to be called multiple times' do
+      builder.attributes :first
+      builder.attributes :second
+
+      expect(builder.attributes_with_id).to eq([:id, :first, :second])
+    end
   end
 end
