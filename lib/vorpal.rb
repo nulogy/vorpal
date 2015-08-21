@@ -7,18 +7,18 @@ require "vorpal/configuration"
 # ```ruby
 # repository = Vorpal.define do
 #   map Tree do
-#     fields :name
+#     attributes :name
 #     belongs_to :trunk
 #     has_many :branches
 #   end
 #
 #   map Trunk do
-#     fields :length
+#     attributes :length
 #     has_one :tree
 #   end
 #
 #   map Branch do
-#     fields :length
+#     attributes :length
 #     belongs_to :tree
 #   end
 # end

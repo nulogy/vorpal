@@ -74,7 +74,7 @@ end
 
 In this aggregate, the Tree is the root and the Branches are inside the aggregate boundary. The Gardener is not technically part of the aggregate but is required for the aggregate to make sense so we say that it is on the aggregate boundary. Only objects that are inside the aggregate boundary will be saved, updated, or destroyed by Vorpal.
 
-POROs must have setters and getters for all fields and associations that are to be persisted. They must also provide a no argument constructor.
+POROs must have setters and getters for all attributes and associations that are to be persisted. They must also provide a no argument constructor.
 
 Along with a relational model (in PostgreSQL):
 
@@ -119,7 +119,7 @@ module TreeRepository
 
   @repository = Vorpal.define do
     map Tree, to: TreeDB do
-      fields :name
+      attributes :name
       belongs_to :gardener, owned: false
       has_many :branches
     end
@@ -127,7 +127,7 @@ module TreeRepository
     map Gardener, to: Gardener
 
     map Branch, to: BranchDB do
-      fields :length, :diameter
+      attributes :length, :diameter
       belongs_to :tree
     end
   end
@@ -183,10 +183,10 @@ It also does not do some things that you might expect from other ORMs:
 1. No support for validations. Validations are not a persistence concern.
 1. No AR-style callbacks. Use Infrastructure, Application, or Domain [services](http://martinfowler.com/bliki/EvansClassification.html) instead.
 1. No has-many-through associations. Use two has-many associations to a join entity instead.
-1. The `id` field is reserved for database primary keys. If you have a natural key/id on your domain model, name it something that makes sense for your domain. It is the strong opinion of the authors that using natural keys as foreign keys is a bad idea. This mixes domain and persistence concerns.
+1. The `id` attribute is reserved for database primary keys. If you have a natural key/id on your domain model, name it something that makes sense for your domain. It is the strong opinion of the authors that using natural keys as foreign keys is a bad idea. This mixes domain and persistence concerns.
 
 ## Constraints
-1. Persisted entities must have getters and setters for all persisted fields and associations. They do not need to be public.
+1. Persisted entities must have getters and setters for all persisted attributes and associations. They do not need to be public.
 1. Only supports PostgreSQL.
 
 ## Future Enhancements
@@ -196,7 +196,7 @@ It also does not do some things that you might expect from other ORMs:
 * Value objects.
 * Remove dependency on ActiveRecord (optimistic locking? updated_at, created_at support? Data type conversions? TimeZone support?)
 * More efficient updates (use fewer queries.)
-* Nicer DSL for specifying field that have different names in the domain model than in the DB.
+* Nicer DSL for specifying attributes that have different names in the domain model than in the DB.
 
 ## FAQ
 

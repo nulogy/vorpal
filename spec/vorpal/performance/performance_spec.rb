@@ -165,26 +165,26 @@ describe 'performance' do
   def build_repository
     Vorpal.define do
       map Tree do
-        fields :name
+        attributes :name
         belongs_to :trunk
         has_many :branches
       end
 
       map Trunk do
-        fields :length
+        attributes :length
         has_one :tree
         has_many :bugs, fk: :lives_on_id, fk_type: :lives_on_type
       end
 
       map Branch do
-        fields :length
+        attributes :length
         belongs_to :tree
         has_many :bugs, fk: :lives_on_id, fk_type: :lives_on_type
         has_many :branches
       end
 
       map Bug do
-        fields :name
+        attributes :name
         belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
       end
     end

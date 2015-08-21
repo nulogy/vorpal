@@ -13,18 +13,18 @@ module Vorpal
       @has_manys = []
       @has_ones = []
       @belongs_tos = []
-      @fields = []
+      @attributes = []
     end
 
-    # Maps the given fields to and from the domain object and the DB. Not needed
+    # Maps the given attributes to and from the domain object and the DB. Not needed
     # if a serializer and deserializer were provided.
-    def fields(*fields)
-      @fields = fields
+    def attributes(*attributes)
+      @attributes = attributes
     end
 
     # Defines a one-to-many association with a list of objects of the same type.
     #
-    # @param name [String] Name of the field that will refer to the other object.
+    # @param name [String] Name of the attribute that will refer to the other object.
     # @param options [Hash]
     # @option options [Boolean] :owned
     # @option options [String] :fk
@@ -37,7 +37,7 @@ module Vorpal
     # Defines a one-to-one association with another object where the foreign key
     # is stored on the other object.
     #
-    # @param name [String] Name of the field that will refer to the other object.
+    # @param name [String] Name of the attribute that will refer to the other object.
     # @param options [Hash]
     # @option options [Boolean] :owned
     # @option options [String] :fk
@@ -52,7 +52,7 @@ module Vorpal
     #
     # This association can be polymorphic. i.e.
     #
-    # @param name [String] Name of the field that will refer to the other object.
+    # @param name [String] Name of the attribute that will refer to the other object.
     # @param options [Hash]
     # @option options [Boolean] :owned
     # @option options [String] :fk
@@ -79,8 +79,8 @@ module Vorpal
       Vorpal::ClassConfig.new(
         domain_class: @domain_class,
         db_class: @class_options[:to] || db_class,
-        serializer: @class_options[:serializer] || serializer(fields_with_id),
-        deserializer: @class_options[:deserializer] || deserializer(fields_with_id),
+        serializer: @class_options[:serializer] || serializer(attributes_with_id),
+        deserializer: @class_options[:deserializer] || deserializer(attributes_with_id),
       )
     end
 
@@ -88,8 +88,8 @@ module Vorpal
       ActiveSupport::Inflector.constantize("#{@domain_class.name}DB")
     end
 
-    def fields_with_id
-      [:id].concat @fields
+    def attributes_with_id
+      [:id].concat @attributes
     end
 
     def build_has_manys

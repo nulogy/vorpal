@@ -23,11 +23,11 @@ module Vorpal
     # @param options [Hash] Configure how to map the domain model
     # @option options [String] :to (Class with the same name as the domain class with a 'DB' appended.)
     #   Class of the ActiveRecord object that will map this domain class to the DB.
-    # @option options [Object] :serializer (map the {ConfigBuilder#fields} directly)
+    # @option options [Object] :serializer (map the {ConfigBuilder#attributes} directly)
     #   Object that will convert the domain objects into a hash.
     #
     #   Must have a `(Hash) serialize(Object)` method.
-    # @option options [Object] :deserializer (map the {ConfigBuilder#fields} directly)
+    # @option options [Object] :deserializer (map the {ConfigBuilder#attributes} directly)
     #   Object that will set a hash of attribute_names->values onto a new domain
     #   object.
     #

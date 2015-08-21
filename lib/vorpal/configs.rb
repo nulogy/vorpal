@@ -73,7 +73,7 @@ module Vorpal
 
     attr_reader :local_class_config, :remote_class_configs, :fk
 
-    # Only one of these two fields needs to be specified
+    # Only one of these two attributes needs to be specified
     # If one is specified, then the association is uni-directional.
     # If both are specified, then the association is bi-directional.
     attr_accessor :local_end_config, :remote_end_config
@@ -114,8 +114,8 @@ module Vorpal
     end
 
     def set_foreign_key(local_db_object, remote_object)
-      local_class_config.set_field(local_db_object, @fk, remote_object.try(:id))
-      local_class_config.set_field(local_db_object, @fk_type, remote_object.class.name) if polymorphic?
+      local_class_config.set_attribute(local_db_object, @fk, remote_object.try(:id))
+      local_class_config.set_attribute(local_db_object, @fk_type, remote_object.class.name) if polymorphic?
     end
 
     def foreign_key_info(remote_class_config)
@@ -165,12 +165,12 @@ module Vorpal
       serialization_required? ? deserializer.deserialize(domain_class.new, attributes) : db_object
     end
 
-    def set_field(db_object, field, value)
-      db_object.send("#{field}=", value)
+    def set_attribute(db_object, attribute, value)
+      db_object.send("#{attribute}=", value)
     end
 
-    def get_field(db_object, field)
-      db_object.send(field)
+    def get_attribute(db_object, attribute)
+      db_object.send(attribute)
     end
 
     private

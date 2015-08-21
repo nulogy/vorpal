@@ -717,23 +717,23 @@ private
   def configure_polymorphic_has_many
     Vorpal.define do
       map Tree do
-        fields :name
+        attributes :name
         has_many :branches
         belongs_to :trunk
       end
 
       map Trunk do
-        fields :length
+        attributes :length
         has_many :bugs, fk: :lives_on_id, fk_type: :lives_on_type
       end
 
       map Branch do
-        fields :length
+        attributes :length
         has_many :bugs, fk: :lives_on_id, fk_type: :lives_on_type
       end
 
       map Bug do
-        fields :name
+        attributes :name
       end
     end
   end
@@ -741,16 +741,16 @@ private
   def configure_polymorphic_belongs_to
     Vorpal.define do
       map Bug do
-        fields :name
+        attributes :name
         belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
       end
 
       map Trunk do
-        fields :length
+        attributes :length
       end
 
       map Branch do
-        fields :length
+        attributes :length
       end
     end
   end
@@ -758,7 +758,7 @@ private
   def configure_ar_polymorphic_belongs_to
     Vorpal.define do
       map Tree do
-        fields :name
+        attributes :name
         belongs_to :environment, owned: false, fk: :environment_id, fk_type: :environment_type, child_class: Swamp
       end
 
@@ -769,16 +769,16 @@ private
   def configure_unowned_polymorphic_belongs_to
     Vorpal.define do
       map Bug do
-        fields :name
+        attributes :name
         belongs_to :lives_on, owned: false, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
       end
 
       map Trunk do
-        fields :length
+        attributes :length
       end
 
       map Branch do
-        fields :length
+        attributes :length
       end
     end
   end
@@ -786,17 +786,17 @@ private
   def configure_unowned
     Vorpal.define do
       map Tree do
-        fields :name
+        attributes :name
         has_many :branches, owned: false
         belongs_to :trunk, owned: false
       end
 
       map Trunk do
-        fields :length
+        attributes :length
       end
 
       map Branch do
-        fields :length
+        attributes :length
       end
     end
   end
@@ -804,12 +804,12 @@ private
   def configure_recursive
     Vorpal.define do
       map Branch do
-        fields :length
+        attributes :length
         has_many :branches
       end
 
       map Tree do
-        fields :name
+        attributes :name
         has_many :branches
       end
     end
@@ -818,12 +818,12 @@ private
   def configure_with_cycle
     Vorpal.define do
       map Branch do
-        fields :length
+        attributes :length
         belongs_to :tree
       end
 
       map Tree do
-        fields :name
+        attributes :name
         has_many :branches
       end
     end
@@ -832,18 +832,18 @@ private
   def configure(options={})
     Vorpal.define(options) do
       map Tree do
-        fields :name
+        attributes :name
         belongs_to :trunk
         has_many :fissures
         has_many :branches
       end
 
       map Trunk do
-        fields :length
+        attributes :length
       end
 
       map Branch do
-        fields :length
+        attributes :length
       end
 
       map Fissure, to: Fissure
@@ -853,12 +853,12 @@ private
   def configure_has_one
     Vorpal.define do
       map Trunk do
-        fields :length
+        attributes :length
         has_one :tree
       end
 
       map Tree do
-        fields :name
+        attributes :name
       end
     end
   end
@@ -866,12 +866,12 @@ private
   def configure_unowned_has_one
     Vorpal.define do
       map Trunk do
-        fields :length
+        attributes :length
         has_one :tree, owned: false
       end
 
       map Tree do
-        fields :name
+        attributes :name
       end
     end
   end
