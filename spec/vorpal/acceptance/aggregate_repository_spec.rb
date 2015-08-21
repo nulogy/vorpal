@@ -51,19 +51,10 @@ describe 'Aggregate Repository' do
 
   before(:all) do
     define_table('branches', {length: :decimal, tree_id: :integer, branch_id: :integer}, false)
-    BranchDB = defineAr('branches')
-
     define_table('bugs', {name: :text, lives_on_id: :integer, lives_on_type: :string}, false)
-    BugDB = defineAr('bugs')
-
     define_table('fissures', {length: :decimal, tree_id: :integer}, false)
-
     define_table('trees', {name: :text, trunk_id: :integer, environment_id: :integer, environment_type: :string}, false)
-    TreeDB = defineAr('trees')
-
     define_table('trunks', {length: :decimal}, false)
-    TrunkDB = defineAr('trunks')
-
     define_table('swamps', {}, false)
   end
 

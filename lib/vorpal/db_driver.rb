@@ -51,6 +51,15 @@ module Vorpal
       result.rows.map(&:first).map(&:to_i)
     end
 
+    # Builds an ORM Class for accessing data in the given DB table.
+    #
+    # @return [Class] ActiveRecord::Base Class
+    def build_db_class(table_name)
+      db_class = Class.new(ActiveRecord::Base)
+      db_class.table_name = table_name
+      db_class
+    end
+
     private
 
     def sequence_name(class_config)

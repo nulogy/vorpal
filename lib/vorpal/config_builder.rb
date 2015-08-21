@@ -2,14 +2,16 @@ require 'simple_serializer/serializer'
 require 'simple_serializer/deserializer'
 require 'vorpal/configs'
 require 'active_support/inflector/methods'
+require 'active_support/core_ext/module/introspection'
 
 module Vorpal
   class ConfigBuilder
 
     # @private
-    def initialize(clazz, options)
+    def initialize(clazz, options, db_driver)
       @domain_class = clazz
       @class_options = options
+      @db_driver = db_driver
       @has_manys = []
       @has_ones = []
       @belongs_tos = []
@@ -78,19 +80,37 @@ module Vorpal
       [:id].concat @attributes
     end
 
+    # @private
+    def table_name
+      @class_options[:table_name] || ActiveSupport::Inflector.tableize(@domain_class.name)
+    end
+
+    # @private
+    def build_db_class
+      # Module#parent comes from 'active_support/core_ext/module/introspection'
+      parent_module = @domain_class.parent
+
+      return parent_module.const_get(db_class_name) if parent_module.const_defined?(db_class_name)
+
+      db_class = @db_driver.build_db_class(table_name)
+      parent_module.const_set(db_class_name, db_class)
+
+      db_class
+    end
+
     private
+
+    def db_class_name
+      @domain_class.name.split('::').last + 'DB'
+    end
 
     def build_class_config
       Vorpal::ClassConfig.new(
         domain_class: @domain_class,
-        db_class: @class_options[:to] || db_class,
+        db_class: @class_options[:to] || build_db_class,
         serializer: @class_options[:serializer] || serializer(attributes_with_id),
         deserializer: @class_options[:deserializer] || deserializer(attributes_with_id),
       )
-    end
-
-    def db_class
-      ActiveSupport::Inflector.constantize("#{@domain_class.name}DB")
     end
 
     def build_has_manys

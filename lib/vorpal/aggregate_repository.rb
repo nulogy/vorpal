@@ -134,6 +134,12 @@ module Vorpal
       ids
     end
 
+    # Returns the DB Class (e.g. ActiveRecord::Base class) that is responsible
+    # for accessing the associated data in the DB.
+    def db_class(domain_class)
+      @configs.config_for(domain_class).db_class
+    end
+
     private
 
     def all_owned_objects(roots)

@@ -109,16 +109,8 @@ require 'vorpal'
 module TreeRepository
   extend self
 
-  class TreeDB < ActiveRecord::Base
-    self.table_name = 'trees'
-  end
-
-  class BranchDB < ActiveRecord::Base
-    self.table_name = 'branches'
-  end
-
   @repository = Vorpal.define do
-    map Tree, to: TreeDB do
+    map Tree do
       attributes :name
       belongs_to :gardener, owned: false
       has_many :branches
@@ -126,7 +118,7 @@ module TreeRepository
 
     map Gardener, to: Gardener
 
-    map Branch, to: BranchDB do
+    map Branch do
       attributes :length, :diameter
       belongs_to :tree
     end
@@ -216,7 +208,7 @@ For example:
 
 ```ruby
   def find_all
-    ids = TreeDB.pluck(:id) # use an AR query to determine the aggregate ids
+    ids = @repository.db_class(Tree).pluck(:id) # use an AR query to determine the aggregate ids
     @repository.load_all(ids, Tree) # use the repository to load all the aggregates
   end
 ```

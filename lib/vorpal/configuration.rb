@@ -38,7 +38,7 @@ module Vorpal
 
     # @private
     def build_class_config(domain_class, options={}, &block)
-      builder = ConfigBuilder.new(domain_class, options)
+      builder = ConfigBuilder.new(domain_class, options, DbDriver.new)
       builder.instance_exec(&block) if block_given?
       builder.build
     end
