@@ -11,26 +11,19 @@ module Vorpal
       @configs = master_config
     end
 
-    # Saves an aggregate to the DB. Inserts objects that are new to the
+    # Saves a collection of aggregates to the DB. Inserts objects that are new to an
     # aggregate, updates existing objects and deletes objects that are no longer
     # present.
     #
-    # Objects that are on the boundary of the aggregate (owned: false) will not
+    # Objects that are on the boundary of an aggregate (owned: false) will not
     # be inserted, updated, or deleted. However, the relationships to these
-    # objects (provided they are stored within the aggregate) will be saved.
+    # objects (provided they are stored within an aggregate) will be saved.
     #
-    # @param root [Object] Root of the aggregate to be saved.
-    # @return [Object] Root of the aggregate.
-    def persist(root)
-      persist_all([root]).first
-    end
-
-    # Like {#persist} but operates on multiple aggregates. Roots must
-    # be of the same type.
-    #
-    # @param roots [[Object]] array of aggregate roots to be saved.
+    # @param roots [[Object]] array of aggregate roots to be saved. Will also accept a
+    #   single aggregate.
     # @return [[Object]] array of aggregate roots.
-    def persist_all(roots)
+    def persist(roots)
+      roots = wrap(roots)
       return roots if roots.empty?
       raise InvalidAggregateRoot, 'Nil aggregate roots are not allowed.' if roots.any?(&:nil?)
 
@@ -87,44 +80,29 @@ module Vorpal
       db_roots.map { |db_object| identity_map.get(db_object) }
     end
 
-    # Removes an aggregate from the DB. Even if the aggregate contains unsaved
-    # changes this method will correctly remove everything.
+    # Removes a collection of aggregates from the DB. Even if an aggregate
+    # contains unsaved changes this method will correctly remove everything.
     #
-    # @param root [Object] Root of the aggregate to be destroyed.
-    # @return [Object] Root that was passed in.
-    def destroy(root)
-      destroy_all([root]).first
-    end
-
-    # Like {#destroy} but operates on multiple aggregates. Roots must
-    # be of the same type.
-    #
-    # @param roots [[Object]] Array of roots of the aggregates to be destroyed.
+    # @param roots [[Object]] Roots of the aggregates to be destroyed. Also accepts a
+    #   single root.
     # @return [[Object]] Roots that were passed in.
-    def destroy_all(roots)
+    def destroy(roots)
+      roots = wrap(roots)
       return roots if roots.empty?
       raise InvalidAggregateRoot, 'Nil aggregate roots are not allowed.' if roots.any?(&:nil?)
 
-      destroy_all_by_id(roots.map(&:id), roots.first.class)
+      destroy_by_id(roots.map(&:id), roots.first.class)
       roots
     end
 
-    # Removes an aggregate from the DB given its primary key.
+    # Removes a collection of aggregates from the DB given their primary keys.
     #
-    # @param id [Integer] Id of root of the aggregate to be destroyed.
-    # @param domain_class [Class] Type of the root of the aggregate to
-    #   be destroyed.
-    def destroy_by_id(id, domain_class)
-      destroy_all_by_id([id], domain_class)
-    end
-
-    # Like {#destroy_by_id} but operates on multiple ids. Roots must
-    # be of the same type.
-    #
-    # @param ids [[Integer]] Ids of roots of the aggregates to be destroyed.
+    # @param ids [[Integer]] Ids of roots of the aggregates to be destroyed. Also
+    #   accepts a single id.
     # @param domain_class [Class] Type of the roots of the aggregates to
     #   be destroyed.
-    def destroy_all_by_id(ids, domain_class)
+    def destroy_by_id(ids, domain_class)
+      ids = wrap(ids)
       raise InvalidPrimaryKeyValue, 'Nil primary key values are not allowed.' if ids.any?(&:nil?)
 
       loaded_db_objects = load_owned_from_db(ids, domain_class)
@@ -141,6 +119,14 @@ module Vorpal
     end
 
     private
+
+    def wrap(collection_or_not)
+      if collection_or_not.is_a?(Array)
+        collection_or_not
+      else
+        [collection_or_not]
+      end
+    end
 
     def all_owned_objects(roots)
       AggregateUtils.group_by_type(roots, @configs)

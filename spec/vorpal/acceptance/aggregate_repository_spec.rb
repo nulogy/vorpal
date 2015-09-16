@@ -456,7 +456,7 @@ describe 'Aggregate Repository' do
       trunk_bug = Bug.new(lives_on: Trunk.new)
       branch_bug = Bug.new(lives_on: Branch.new)
 
-      test_repository.persist_all([trunk_bug, branch_bug])
+      test_repository.persist([trunk_bug, branch_bug])
 
       expect(BugDB.find(trunk_bug.id).lives_on_type).to eq Trunk.name
       expect(BugDB.find(branch_bug.id).lives_on_type).to eq Branch.name
@@ -536,7 +536,7 @@ describe 'Aggregate Repository' do
 
       tree_db = TreeDB.create!
 
-      test_repository.destroy_all([Tree.new(id: tree_db.id)])
+      test_repository.destroy([Tree.new(id: tree_db.id)])
 
       expect(TreeDB.count).to eq 0
     end
@@ -603,7 +603,7 @@ describe 'Aggregate Repository' do
 
       tree_db = TreeDB.create!
 
-      test_repository.destroy_all_by_id([tree_db.id], Tree)
+      test_repository.destroy_by_id([tree_db.id], Tree)
 
       expect(TreeDB.count).to eq 0
     end
@@ -632,17 +632,17 @@ describe 'Aggregate Repository' do
       expect(result).to eq nil
     end
 
-    it 'persist_all ignores empty arrays' do
+    it 'persist ignores empty arrays' do
       test_repository = configure
 
-      results = test_repository.persist_all([])
+      results = test_repository.persist([])
       expect(results).to eq []
     end
 
-    it 'persist_all throws an exception when given a nil root' do
+    it 'persist throws an exception when given a collection with a nil root' do
       test_repository = configure
       expect {
-        test_repository.persist_all([nil])
+        test_repository.persist([nil])
       }.to raise_error(Vorpal::InvalidAggregateRoot, "Nil aggregate roots are not allowed.")
     end
 
@@ -653,10 +653,10 @@ describe 'Aggregate Repository' do
       }.to raise_error(Vorpal::InvalidAggregateRoot, "Nil aggregate roots are not allowed.")
     end
 
-    it 'destroy_all ignores empty arrays' do
+    it 'destroy ignores empty arrays' do
       test_repository = configure
 
-      results = test_repository.destroy_all([])
+      results = test_repository.destroy([])
       expect(results).to eq []
     end
 
@@ -668,32 +668,32 @@ describe 'Aggregate Repository' do
       }.to raise_error(Vorpal::InvalidAggregateRoot, "Nil aggregate roots are not allowed.")
     end
 
-    it 'destroy_all throws an exception when given a nil root' do
+    it 'destroy throws an exception when given a collection with a nil root' do
       test_repository = configure
 
       expect {
-        test_repository.destroy_all([nil])
+        test_repository.destroy([nil])
       }.to raise_error(Vorpal::InvalidAggregateRoot, "Nil aggregate roots are not allowed.")
     end
 
-    it 'destroy_all_by_id ignores empty arrays' do
+    it 'destroy_by_id ignores empty arrays' do
       test_repository = configure
 
-      results = test_repository.destroy_all_by_id([], Tree)
+      results = test_repository.destroy_by_id([], Tree)
       expect(results).to eq []
     end
 
-    it 'destroy_all_by_id ignores ids that do not exist' do
+    it 'destroy_by_id ignores ids that do not exist' do
       test_repository = configure
 
-      test_repository.destroy_all_by_id([99], Tree)
+      test_repository.destroy_by_id([99], Tree)
     end
 
-    it 'destroy_all_by_id throws an exception when given a nil id' do
+    it 'destroy_by_id throws an exception when given a collection with a nil id' do
       test_repository = configure
 
       expect {
-        test_repository.destroy_all_by_id([nil], Tree)
+        test_repository.destroy_by_id([nil], Tree)
       }.to raise_error(Vorpal::InvalidPrimaryKeyValue, "Nil primary key values are not allowed.")
     end
 

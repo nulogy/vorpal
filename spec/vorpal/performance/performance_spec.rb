@@ -92,10 +92,10 @@ describe 'performance' do
   it 'benchmarks all operations' do
     trees = build_trees(1000)
     Benchmark.bm(7) do |x|
-      x.report('create') { test_repository.persist_all(trees) }
-      x.report('update') { test_repository.persist_all(trees) }
+      x.report('create') { test_repository.persist(trees) }
+      x.report('update') { test_repository.persist(trees) }
       x.report('load') { test_repository.load_many(TreeDB.where(id: trees.map(&:id)).all, Tree) }
-      x.report('destroy') { test_repository.destroy_all(trees) }
+      x.report('destroy') { test_repository.destroy(trees) }
     end
   end
 
@@ -104,24 +104,24 @@ describe 'performance' do
 
     puts 'starting persistence benchmark'
     puts Benchmark.measure {
-      test_repository.persist_all(trees)
+      test_repository.persist(trees)
     }
   end
 
   it 'updates aggregates quickly' do
     trees = build_trees(1000)
 
-    test_repository.persist_all(trees)
+    test_repository.persist(trees)
 
     puts 'starting update benchmark'
     puts Benchmark.measure {
-      test_repository.persist_all(trees)
+      test_repository.persist(trees)
     }
   end
 
   it 'loads aggregates quickly' do
     trees = build_trees(1000)
-    test_repository.persist_all(trees)
+    test_repository.persist(trees)
     ids = trees.map(&:id)
 
     puts 'starting loading benchmark'
@@ -132,11 +132,11 @@ describe 'performance' do
 
   it 'destroys aggregates quickly' do
     trees = build_trees(1000)
-    test_repository.persist_all(trees)
+    test_repository.persist(trees)
 
     puts 'starting destruction benchmark'
     puts Benchmark.measure {
-      test_repository.destroy_all(trees)
+      test_repository.destroy(trees)
     }
   end
 
