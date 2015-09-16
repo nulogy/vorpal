@@ -109,7 +109,7 @@ require 'vorpal'
 module TreeRepository
   extend self
 
-  @repository = Vorpal.define do
+  engine = Vorpal.define do
     map Tree do
       attributes :name
       belongs_to :gardener, owned: false
@@ -123,9 +123,10 @@ module TreeRepository
       belongs_to :tree
     end
   end
+  @repository = engine.repository_for(Tree)
 
-  def find(id)
-    @repository.load(id, Tree)
+  def find(tree_id)
+    @repository.load_one(@repository.db_class.where(id: tree_id).first)
   end
 
   def save(tree)
@@ -137,7 +138,7 @@ module TreeRepository
   end
 
   def destroy_by_id(tree_id)
-    @repository.destroy_by_id(tree_id, Tree)
+    @repository.destroy_by_id(tree_id)
   end
 end
 ```

@@ -1,20 +1,20 @@
-require 'vorpal/aggregate_repository'
+require 'vorpal/engine'
 require 'vorpal/config_builder'
 
 module Vorpal
   module Configuration
 
-    # Configures and creates a {Vorpal::AggregateRepository} instance.
+    # Configures and creates a {Engine} instance.
     #
     # @param options [Hash] Global configuration options for the repository instance.
     # @option options [Object] :db_driver (Object that will be used to interact with the DB.)
-    #  Must be duck-type compatible with {Vorpal::DbDriver}.
+    #  Must be duck-type compatible with {DbDriver}.
     #
-    # @return [Vorpal::AggregateRepository] Repository instance.
+    # @return [Engine] Instance of the mapping engine.
     def define(options={}, &block)
       master_config = build_config(&block)
       db_driver = options.fetch(:db_driver, DbDriver.new)
-      AggregateRepository.new(db_driver, master_config)
+      Engine.new(db_driver, master_config)
     end
 
     # Maps a domain class to a relational table.

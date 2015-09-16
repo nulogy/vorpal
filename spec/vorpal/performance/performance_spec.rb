@@ -94,7 +94,7 @@ describe 'performance' do
     Benchmark.bm(7) do |x|
       x.report('create') { test_repository.persist(trees) }
       x.report('update') { test_repository.persist(trees) }
-      x.report('load') { test_repository.load_many(TreeDB.where(id: trees.map(&:id)).all, Tree) }
+      x.report('load') { test_repository.load_many(TreeDB.where(id: trees.map(&:id)).all) }
       x.report('destroy') { test_repository.destroy(trees) }
     end
   end
@@ -126,7 +126,7 @@ describe 'performance' do
 
     puts 'starting loading benchmark'
     puts Benchmark.measure {
-      test_repository.load_many(TreeDB.where(id: ids).all, Tree)
+      test_repository.load_many(TreeDB.where(id: ids).all)
     }
   end
 
@@ -163,7 +163,7 @@ describe 'performance' do
   end
 
   def build_repository
-    Vorpal.define do
+    engine = Vorpal.define do
       map Tree do
         attributes :name
         belongs_to :trunk
@@ -188,5 +188,6 @@ describe 'performance' do
         belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
       end
     end
+    engine.repository_for(Tree)
   end
 end

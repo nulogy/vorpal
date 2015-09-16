@@ -185,7 +185,7 @@ describe 'Aggregate Repository' do
     test_repository = configure
 
     tree_db = TreeDB.create! name: 'tree name'
-    tree = test_repository.load_one(tree_db, Tree)
+    tree = test_repository.load_one(tree_db)
 
     expect(tree.id).to eq tree_db.id
     expect(tree.name).to eq 'tree name'
@@ -197,7 +197,7 @@ describe 'Aggregate Repository' do
     tree_db = TreeDB.create!
     Fissure.create! length: 21, tree_id: tree_db.id
 
-    tree = test_repository.load_one(tree_db, Tree)
+    tree = test_repository.load_one(tree_db)
 
     expect(tree.fissures.first.length).to eq 21
   end
@@ -221,7 +221,7 @@ describe 'Aggregate Repository' do
       tree_db = TreeDB.create!
       BranchDB.create!(length: 50, tree_id: tree_db.id)
 
-      tree = test_repository.load_one(tree_db, Tree)
+      tree = test_repository.load_one(tree_db)
 
       expect(tree).to be tree.branches.first.tree
     end
@@ -249,7 +249,7 @@ describe 'Aggregate Repository' do
       long_branch = BranchDB.create!(length: 100, tree_id: tree_db.id)
       BranchDB.create!(length: 50, branch_id: long_branch.id)
 
-      tree = test_repository.load_one(tree_db, Tree)
+      tree = test_repository.load_one(tree_db)
 
       expect(tree.branches.first.branches.first.length).to eq 50
     end
@@ -306,7 +306,7 @@ describe 'Aggregate Repository' do
       trunk_db = TrunkDB.create!(length: 21)
       tree_db = TreeDB.create!(trunk_id: trunk_db.id)
 
-      new_tree = test_repository.load_one(tree_db, Tree)
+      new_tree = test_repository.load_one(tree_db)
       expect(new_tree.trunk.length).to eq 21
     end
   end
@@ -371,7 +371,7 @@ describe 'Aggregate Repository' do
       tree_db = TreeDB.create!
       BranchDB.create!(length: 50, tree_id: tree_db.id)
 
-      tree = test_repository.load_one(tree_db, Tree)
+      tree = test_repository.load_one(tree_db)
 
       expect(tree.branches.first.length).to eq 50
     end
@@ -414,7 +414,7 @@ describe 'Aggregate Repository' do
       trunk_db = TrunkDB.create!
       TreeDB.create!(name: 'big tree', trunk_id: trunk_db.id)
 
-      trunk = test_repository.load_one(trunk_db, Trunk)
+      trunk = test_repository.load_one(trunk_db)
 
       expect(trunk.tree.name).to eq 'big tree'
     end
@@ -442,12 +442,13 @@ describe 'Aggregate Repository' do
       test_repository = configure_polymorphic_has_many
 
       trunk_db = TrunkDB.create!
+      tree_db = TreeDB.create!(trunk_id: trunk_db.id)
       BugDB.create!(name: 'trunk bug', lives_on_id: trunk_db.id, lives_on_type: Trunk.name)
       BugDB.create!(name: 'not a trunk bug!', lives_on_id: trunk_db.id, lives_on_type: 'some other table')
 
-      trunk = test_repository.load_one(trunk_db, Trunk)
+      tree = test_repository.load_one(tree_db)
 
-      expect(trunk.bugs.map(&:name)).to eq ['trunk bug']
+      expect(tree.trunk.bugs.map(&:name)).to eq ['trunk bug']
     end
 
     it 'saves with belongs_tos' do
@@ -487,7 +488,7 @@ describe 'Aggregate Repository' do
       branch_db.save!
       branch_bug_db = BugDB.create!(lives_on_id: branch_db.id, lives_on_type: Branch.name)
 
-      trunk_bug, branch_bug = test_repository.load_many([trunk_bug_db, branch_bug_db], Bug)
+      trunk_bug, branch_bug = test_repository.load_many([trunk_bug_db, branch_bug_db])
 
       expect(trunk_bug.lives_on.length).to eq 99
       expect(branch_bug.lives_on.length).to eq 5
@@ -499,7 +500,7 @@ describe 'Aggregate Repository' do
       swamp = Swamp.create!
       tree_db = TreeDB.create!(environment_id: swamp.id, environment_type: Swamp.name)
 
-      tree = test_repository.load_one(tree_db, Tree)
+      tree = test_repository.load_one(tree_db)
 
       expect(tree.environment).to eq swamp
     end
@@ -512,7 +513,7 @@ describe 'Aggregate Repository' do
       TreeDB.create!
       tree_db = TreeDB.create!
 
-      trees = test_repository.load_many([tree_db], Tree)
+      trees = test_repository.load_many([tree_db])
 
       expect(trees.map(&:id)).to eq [tree_db.id]
     end
@@ -524,7 +525,7 @@ describe 'Aggregate Repository' do
       tree_db = TreeDB.create!
       BranchDB.create!(tree_id: tree_db.id)
 
-      trees = test_repository.load_many([tree_db], Tree)
+      trees = test_repository.load_many([tree_db])
 
       expect(trees.map(&:id)).to eq [tree_db.id]
     end
@@ -603,7 +604,7 @@ describe 'Aggregate Repository' do
 
       tree_db = TreeDB.create!
 
-      test_repository.destroy_by_id([tree_db.id], Tree)
+      test_repository.destroy_by_id([tree_db.id])
 
       expect(TreeDB.count).to eq 0
     end
@@ -613,7 +614,7 @@ describe 'Aggregate Repository' do
     it 'load_many returns an empty array when given an empty array' do
       test_repository = configure
 
-      results = test_repository.load_many([], Tree)
+      results = test_repository.load_many([])
       expect(results).to eq []
     end
 
@@ -621,14 +622,14 @@ describe 'Aggregate Repository' do
       test_repository = configure
 
       expect {
-        test_repository.load_many([nil], Tree)
+        test_repository.load_many([nil])
       }.to raise_error(Vorpal::InvalidAggregateRoot, "Nil aggregate roots are not allowed.")
     end
 
     it 'load_one returns nil when given nil' do
       test_repository = configure
 
-      result = test_repository.load_one(nil, Tree)
+      result = test_repository.load_one(nil)
       expect(result).to eq nil
     end
 
@@ -679,21 +680,21 @@ describe 'Aggregate Repository' do
     it 'destroy_by_id ignores empty arrays' do
       test_repository = configure
 
-      results = test_repository.destroy_by_id([], Tree)
+      results = test_repository.destroy_by_id([])
       expect(results).to eq []
     end
 
     it 'destroy_by_id ignores ids that do not exist' do
       test_repository = configure
 
-      test_repository.destroy_by_id([99], Tree)
+      test_repository.destroy_by_id([99])
     end
 
     it 'destroy_by_id throws an exception when given a collection with a nil id' do
       test_repository = configure
 
       expect {
-        test_repository.destroy_by_id([nil], Tree)
+        test_repository.destroy_by_id([nil])
       }.to raise_error(Vorpal::InvalidPrimaryKeyValue, "Nil primary key values are not allowed.")
     end
 
@@ -701,7 +702,7 @@ describe 'Aggregate Repository' do
       test_repository = configure
 
       expect {
-        test_repository.destroy_by_id(nil, Tree)
+        test_repository.destroy_by_id(nil)
       }.to raise_error(Vorpal::InvalidPrimaryKeyValue, "Nil primary key values are not allowed.")
     end
   end
@@ -709,7 +710,7 @@ describe 'Aggregate Repository' do
 private
 
   def configure_polymorphic_has_many
-    Vorpal.define do
+    engine = Vorpal.define do
       map Tree do
         attributes :name
         has_many :branches
@@ -730,10 +731,11 @@ private
         attributes :name
       end
     end
+    engine.repository_for(Tree)
   end
 
   def configure_polymorphic_belongs_to
-    Vorpal.define do
+    engine = Vorpal.define do
       map Bug do
         attributes :name
         belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
@@ -747,10 +749,11 @@ private
         attributes :length
       end
     end
+    engine.repository_for(Bug)
   end
 
   def configure_ar_polymorphic_belongs_to
-    Vorpal.define do
+    engine = Vorpal.define do
       map Tree do
         attributes :name
         belongs_to :environment, owned: false, fk: :environment_id, fk_type: :environment_type, child_class: Swamp
@@ -758,10 +761,11 @@ private
 
       map Swamp, to: Swamp
     end
+    engine.repository_for(Tree)
   end
 
   def configure_unowned_polymorphic_belongs_to
-    Vorpal.define do
+    engine = Vorpal.define do
       map Bug do
         attributes :name
         belongs_to :lives_on, owned: false, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
@@ -775,10 +779,11 @@ private
         attributes :length
       end
     end
+    engine.repository_for(Bug)
   end
 
   def configure_unowned
-    Vorpal.define do
+    engine = Vorpal.define do
       map Tree do
         attributes :name
         has_many :branches, owned: false
@@ -793,10 +798,11 @@ private
         attributes :length
       end
     end
+    engine.repository_for(Tree)
   end
 
   def configure_recursive
-    Vorpal.define do
+    engine = Vorpal.define do
       map Branch do
         attributes :length
         has_many :branches
@@ -807,10 +813,11 @@ private
         has_many :branches
       end
     end
+    engine.repository_for(Tree)
   end
 
   def configure_with_cycle
-    Vorpal.define do
+    engine = Vorpal.define do
       map Branch do
         attributes :length
         belongs_to :tree
@@ -821,10 +828,11 @@ private
         has_many :branches
       end
     end
+    engine.repository_for(Tree)
   end
   
   def configure(options={})
-    Vorpal.define(options) do
+    engine = Vorpal.define(options) do
       map Tree do
         attributes :name
         belongs_to :trunk
@@ -842,10 +850,11 @@ private
 
       map Fissure, to: Fissure
     end
+    engine.repository_for(Tree)
   end
 
   def configure_has_one
-    Vorpal.define do
+    engine = Vorpal.define do
       map Trunk do
         attributes :length
         has_one :tree
@@ -855,10 +864,11 @@ private
         attributes :name
       end
     end
+    engine.repository_for(Trunk)
   end
 
   def configure_unowned_has_one
-    Vorpal.define do
+    engine = Vorpal.define do
       map Trunk do
         attributes :length
         has_one :tree, owned: false
@@ -868,5 +878,6 @@ private
         attributes :name
       end
     end
+    engine.repository_for(Trunk)
   end
 end

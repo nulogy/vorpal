@@ -1,11 +1,10 @@
 require "vorpal/version"
 require "vorpal/configuration"
 
-# Allows easy creation of {Vorpal::AggregateRepository}
-# instances.
+# Allows easy creation of {Vorpal::Engine} instances.
 #
 # ```ruby
-# repository = Vorpal.define do
+# engine = Vorpal.define do
 #   map Tree do
 #     attributes :name
 #     belongs_to :trunk
@@ -22,6 +21,8 @@ require "vorpal/configuration"
 #     belongs_to :tree
 #   end
 # end
+#
+# repository = engine.repository_for(Tree)
 # ```
 module Vorpal
   extend Vorpal::Configuration
