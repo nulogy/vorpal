@@ -13,9 +13,15 @@ module Vorpal
     end
 
     def load_from_db(ids, config)
+      db_roots = @db_driver.load_by_id(config, ids)
+      load_from_db_objects(db_roots, config)
+    end
+
+    def load_from_db_objects(db_roots, config)
       @loaded_objects = LoadedObjects.new
+      @loaded_objects.add(config, db_roots)
       @lookup_instructions = LookupInstructions.new
-      @lookup_instructions.lookup_by_id(config, ids)
+      explore_objects(config, db_roots)
 
       until @lookup_instructions.empty?
         lookup = @lookup_instructions.next_lookup

@@ -56,35 +56,35 @@ module Vorpal
     # Loads an aggregate from the DB. Will eagerly load all objects in the
     # aggregate and on the boundary (owned: false).
     #
-    # @param id [Integer] Primary key value of the root of the aggregate to be
+    # @param db_root [Object] DB representation of the root of the aggregate to be
     #   loaded.
     # @param domain_class [Class] Type of the root of the aggregate to
     #   be loaded.
     # @param identity_map [Vorpal::IdentityMap] Provide your own IdentityMap instance
     #   if you want entity id - unique object mapping for a greater scope than one
     #   operation.
-    # @return [Object] Entity with the given primary key value and type.
-    def load(id, domain_class, identity_map=IdentityMap.new)
-      load_all([id], domain_class, identity_map).first
+    # @return [Object] Aggregate root corresponding to the given DB representation.
+    def load_one(db_root, domain_class, identity_map=IdentityMap.new)
+      load_many(Array(db_root), domain_class, identity_map).first
     end
 
-    # Like {#load} but operates on multiple ids.
+    # Like {#load_one} but operates on multiple aggregate roots.
     #
-    # @param ids [[Integer]] Array of primary key values of the roots of the
+    # @param db_roots [[Integer]] Array of primary key values of the roots of the
     #   aggregates to be loaded.
     # @param domain_class [Class] Type of the roots of the aggregate to be loaded.
     # @param identity_map [Vorpal::IdentityMap] Provide your own IdentityMap instance
     #   if you want entity id - unique object mapping for a greater scope than one
     #   operation.
-    # @return [[Object]] Entities with the given primary key values and type.
-    def load_all(ids, domain_class, identity_map=IdentityMap.new)
-      raise InvalidPrimaryKeyValue, 'Nil primary key values are not allowed.' if ids.any?(&:nil?)
+    # @return [[Object]] Aggregate roots corresponding to the given DB representations.
+    def load_many(db_roots, domain_class, identity_map=IdentityMap.new)
+      raise InvalidAggregateRoot, 'Nil aggregate roots are not allowed.' if db_roots.any?(&:nil?)
 
-      loaded_db_objects = load_from_db(ids, domain_class)
-      objects = deserialize(loaded_db_objects, identity_map)
+      loaded_db_objects = DbLoader.new(false, @db_driver).load_from_db_objects(db_roots, @configs.config_for(domain_class))
+      deserialize(loaded_db_objects, identity_map)
       set_associations(loaded_db_objects, identity_map)
 
-      sorted_roots(ids, objects, domain_class)
+      db_roots.map { |db_object| identity_map.get(db_object) }
     end
 
     # Removes an aggregate from the DB. Even if the aggregate contains unsaved
@@ -175,12 +175,6 @@ module Vorpal
           end
         end
       end
-    end
-
-    def sorted_roots(ids, objects, domain_class)
-      roots = objects.select { |obj| obj.class == domain_class }
-      roots_by_id = roots.reduce({}) { |h, root| h[root.id] = root; h }
-      ids.map { |id| roots_by_id[id] }.compact
     end
 
     def serialize(owned_objects, mapping, loaded_db_objects)

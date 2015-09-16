@@ -94,7 +94,7 @@ describe 'performance' do
     Benchmark.bm(7) do |x|
       x.report('create') { test_repository.persist_all(trees) }
       x.report('update') { test_repository.persist_all(trees) }
-      x.report('load') { ids = trees.map(&:id); test_repository.load_all(ids, Tree) }
+      x.report('load') { test_repository.load_many(TreeDB.where(id: trees.map(&:id)).all, Tree) }
       x.report('destroy') { test_repository.destroy_all(trees) }
     end
   end
@@ -126,7 +126,7 @@ describe 'performance' do
 
     puts 'starting loading benchmark'
     puts Benchmark.measure {
-      test_repository.load_all(ids, Tree)
+      test_repository.load_many(TreeDB.where(id: ids).all, Tree)
     }
   end
 

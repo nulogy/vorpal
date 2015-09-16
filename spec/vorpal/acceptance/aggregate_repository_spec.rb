@@ -131,7 +131,7 @@ describe 'Aggregate Repository' do
     it 'does not change the id on update' do
       test_repository = configure
 
-      tree = Tree.new()
+      tree = Tree.new
       test_repository.persist(tree)
 
       original_id = tree.id
@@ -145,7 +145,7 @@ describe 'Aggregate Repository' do
     it 'does not create additional records' do
       test_repository = configure
 
-      tree = Tree.new()
+      tree = Tree.new
       test_repository.persist(tree)
 
       tree.name = 'change it'
@@ -185,7 +185,7 @@ describe 'Aggregate Repository' do
     test_repository = configure
 
     tree_db = TreeDB.create! name: 'tree name'
-    tree = test_repository.load(tree_db.id, Tree)
+    tree = test_repository.load_one(tree_db, Tree)
 
     expect(tree.id).to eq tree_db.id
     expect(tree.name).to eq 'tree name'
@@ -197,7 +197,7 @@ describe 'Aggregate Repository' do
     tree_db = TreeDB.create!
     Fissure.create! length: 21, tree_id: tree_db.id
 
-    tree = test_repository.load(tree_db.id, Tree)
+    tree = test_repository.load_one(tree_db, Tree)
 
     expect(tree.fissures.first.length).to eq 21
   end
@@ -221,7 +221,7 @@ describe 'Aggregate Repository' do
       tree_db = TreeDB.create!
       BranchDB.create!(length: 50, tree_id: tree_db.id)
 
-      tree = test_repository.load(tree_db.id, Tree)
+      tree = test_repository.load_one(tree_db, Tree)
 
       expect(tree).to be tree.branches.first.tree
     end
@@ -249,7 +249,7 @@ describe 'Aggregate Repository' do
       long_branch = BranchDB.create!(length: 100, tree_id: tree_db.id)
       BranchDB.create!(length: 50, branch_id: long_branch.id)
 
-      tree = test_repository.load(tree_db.id, Tree)
+      tree = test_repository.load_one(tree_db, Tree)
 
       expect(tree.branches.first.branches.first.length).to eq 50
     end
@@ -269,7 +269,7 @@ describe 'Aggregate Repository' do
 
     it 'saves foreign keys' do
       test_repository = configure
-      trunk = Trunk.new()
+      trunk = Trunk.new
       tree = Tree.new(trunk: trunk)
 
       test_repository.persist(tree)
@@ -306,7 +306,7 @@ describe 'Aggregate Repository' do
       trunk_db = TrunkDB.create!(length: 21)
       tree_db = TreeDB.create!(trunk_id: trunk_db.id)
 
-      new_tree = test_repository.load(tree_db.id, Tree)
+      new_tree = test_repository.load_one(tree_db, Tree)
       expect(new_tree.trunk.length).to eq 21
     end
   end
@@ -371,7 +371,7 @@ describe 'Aggregate Repository' do
       tree_db = TreeDB.create!
       BranchDB.create!(length: 50, tree_id: tree_db.id)
 
-      tree = test_repository.load(tree_db.id, Tree)
+      tree = test_repository.load_one(tree_db, Tree)
 
       expect(tree.branches.first.length).to eq 50
     end
@@ -414,7 +414,7 @@ describe 'Aggregate Repository' do
       trunk_db = TrunkDB.create!
       TreeDB.create!(name: 'big tree', trunk_id: trunk_db.id)
 
-      trunk = test_repository.load(trunk_db.id, Trunk)
+      trunk = test_repository.load_one(trunk_db, Trunk)
 
       expect(trunk.tree.name).to eq 'big tree'
     end
@@ -445,7 +445,7 @@ describe 'Aggregate Repository' do
       BugDB.create!(name: 'trunk bug', lives_on_id: trunk_db.id, lives_on_type: Trunk.name)
       BugDB.create!(name: 'not a trunk bug!', lives_on_id: trunk_db.id, lives_on_type: 'some other table')
 
-      trunk = test_repository.load(trunk_db.id, Trunk)
+      trunk = test_repository.load_one(trunk_db, Trunk)
 
       expect(trunk.bugs.map(&:name)).to eq ['trunk bug']
     end
@@ -487,7 +487,7 @@ describe 'Aggregate Repository' do
       branch_db.save!
       branch_bug_db = BugDB.create!(lives_on_id: branch_db.id, lives_on_type: Branch.name)
 
-      trunk_bug, branch_bug = test_repository.load_all([trunk_bug_db.id, branch_bug_db.id], Bug)
+      trunk_bug, branch_bug = test_repository.load_many([trunk_bug_db, branch_bug_db], Bug)
 
       expect(trunk_bug.lives_on.length).to eq 99
       expect(branch_bug.lives_on.length).to eq 5
@@ -499,23 +499,34 @@ describe 'Aggregate Repository' do
       swamp = Swamp.create!
       tree_db = TreeDB.create!(environment_id: swamp.id, environment_type: Swamp.name)
 
-      tree = test_repository.load(tree_db.id, Tree)
+      tree = test_repository.load_one(tree_db, Tree)
 
       expect(tree.environment).to eq swamp
     end
   end
 
-  describe 'load_all' do
-    it 'returns objects in the same order as the ids' do
+  describe 'load_many' do
+    it 'maps given db objects' do
       test_repository = configure
 
-      tree_db1 = TreeDB.create!
-      tree_db2 = TreeDB.create!
-      tree_db3 = TreeDB.create!
+      TreeDB.create!
+      tree_db = TreeDB.create!
 
-      trees = test_repository.load_all([tree_db2.id, tree_db1.id, tree_db3.id], Tree)
+      trees = test_repository.load_many([tree_db], Tree)
 
-      expect(trees.map(&:id)).to eq [tree_db2.id, tree_db1.id, tree_db3.id]
+      expect(trees.map(&:id)).to eq [tree_db.id]
+    end
+
+    it 'only returns roots' do
+      test_repository = configure
+
+      TreeDB.create!
+      tree_db = TreeDB.create!
+      BranchDB.create!(tree_id: tree_db.id)
+
+      trees = test_repository.load_many([tree_db], Tree)
+
+      expect(trees.map(&:id)).to eq [tree_db.id]
     end
   end
 
@@ -599,34 +610,26 @@ describe 'Aggregate Repository' do
   end
 
   describe 'non-existent values' do
-    it 'load_all ignores ids that do not exist' do
+    it 'load_many returns an empty array when given an empty array' do
       test_repository = configure
 
-      results = test_repository.load_all([99], Tree)
+      results = test_repository.load_many([], Tree)
       expect(results).to eq []
     end
 
-    it 'load_all throws an exception when given a nil id' do
+    it 'load_many throws an exception when given a nil db_object' do
       test_repository = configure
 
       expect {
-        test_repository.load_all([nil], Tree)
-      }.to raise_error(Vorpal::InvalidPrimaryKeyValue, "Nil primary key values are not allowed.")
+        test_repository.load_many([nil], Tree)
+      }.to raise_error(Vorpal::InvalidAggregateRoot, "Nil aggregate roots are not allowed.")
     end
 
-    it 'load throws an exception when given a nil id' do
+    it 'load_one returns nil when given nil' do
       test_repository = configure
 
-      expect {
-        test_repository.load(nil, Tree)
-      }.to raise_error(Vorpal::InvalidPrimaryKeyValue, "Nil primary key values are not allowed.")
-    end
-
-    it 'load_all ignores empty arrays' do
-      test_repository = configure
-
-      results = test_repository.load_all([], Tree)
-      expect(results).to eq []
+      result = test_repository.load_one(nil, Tree)
+      expect(result).to eq nil
     end
 
     it 'persist_all ignores empty arrays' do
