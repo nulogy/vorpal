@@ -2,7 +2,7 @@ require 'vorpal/identity_map'
 require 'vorpal/aggregate_utils'
 require 'vorpal/db_loader'
 require 'vorpal/db_driver'
-require 'vorpal/aggregate_repository'
+require 'vorpal/aggregate_mapper'
 
 module Vorpal
   class Engine
