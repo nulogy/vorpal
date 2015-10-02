@@ -123,7 +123,7 @@ module TreeRepository
       belongs_to :tree
     end
   end
-  @repository = engine.repository_for(Tree)
+  @repository = engine.mapper_for(Tree)
 
   def find(tree_id)
     @repository.load_one(@repository.db_class.where(id: tree_id).first)

@@ -17,7 +17,7 @@ module Vorpal
     #
     # @param domain_class [Class] Class of the root of the aggregate.
     # @return [AggregateRepository] Repository suitable for mapping a single aggregate.
-    def repository_for(domain_class)
+    def mapper_for(domain_class)
       AggregateRepository.new(domain_class, self)
     end
 
@@ -90,7 +90,7 @@ module Vorpal
     end
 
     def query(domain_class)
-      @db_driver.query(@configs.config_for(domain_class), repository_for(domain_class))
+      @db_driver.query(@configs.config_for(domain_class), mapper_for(domain_class))
     end
 
     private

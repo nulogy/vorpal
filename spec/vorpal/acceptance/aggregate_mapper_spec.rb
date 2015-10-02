@@ -755,7 +755,7 @@ private
         attributes :name
       end
     end
-    engine.repository_for(Tree)
+    engine.mapper_for(Tree)
   end
 
   def configure_polymorphic_belongs_to
@@ -773,7 +773,7 @@ private
         attributes :length
       end
     end
-    engine.repository_for(Bug)
+    engine.mapper_for(Bug)
   end
 
   def configure_ar_polymorphic_belongs_to
@@ -785,7 +785,7 @@ private
 
       map Swamp, to: Swamp
     end
-    engine.repository_for(Tree)
+    engine.mapper_for(Tree)
   end
 
   def configure_unowned_polymorphic_belongs_to
@@ -803,7 +803,7 @@ private
         attributes :length
       end
     end
-    engine.repository_for(Bug)
+    engine.mapper_for(Bug)
   end
 
   def configure_unowned
@@ -822,7 +822,7 @@ private
         attributes :length
       end
     end
-    engine.repository_for(Tree)
+    engine.mapper_for(Tree)
   end
 
   def configure_recursive
@@ -837,7 +837,7 @@ private
         has_many :branches
       end
     end
-    engine.repository_for(Tree)
+    engine.mapper_for(Tree)
   end
 
   def configure_with_cycle
@@ -852,7 +852,7 @@ private
         has_many :branches
       end
     end
-    engine.repository_for(Tree)
+    engine.mapper_for(Tree)
   end
   
   def configure(options={})
@@ -874,7 +874,7 @@ private
 
       map Fissure, to: Fissure
     end
-    engine.repository_for(Tree)
+    engine.mapper_for(Tree)
   end
 
   def configure_has_one
@@ -888,7 +888,7 @@ private
         attributes :name
       end
     end
-    engine.repository_for(Trunk)
+    engine.mapper_for(Trunk)
   end
 
   def configure_unowned_has_one
@@ -902,6 +902,6 @@ private
         attributes :name
       end
     end
-    engine.repository_for(Trunk)
+    engine.mapper_for(Trunk)
   end
 end

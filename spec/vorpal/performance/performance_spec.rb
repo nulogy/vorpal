@@ -188,6 +188,6 @@ describe 'performance' do
         belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
       end
     end
-    engine.repository_for(Tree)
+    engine.mapper_for(Tree)
   end
 end
