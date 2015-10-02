@@ -68,8 +68,8 @@ module Vorpal
     # Builds a composable query object (e.g. ActiveRecord::Relation) with Vorpal methods mixed in.
     #
     # @param class_config [ClassConfig] Config of the entity whose db representations should be returned.
-    def query(class_config)
-      class_config.db_class.unscoped.extending(ArelQueryMethods.new(self))
+    def query(class_config, aggregate_mapper)
+      class_config.db_class.unscoped.extending(ArelQueryMethods.new(aggregate_mapper))
     end
 
     private

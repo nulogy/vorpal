@@ -85,7 +85,6 @@ module Vorpal
     end
 
     def query
-      # db_class.unscoped.extending(ArelQueryMethods.new(self))
       @engine.query(@domain_class)
     end
   end

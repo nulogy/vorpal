@@ -90,7 +90,7 @@ module Vorpal
     end
 
     def query(domain_class)
-      @db_driver.query(@configs.config_for(domain_class))
+      @db_driver.query(@configs.config_for(domain_class), repository_for(domain_class))
     end
 
     private
