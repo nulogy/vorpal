@@ -89,6 +89,10 @@ module Vorpal
       @configs.config_for(domain_class).db_class
     end
 
+    def query(domain_class)
+      @db_driver.query(@configs.config_for(domain_class))
+    end
+
     private
 
     def wrap(collection_or_not)

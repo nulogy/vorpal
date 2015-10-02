@@ -506,6 +506,30 @@ describe 'Aggregate Repository' do
     end
   end
 
+  describe 'arel' do
+    it 'loads many' do
+      test_repository = configure
+
+      TreeDB.create!
+      tree_db = TreeDB.create!
+
+      trees = test_repository.query.where(id: tree_db.id).load_many
+
+      expect(trees.map(&:id)).to eq [tree_db.id]
+    end
+
+    it 'loads one' do
+      test_repository = configure
+
+      TreeDB.create!
+      tree_db = TreeDB.create!
+
+      trees = test_repository.query.where(id: tree_db.id).load_one
+
+      expect(trees.id).to eq tree_db.id
+    end
+  end
+
   describe 'load_many' do
     it 'maps given db objects' do
       test_repository = configure
