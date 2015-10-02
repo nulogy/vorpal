@@ -1,7 +1,7 @@
 require 'vorpal/identity_map'
 
 module Vorpal
-  class AggregateRepository
+  class AggregateMapper
     # @private
     def initialize(domain_class, engine)
       @domain_class = domain_class

@@ -16,12 +16,12 @@ module Vorpal
     # the DB. It is possible to use the methods directly on the {Engine}.
     #
     # @param domain_class [Class] Class of the root of the aggregate.
-    # @return [AggregateRepository] Repository suitable for mapping a single aggregate.
+    # @return [AggregateMapper] Repository suitable for mapping a single aggregate.
     def mapper_for(domain_class)
-      AggregateRepository.new(domain_class, self)
+      AggregateMapper.new(domain_class, self)
     end
 
-    # Try to use {AggregateRepository#persist} instead.
+    # Try to use {AggregateMapper#persist} instead.
     def persist(roots)
       roots = wrap(roots)
       return roots if roots.empty?
@@ -46,12 +46,12 @@ module Vorpal
       end
     end
 
-    # Try to use {AggregateRepository#load_one} instead.
+    # Try to use {AggregateMapper#load_one} instead.
     def load_one(db_root, domain_class, identity_map)
       load_many(Array(db_root), domain_class, identity_map).first
     end
 
-    # Try to use {AggregateRepository#load_many} instead.
+    # Try to use {AggregateMapper#load_many} instead.
     def load_many(db_roots, domain_class, identity_map)
       raise InvalidAggregateRoot, 'Nil aggregate roots are not allowed.' if db_roots.any?(&:nil?)
 
@@ -62,7 +62,7 @@ module Vorpal
       db_roots.map { |db_object| identity_map.get(db_object) }
     end
 
-    # Try to use {AggregateRepository#destroy} instead.
+    # Try to use {AggregateMapper#destroy} instead.
     def destroy(roots)
       roots = wrap(roots)
       return roots if roots.empty?
@@ -72,7 +72,7 @@ module Vorpal
       roots
     end
 
-    # Try to use {AggregateRepository#destroy_by_id} instead.
+    # Try to use {AggregateMapper#destroy_by_id} instead.
     def destroy_by_id(ids, domain_class)
       ids = wrap(ids)
       raise InvalidPrimaryKeyValue, 'Nil primary key values are not allowed.' if ids.any?(&:nil?)
@@ -84,7 +84,7 @@ module Vorpal
       ids
     end
 
-    # Try to use {AggregateRepository#db_class} instead.
+    # Try to use {AggregateMapper#db_class} instead.
     def db_class(domain_class)
       @configs.config_for(domain_class).db_class
     end

@@ -102,13 +102,13 @@ module Vorpal
     module Methods
       attr_writer :vorpal_aggregate_repository
 
-      # See {AggregateRepository#load_many}.
+      # See {AggregateMapper#load_many}.
       def load_many
         db_roots = self.all
         @vorpal_aggregate_repository.load_many(db_roots)
       end
 
-      # See {AggregateRepository#load_one}.
+      # See {AggregateMapper#load_one}.
       def load_one
         db_root = self.first
         @vorpal_aggregate_repository.load_one(db_root)

@@ -65,7 +65,7 @@ describe Vorpal::DbLoader do
   #   p loaded_objects.all_objects
   #   # expect(loaded_objects.all_objects.size).to eq(2)
   #
-  #   repo = Vorpal::AggregateRepository.new(driver, master_config)
+  #   repo = Vorpal::AggregateMapper.new(driver, master_config)
   #   post = repo.load(post_db.id, Post)
   #   p post
   #   expect(post.comments.size).to eq(1)
