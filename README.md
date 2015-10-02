@@ -123,22 +123,22 @@ module TreeRepository
       belongs_to :tree
     end
   end
-  @repository = engine.mapper_for(Tree)
+  @mapper = engine.mapper_for(Tree)
 
   def find(tree_id)
-    @repository.load_one(@repository.db_class.where(id: tree_id).first)
+    @mapper.query.where(id: tree_id).load_one
   end
 
   def save(tree)
-    @repository.persist(tree)
+    @mapper.persist(tree)
   end
 
   def destroy(tree)
-    @repository.destroy(tree)
+    @mapper.destroy(tree)
   end
 
   def destroy_by_id(tree_id)
-    @repository.destroy_by_id(tree_id)
+    @mapper.destroy_by_id(tree_id)
   end
 end
 ```
@@ -209,8 +209,7 @@ For example:
 
 ```ruby
   def find_all
-    ids = @repository.db_class(Tree).pluck(:id) # use an AR query to determine the aggregate ids
-    @repository.load_all(ids, Tree) # use the repository to load all the aggregates
+    @mapper.query.load_all # use the mapper to load all the aggregates
   end
 ```
 
