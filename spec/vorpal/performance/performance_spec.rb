@@ -74,7 +74,7 @@ describe 'performance' do
     TrunkDB = defineAr('trunks_perf')
   end
 
-  let(:test_repository) { build_repository }
+  let(:test_mapper) { build_repository }
 
   # Vorpal 0.0.5:
   #               user     system      total        real
@@ -92,10 +92,10 @@ describe 'performance' do
   it 'benchmarks all operations' do
     trees = build_trees(1000)
     Benchmark.bm(7) do |x|
-      x.report('create') { test_repository.persist(trees) }
-      x.report('update') { test_repository.persist(trees) }
-      x.report('load') { test_repository.load_many(TreeDB.where(id: trees.map(&:id)).all) }
-      x.report('destroy') { test_repository.destroy(trees) }
+      x.report('create') { test_mapper.persist(trees) }
+      x.report('update') { test_mapper.persist(trees) }
+      x.report('load') { test_mapper.load_many(TreeDB.where(id: trees.map(&:id)).all) }
+      x.report('destroy') { test_mapper.destroy(trees) }
     end
   end
 
@@ -104,39 +104,39 @@ describe 'performance' do
 
     puts 'starting persistence benchmark'
     puts Benchmark.measure {
-      test_repository.persist(trees)
+      test_mapper.persist(trees)
     }
   end
 
   it 'updates aggregates quickly' do
     trees = build_trees(1000)
 
-    test_repository.persist(trees)
+    test_mapper.persist(trees)
 
     puts 'starting update benchmark'
     puts Benchmark.measure {
-      test_repository.persist(trees)
+      test_mapper.persist(trees)
     }
   end
 
   it 'loads aggregates quickly' do
     trees = build_trees(1000)
-    test_repository.persist(trees)
+    test_mapper.persist(trees)
     ids = trees.map(&:id)
 
     puts 'starting loading benchmark'
     puts Benchmark.measure {
-      test_repository.load_many(TreeDB.where(id: ids).all)
+      test_mapper.load_many(TreeDB.where(id: ids).all)
     }
   end
 
   it 'destroys aggregates quickly' do
     trees = build_trees(1000)
-    test_repository.persist(trees)
+    test_mapper.persist(trees)
 
     puts 'starting destruction benchmark'
     puts Benchmark.measure {
-      test_repository.destroy(trees)
+      test_mapper.destroy(trees)
     }
   end
 
