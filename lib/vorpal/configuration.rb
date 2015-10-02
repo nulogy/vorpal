@@ -6,7 +6,7 @@ module Vorpal
 
     # Configures and creates a {Engine} instance.
     #
-    # @param options [Hash] Global configuration options for the repository instance.
+    # @param options [Hash] Global configuration options for the engine instance.
     # @option options [Object] :db_driver (Object that will be used to interact with the DB.)
     #  Must be duck-type compatible with {DbDriver}.
     #

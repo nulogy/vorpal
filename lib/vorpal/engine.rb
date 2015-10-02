@@ -12,11 +12,11 @@ module Vorpal
       @configs = master_config
     end
 
-    # Creates a repository for saving/updating/loading/destroying an aggregate to/from
+    # Creates a mapper for saving/updating/loading/destroying an aggregate to/from
     # the DB. It is possible to use the methods directly on the {Engine}.
     #
     # @param domain_class [Class] Class of the root of the aggregate.
-    # @return [AggregateMapper] Repository suitable for mapping a single aggregate.
+    # @return [AggregateMapper] Mapper suitable for mapping a single aggregate.
     def mapper_for(domain_class)
       AggregateMapper.new(domain_class, self)
     end

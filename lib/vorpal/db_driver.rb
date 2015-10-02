@@ -88,30 +88,30 @@ module Vorpal
   end
 
   class ArelQueryMethods < Module
-    def initialize(repository)
-      @repository = repository
+    def initialize(mapper)
+      @mapper = mapper
     end
 
     def extended(descendant)
       super
       descendant.extend(Methods)
-      descendant.vorpal_aggregate_repository = @repository
+      descendant.vorpal_aggregate_mapper = @mapper
     end
 
     # Methods in this module will appear on any composable
     module Methods
-      attr_writer :vorpal_aggregate_repository
+      attr_writer :vorpal_aggregate_mapper
 
       # See {AggregateMapper#load_many}.
       def load_many
         db_roots = self.all
-        @vorpal_aggregate_repository.load_many(db_roots)
+        @vorpal_aggregate_mapper.load_many(db_roots)
       end
 
       # See {AggregateMapper#load_one}.
       def load_one
         db_root = self.first
-        @vorpal_aggregate_repository.load_one(db_root)
+        @vorpal_aggregate_mapper.load_one(db_root)
       end
     end
   end

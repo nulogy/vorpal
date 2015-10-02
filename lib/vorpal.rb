@@ -22,7 +22,7 @@ require "vorpal/configuration"
 #   end
 # end
 #
-# repository = engine.mapper_for(Tree)
+# mapper = engine.mapper_for(Tree)
 # ```
 module Vorpal
   extend Vorpal::Configuration

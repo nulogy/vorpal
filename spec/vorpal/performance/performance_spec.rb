@@ -74,7 +74,7 @@ describe 'performance' do
     TrunkDB = defineAr('trunks_perf')
   end
 
-  let(:test_mapper) { build_repository }
+  let(:test_mapper) { build_mapper }
 
   # Vorpal 0.0.5:
   #               user     system      total        real
@@ -162,7 +162,7 @@ describe 'performance' do
     bug_home.bugs = [bug]
   end
 
-  def build_repository
+  def build_mapper
     engine = Vorpal.define do
       map Tree do
         attributes :name
