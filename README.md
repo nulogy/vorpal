@@ -25,6 +25,8 @@ We say 'framelet' because it doesn't attempt to give you all the goodies that OR
 
 This last point is incredibly important because applications that grow organically can get very far without needing to separate persistence and domain logic. But when they do, Vorpal will play nicely with all that legacy code.
 
+For more details on why we created Vorpal, see [The Pitch](https://github.com/nulogy/vorpal/wiki#the-pitch).
+
 ## Installation
 
 Add this line to your application's Gemfile:
