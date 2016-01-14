@@ -1,10 +1,9 @@
 require 'active_record'
-require 'pg' # or 'mysql2' or 'sqlite3'
-# require 'logger'
+require 'pg'
 
 # Change the following to reflect your database settings
 ActiveRecord::Base.establish_connection(
-  adapter:  'postgresql', # or 'mysql2' or 'sqlite3'
+  adapter:  'postgresql',
   host:     'localhost',
   database: 'vorpal_test',
   username: 'vorpal',
@@ -18,21 +17,27 @@ RSpec.configure do |config|
   config.include DbHelpers
 
   # implements `use_transactional_fixtures = true`
-  # from lib/active_record/fixtures.rb
-  # works with Rails 3.2. Probably not with Rails 4
   config.before(:each) do
-    # ActiveRecord::Base.logger = Logger.new(STDOUT)
     connection = ActiveRecord::Base.connection
-    connection.increment_open_transactions
-    connection.transaction_joinable = false
-    connection.begin_db_transaction
+    if ActiveRecord::VERSION::MAJOR == 3
+      # from lib/active_record/fixtures.rb
+      connection.increment_open_transactions
+      connection.transaction_joinable = false
+      connection.begin_db_transaction
+    else
+      connection.begin_transaction(joinable: false)
+    end
   end
 
   config.after(:each) do
     connection = ActiveRecord::Base.connection
-    if connection.open_transactions != 0
-      connection.rollback_db_transaction
-      connection.decrement_open_transactions
+    if ActiveRecord::VERSION::MAJOR == 3
+      if connection.open_transactions != 0
+        connection.rollback_db_transaction
+        connection.decrement_open_transactions
+      end
+    else
+      connection.rollback_transaction if connection.transaction_open?
     end
     ActiveRecord::Base.clear_active_connections!
   end
