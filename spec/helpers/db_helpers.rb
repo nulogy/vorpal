@@ -1,8 +1,37 @@
 module DbHelpers
+  module_function
+
+  CONNECTION_SETTINGS = {
+    adapter: 'postgresql',
+    host: 'localhost',
+    database: 'vorpal_test',
+    min_messages: 'error',
+    # Change the following to reflect your database settings
+    # username: 'vorpal',
+    # password: 'pass',
+  }
+
+  def ensure_database_exists
+    test_database_name = CONNECTION_SETTINGS.fetch(:database)
+    ActiveRecord::Base.establish_connection(CONNECTION_SETTINGS.except(:database))
+
+    if db_connection.exec_query("SELECT 1 from pg_database WHERE datname='#{test_database_name}';").none?
+      db_connection.create_database test_database_name
+    end
+  end
+
+  def db_connection
+    ActiveRecord::Base.connection
+  end
+
+  def establish_connection
+    ActiveRecord::Base.establish_connection(CONNECTION_SETTINGS)
+  end
+
   # when you change a table's columns, set force to true to re-generate the table in the DB
   def define_table(table_name, columns, force)
-    if !ActiveRecord::Base.connection.table_exists?(table_name) || force
-      ActiveRecord::Base.connection.create_table(table_name, force: true) do |t|
+    if !db_connection.table_exists?(table_name) || force
+      db_connection.create_table(table_name, force: true) do |t|
         columns.each do |name, type|
           t.send(type, name)
         end

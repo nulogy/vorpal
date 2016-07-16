@@ -1,17 +1,9 @@
 require 'active_record'
 require 'pg'
-
-# Change the following to reflect your database settings
-ActiveRecord::Base.establish_connection(
-  adapter:  'postgresql',
-  host:     'localhost',
-  database: 'vorpal_test',
-  # username: 'vorpal',
-  # password: 'pass',
-  min_messages: 'error'
-)
-
 require 'helpers/db_helpers'
+
+DbHelpers.ensure_database_exists
+DbHelpers.establish_connection
 
 RSpec.configure do |config|
   config.include DbHelpers
