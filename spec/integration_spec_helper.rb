@@ -6,8 +6,8 @@ ActiveRecord::Base.establish_connection(
   adapter:  'postgresql',
   host:     'localhost',
   database: 'vorpal_test',
-  username: 'vorpal',
-  password: 'pass',
+  # username: 'vorpal',
+  # password: 'pass',
   min_messages: 'error'
 )
 
