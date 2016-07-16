@@ -129,7 +129,9 @@ module Vorpal
     end
 
     def child_class(association_name)
-      ActiveSupport::Inflector.constantize(ActiveSupport::Inflector.classify(association_name.to_s))
+      # Module#parent comes from 'active_support/core_ext/module/introspection'
+      parent_module = @domain_class.parent
+      parent_module.const_get(ActiveSupport::Inflector.classify(association_name.to_s))
     end
 
     def build_has_ones

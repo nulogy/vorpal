@@ -3,6 +3,7 @@ require 'vorpal'
 require 'virtus'
 require 'activerecord-import/base'
 
+module Performance
 describe 'performance' do
 
   class Bug
@@ -190,4 +191,5 @@ describe 'performance' do
     end
     engine.mapper_for(Tree)
   end
+end
 end
