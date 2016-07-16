@@ -65,7 +65,7 @@ describe Vorpal::ConfigBuilder do
     end
 
     after do
-      A::B::C.send(:remove_const, :"TestDB") if defined? A::B::C::TestDB
+      A::B::C.undefine_test_db_class
     end
   end
 
@@ -76,6 +76,10 @@ describe Vorpal::ConfigBuilder do
       module C
         class Test
 
+        end
+
+        def self.undefine_test_db_class
+          remove_const :"TestDB" if const_defined?("A::B::C::TestDB")
         end
       end
     end
