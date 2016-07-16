@@ -101,7 +101,7 @@ module Vorpal
     private
 
     def db_class_name
-      @domain_class.name.split('::').last + 'DB'
+      ActiveSupport::Inflector.demodulize(@domain_class.name) + 'DB'
     end
 
     def build_class_config
@@ -125,7 +125,7 @@ module Vorpal
     end
 
     def foreign_key(name)
-      ActiveSupport::Inflector.underscore(name.to_s) + '_id'
+      ActiveSupport::Inflector.foreign_key(name.to_s)
     end
 
     def child_class(association_name)
