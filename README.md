@@ -237,8 +237,8 @@ For example:
 
 1. Start a PostgreSQL server.
 2. Either:
-  * Create a DB user called `vorpal` with password `pass` and a DB called `vorpal_test`. OR:
-  * Modify `spec/integration_spec_helper.rb`.
+  * Create a DB user called `vorpal` with password `pass`. OR:
+  * Modify `spec/helpers/db_helpers.rb`.
 3. Run `rake` from the terminal.
 
 ## Contributors

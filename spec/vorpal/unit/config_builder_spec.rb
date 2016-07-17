@@ -43,7 +43,7 @@ describe Vorpal::ConfigBuilder do
     end
 
     it 'does not redefine constants' do
-      stub_const('A::B::C::TestDB', 1)
+      A::B::C::TestDB = 1
 
       builder = Vorpal::ConfigBuilder.new(A::B::C::Test, {}, nil)
 
@@ -51,6 +51,21 @@ describe Vorpal::ConfigBuilder do
 
       expect(A::B::C::TestDB).to eq(1)
       expect(db_class).to eq(1)
+    end
+
+    it 'defines a new db_class even when the same name exists at the root namespace' do
+      stub_const('TestDB', 1)
+      driver = instance_double(Vorpal::DbDriver)
+      expect(driver).to receive(:build_db_class).and_return(99)
+      builder = Vorpal::ConfigBuilder.new(A::B::C::Test, {}, driver)
+
+      builder.build_db_class
+
+      expect(A::B::C::TestDB).to eq(99)
+    end
+
+    after do
+      A::B::C.undefine_test_db_class
     end
   end
 
@@ -61,6 +76,10 @@ describe Vorpal::ConfigBuilder do
       module C
         class Test
 
+        end
+
+        def self.undefine_test_db_class
+          remove_const :"TestDB" if const_defined?("A::B::C::TestDB")
         end
       end
     end
