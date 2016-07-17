@@ -3,6 +3,7 @@ require 'vorpal/aggregate_utils'
 require 'vorpal/db_loader'
 require 'vorpal/db_driver'
 require 'vorpal/aggregate_mapper'
+require 'vorpal/exceptions'
 
 module Vorpal
   class Engine
@@ -232,10 +233,5 @@ module Vorpal
       objects ||= []
       objects.each { |object| object.id = nil }
     end
-  end
-
-  class InvalidPrimaryKeyValue < StandardError
-  end
-  class InvalidAggregateRoot < StandardError
   end
 end
