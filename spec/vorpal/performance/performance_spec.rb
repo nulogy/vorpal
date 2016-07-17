@@ -63,16 +63,9 @@ describe 'performance' do
 
   before(:all) do
     define_table('branches_perf', {length: :decimal, tree_id: :integer, branch_id: :integer}, false)
-    BranchDB = defineAr('branches_perf')
-
     define_table('bugs_perf', {name: :text, lives_on_id: :integer, lives_on_type: :string}, false)
-    BugDB = defineAr('bugs_perf')
-
     define_table('trees_perf', {name: :text, trunk_id: :integer}, false)
-    TreeDB = defineAr('trees_perf')
-
     define_table('trunks_perf', {length: :decimal}, false)
-    TrunkDB = defineAr('trunks_perf')
   end
 
   let(:tree_mapper) { build_mapper }
@@ -165,26 +158,26 @@ describe 'performance' do
 
   def build_mapper
     engine = Vorpal.define do
-      map Tree do
+      map Tree, table_name: "trees_perf" do
         attributes :name
         belongs_to :trunk
         has_many :branches
       end
 
-      map Trunk do
+      map Trunk, table_name: "trunks_perf" do
         attributes :length
         has_one :tree
         has_many :bugs, fk: :lives_on_id, fk_type: :lives_on_type
       end
 
-      map Branch do
+      map Branch, table_name: "branches_perf" do
         attributes :length
         belongs_to :tree
         has_many :bugs, fk: :lives_on_id, fk_type: :lives_on_type
         has_many :branches
       end
 
-      map Bug do
+      map Bug, table_name: "bugs_perf" do
         attributes :name
         belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
       end

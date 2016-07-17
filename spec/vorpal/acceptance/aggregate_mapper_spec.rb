@@ -65,7 +65,7 @@ describe 'AggregateMapper' do
       tree = Tree.new(name: 'backyard tree')
       test_mapper.persist(tree)
 
-      tree_db = TreeDB.first
+      tree_db = db_class_for(Tree, test_mapper).first
       expect(tree_db.name).to eq 'backyard tree'
     end
 
@@ -77,7 +77,7 @@ describe 'AggregateMapper' do
 
       expect(tree.id).to_not be nil
 
-      tree_db = TreeDB.first
+      tree_db = db_class_for(Tree, test_mapper).first
       expect(tree_db.id).to eq tree.id
     end
 
@@ -98,7 +98,7 @@ describe 'AggregateMapper' do
       db_driver = Vorpal::DbDriver.new
       test_mapper = configure(db_driver: db_driver)
 
-      tree_db = TreeDB.create!
+      tree_db = db_class_for(Tree, test_mapper).create!
 
       expect(db_driver).to receive(:update).and_raise('not so good')
 
@@ -124,7 +124,7 @@ describe 'AggregateMapper' do
       tree.name = 'big tree'
       test_mapper.persist(tree)
 
-      tree_db = TreeDB.first
+      tree_db = db_class_for(Tree, test_mapper).first
       expect(tree_db.name).to eq 'big tree'
     end
 
@@ -151,40 +151,40 @@ describe 'AggregateMapper' do
       tree.name = 'change it'
       test_mapper.persist(tree)
 
-      expect(TreeDB.count).to eq 1
+      expect(db_class_for(Tree, test_mapper).count).to eq 1
     end
 
     it 'removes orphans' do
       test_mapper = configure
 
-      tree_db = TreeDB.create!
-      BranchDB.create!(tree_id: tree_db.id)
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
 
       tree = Tree.new(id: tree_db.id, branches: [])
 
       test_mapper.persist(tree)
 
-      expect(BranchDB.count).to eq 0
+      expect(db_class_for(Branch, test_mapper).count).to eq 0
     end
 
     it 'does not remove orphans from unowned associations' do
       test_mapper = configure_unowned
 
-      tree_db = TreeDB.create!
-      BranchDB.create!(tree_id: tree_db.id)
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
 
       tree = Tree.new(id: tree_db.id, branches: [])
 
       test_mapper.persist(tree)
 
-      expect(BranchDB.count).to eq 1
+      expect(db_class_for(Branch, test_mapper).count).to eq 1
     end
   end
 
   it 'copies attributes to domain' do
     test_mapper = configure
 
-    tree_db = TreeDB.create! name: 'tree name'
+    tree_db = db_class_for(Tree, test_mapper).create! name: 'tree name'
     tree = test_mapper.load_one(tree_db)
 
     expect(tree.id).to eq tree_db.id
@@ -194,7 +194,7 @@ describe 'AggregateMapper' do
   it 'hydrates ActiveRecord::Base associations' do
     test_mapper = configure
 
-    tree_db = TreeDB.create!
+    tree_db = db_class_for(Tree, test_mapper).create!
     Fissure.create! length: 21, tree_id: tree_db.id
 
     tree = test_mapper.load_one(tree_db)
@@ -212,14 +212,14 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(tree)
 
-      expect(TreeDB.count).to eq 1
+      expect(db_class_for(Tree, test_mapper).count).to eq 1
     end
 
     it 'hydrates' do
       test_mapper = configure_with_cycle
 
-      tree_db = TreeDB.create!
-      BranchDB.create!(length: 50, tree_id: tree_db.id)
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(length: 50, tree_id: tree_db.id)
 
       tree = test_mapper.load_one(tree_db)
 
@@ -239,15 +239,15 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(tree)
 
-      expect(BranchDB.count).to eq 2
+      expect(db_class_for(Branch, test_mapper).count).to eq 2
     end
 
     it 'hydrates' do
       test_mapper = configure_recursive
 
-      tree_db = TreeDB.create!
-      long_branch = BranchDB.create!(length: 100, tree_id: tree_db.id)
-      BranchDB.create!(length: 50, branch_id: long_branch.id)
+      tree_db = db_class_for(Tree, test_mapper).create!
+      long_branch = db_class_for(Branch, test_mapper).create!(length: 100, tree_id: tree_db.id)
+      db_class_for(Branch, test_mapper).create!(length: 50, branch_id: long_branch.id)
 
       tree = test_mapper.load_one(tree_db)
 
@@ -263,7 +263,7 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(tree)
 
-      trunk_db = TrunkDB.first
+      trunk_db = db_class_for(Trunk, test_mapper).first
       expect(trunk_db.length).to eq 12
     end
 
@@ -274,7 +274,7 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(tree)
 
-      tree_db = TreeDB.first
+      tree_db = db_class_for(Tree, test_mapper).first
       expect(tree_db.trunk_id).to eq trunk.id
     end
 
@@ -287,7 +287,7 @@ describe 'AggregateMapper' do
 
       trunk.length = 21
 
-      expect{ test_mapper.persist(tree) }.to_not change{ TrunkDB.count }
+      expect{ test_mapper.persist(tree) }.to_not change{ db_class_for(Trunk, test_mapper).count }
     end
 
     it 'only saves entities that are owned' do
@@ -298,13 +298,13 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(tree)
 
-      expect(TrunkDB.count).to eq 0
+      expect(db_class_for(Trunk, test_mapper).count).to eq 0
     end
 
     it 'hydrates' do
       test_mapper = configure
-      trunk_db = TrunkDB.create!(length: 21)
-      tree_db = TreeDB.create!(trunk_id: trunk_db.id)
+      trunk_db = db_class_for(Trunk, test_mapper).create!(length: 21)
+      tree_db = db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
 
       new_tree = test_mapper.load_one(tree_db)
       expect(new_tree.trunk.length).to eq 21
@@ -320,7 +320,7 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(tree)
 
-      branches = BranchDB.all
+      branches = db_class_for(Branch, test_mapper).all
       expect(branches.size).to eq 2
       expect(branches.first.length).to eq 100
       expect(branches.second.length).to eq 3
@@ -333,7 +333,7 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(tree)
 
-      branches = BranchDB.all
+      branches = db_class_for(Branch, test_mapper).all
       expect(branches.first.tree_id).to eq tree.id
     end
 
@@ -349,7 +349,7 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(tree)
 
-      branches = BranchDB.all
+      branches = db_class_for(Branch, test_mapper).all
       expect(branches.first.length).to eq 120
     end
 
@@ -362,14 +362,14 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(tree)
 
-      expect(BranchDB.count).to eq 0
+      expect(db_class_for(Branch, test_mapper).count).to eq 0
     end
 
     it 'hydrates' do
       test_mapper = configure
 
-      tree_db = TreeDB.create!
-      BranchDB.create!(length: 50, tree_id: tree_db.id)
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(length: 50, tree_id: tree_db.id)
 
       tree = test_mapper.load_one(tree_db)
 
@@ -385,7 +385,7 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(trunk)
 
-      expect(TreeDB.first.name).to eq 'big tree'
+      expect(db_class_for(Tree, test_mapper).first.name).to eq 'big tree'
     end
 
     it 'saves foreign keys' do
@@ -395,7 +395,7 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(trunk)
 
-      expect(TreeDB.first.trunk_id).to eq trunk.id
+      expect(db_class_for(Tree, test_mapper).first.trunk_id).to eq trunk.id
     end
 
     it 'only saves entities that are owned' do
@@ -405,14 +405,14 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(trunk)
 
-      expect(TreeDB.count).to eq 0
+      expect(db_class_for(Tree, test_mapper).count).to eq 0
     end
 
     it 'hydrates' do
       test_mapper = configure_has_one
 
-      trunk_db = TrunkDB.create!
-      TreeDB.create!(name: 'big tree', trunk_id: trunk_db.id)
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      db_class_for(Tree, test_mapper).create!(name: 'big tree', trunk_id: trunk_db.id)
 
       trunk = test_mapper.load_one(trunk_db)
 
@@ -434,17 +434,17 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(tree)
 
-      expect(BugDB.find(trunk_bug.id).lives_on_type).to eq Trunk.name
-      expect(BugDB.find(branch_bug.id).lives_on_type).to eq Branch.name
+      expect(db_class_for(Bug, test_mapper).find(trunk_bug.id).lives_on_type).to eq Trunk.name
+      expect(db_class_for(Bug, test_mapper).find(branch_bug.id).lives_on_type).to eq Branch.name
     end
 
     it 'restores with has_manys' do
       test_mapper = configure_polymorphic_has_many
 
-      trunk_db = TrunkDB.create!
-      tree_db = TreeDB.create!(trunk_id: trunk_db.id)
-      BugDB.create!(name: 'trunk bug', lives_on_id: trunk_db.id, lives_on_type: Trunk.name)
-      BugDB.create!(name: 'not a trunk bug!', lives_on_id: trunk_db.id, lives_on_type: 'some other table')
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
+      db_class_for(Bug, test_mapper).create!(name: 'trunk bug', lives_on_id: trunk_db.id, lives_on_type: Trunk.name)
+      db_class_for(Bug, test_mapper).create!(name: 'not a trunk bug!', lives_on_id: trunk_db.id, lives_on_type: 'some other table')
 
       tree = test_mapper.load_one(tree_db)
 
@@ -459,8 +459,8 @@ describe 'AggregateMapper' do
 
       test_mapper.persist([trunk_bug, branch_bug])
 
-      expect(BugDB.find(trunk_bug.id).lives_on_type).to eq Trunk.name
-      expect(BugDB.find(branch_bug.id).lives_on_type).to eq Branch.name
+      expect(db_class_for(Bug, test_mapper).find(trunk_bug.id).lives_on_type).to eq Trunk.name
+      expect(db_class_for(Bug, test_mapper).find(branch_bug.id).lives_on_type).to eq Branch.name
     end
 
     it 'saves associations to unowned entities via belongs_to' do
@@ -471,7 +471,7 @@ describe 'AggregateMapper' do
 
       test_mapper.persist(trunk_bug)
 
-      expect(BugDB.find(trunk_bug.id).lives_on_type).to eq Trunk.name
+      expect(db_class_for(Bug, test_mapper).find(trunk_bug.id).lives_on_type).to eq Trunk.name
     end
 
     it 'restores with belongs_tos' do
@@ -479,14 +479,14 @@ describe 'AggregateMapper' do
 
       # makes sure that we are using the fk_type to discriminate against
       # two entities with the same primary key value
-      trunk_db = TrunkDB.new(length: 99)
+      trunk_db = db_class_for(Trunk, test_mapper).new(length: 99)
       trunk_db.id = 99
       trunk_db.save!
-      trunk_bug_db = BugDB.create!(lives_on_id: trunk_db.id, lives_on_type: Trunk.name)
-      branch_db = BranchDB.new(length: 5)
+      trunk_bug_db = db_class_for(Bug, test_mapper).create!(lives_on_id: trunk_db.id, lives_on_type: Trunk.name)
+      branch_db = db_class_for(Branch, test_mapper).new(length: 5)
       branch_db.id = 99
       branch_db.save!
-      branch_bug_db = BugDB.create!(lives_on_id: branch_db.id, lives_on_type: Branch.name)
+      branch_bug_db = db_class_for(Bug, test_mapper).create!(lives_on_id: branch_db.id, lives_on_type: Branch.name)
 
       trunk_bug, branch_bug = test_mapper.load_many([trunk_bug_db, branch_bug_db])
 
@@ -498,7 +498,7 @@ describe 'AggregateMapper' do
       test_mapper = configure_ar_polymorphic_belongs_to
 
       swamp = Swamp.create!
-      tree_db = TreeDB.create!(environment_id: swamp.id, environment_type: Swamp.name)
+      tree_db = db_class_for(Tree, test_mapper).create!(environment_id: swamp.id, environment_type: Swamp.name)
 
       tree = test_mapper.load_one(tree_db)
 
@@ -510,8 +510,8 @@ describe 'AggregateMapper' do
     it 'loads many' do
       test_mapper = configure
 
-      TreeDB.create!
-      tree_db = TreeDB.create!
+      db_class_for(Tree, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!
 
       trees = test_mapper.query.where(id: tree_db.id).load_many
 
@@ -521,8 +521,8 @@ describe 'AggregateMapper' do
     it 'loads one' do
       test_mapper = configure
 
-      TreeDB.create!
-      tree_db = TreeDB.create!
+      db_class_for(Tree, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!
 
       trees = test_mapper.query.where(id: tree_db.id).load_one
 
@@ -534,8 +534,8 @@ describe 'AggregateMapper' do
     it 'maps given db objects' do
       test_mapper = configure
 
-      TreeDB.create!
-      tree_db = TreeDB.create!
+      db_class_for(Tree, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!
 
       trees = test_mapper.load_many([tree_db])
 
@@ -545,9 +545,9 @@ describe 'AggregateMapper' do
     it 'only returns roots' do
       test_mapper = configure
 
-      TreeDB.create!
-      tree_db = TreeDB.create!
-      BranchDB.create!(tree_id: tree_db.id)
+      db_class_for(Tree, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
 
       trees = test_mapper.load_many([tree_db])
 
@@ -559,39 +559,39 @@ describe 'AggregateMapper' do
     it 'removes the entity from the database' do
       test_mapper = configure
 
-      tree_db = TreeDB.create!
+      tree_db = db_class_for(Tree, test_mapper).create!
 
       test_mapper.destroy([Tree.new(id: tree_db.id)])
 
-      expect(TreeDB.count).to eq 0
+      expect(db_class_for(Tree, test_mapper).count).to eq 0
     end
 
     it 'removes has many children from the database' do
       test_mapper = configure
 
-      tree_db = TreeDB.create!
-      BranchDB.create!(tree_id: tree_db.id)
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
 
       test_mapper.destroy(Tree.new(id: tree_db.id))
 
-      expect(BranchDB.count).to eq 0
+      expect(db_class_for(Branch, test_mapper).count).to eq 0
     end
 
     it 'removes belongs to children from the database' do
       test_mapper = configure
 
-      trunk_db = TrunkDB.create!
-      tree_db = TreeDB.create!(trunk_id: trunk_db.id)
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
 
       test_mapper.destroy(Tree.new(id: tree_db.id))
 
-      expect(TrunkDB.count).to eq 0
+      expect(db_class_for(Trunk, test_mapper).count).to eq 0
     end
 
     it 'removes AR children from the database' do
       test_mapper = configure
 
-      tree_db = TreeDB.create!
+      tree_db = db_class_for(Tree, test_mapper).create!
       Fissure.create!(tree_id: tree_db.id)
 
       test_mapper.destroy(Tree.new(id: tree_db.id))
@@ -602,23 +602,23 @@ describe 'AggregateMapper' do
     it 'leaves unowned belongs to children in the database' do
       test_mapper = configure_unowned
 
-      trunk_db = TrunkDB.create!
-      tree_db = TreeDB.create!(trunk_id: trunk_db.id)
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
 
       test_mapper.destroy(Tree.new(id: tree_db.id))
 
-      expect(TrunkDB.count).to eq 1
+      expect(db_class_for(Trunk, test_mapper).count).to eq 1
     end
 
     it 'leaves unowned has many children in the database' do
       test_mapper = configure_unowned
 
-      tree_db = TreeDB.create!
-      BranchDB.create!(tree_id: tree_db.id)
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
 
       test_mapper.destroy(Tree.new(id: tree_db.id))
 
-      expect(BranchDB.count).to eq 1
+      expect(db_class_for(Branch, test_mapper).count).to eq 1
     end
   end
 
@@ -626,11 +626,11 @@ describe 'AggregateMapper' do
     it 'removes the entity from the database' do
       test_mapper = configure
 
-      tree_db = TreeDB.create!
+      tree_db = db_class_for(Tree, test_mapper).create!
 
       test_mapper.destroy_by_id([tree_db.id])
 
-      expect(TreeDB.count).to eq 0
+      expect(db_class_for(Tree, test_mapper).count).to eq 0
     end
   end
 
@@ -732,6 +732,10 @@ describe 'AggregateMapper' do
   end
 
 private
+
+  def db_class_for(clazz, mapper)
+    mapper.engine.mapper_for(clazz).db_class
+  end
 
   def configure_polymorphic_has_many
     engine = Vorpal.define do
