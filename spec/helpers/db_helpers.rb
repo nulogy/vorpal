@@ -13,11 +13,15 @@ module DbHelpers
 
   def ensure_database_exists
     test_database_name = CONNECTION_SETTINGS.fetch(:database)
-    ActiveRecord::Base.establish_connection(CONNECTION_SETTINGS.except(:database))
-
-    if db_connection.exec_query("SELECT 1 from pg_database WHERE datname='#{test_database_name}';").none?
-      db_connection.create_database test_database_name
+    if !db_exists?(test_database_name)
+      db_connection.create_database(test_database_name)
     end
+  end
+
+  def db_exists?(db_name)
+    ActiveRecord::Base.establish_connection(CONNECTION_SETTINGS.merge(database: 'template1'))
+
+    return db_connection.exec_query("SELECT 1 from pg_database WHERE datname='#{db_name}';").present?
   end
 
   def db_connection
