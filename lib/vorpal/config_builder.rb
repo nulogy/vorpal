@@ -90,7 +90,7 @@ module Vorpal
       # Module#parent comes from 'active_support/core_ext/module/introspection'
       parent_module = @domain_class.parent
 
-      return parent_module.const_get(db_class_name) if Object.const_defined?(fully_qualified_db_class_name)
+      return parent_module.const_get(db_class_name) if parent_module.const_defined?(db_class_name, false)
 
       db_class = @db_driver.build_db_class(table_name)
       parent_module.const_set(db_class_name, db_class)
@@ -102,10 +102,6 @@ module Vorpal
 
     def db_class_name
       ActiveSupport::Inflector.demodulize(@domain_class.name) + 'DB'
-    end
-
-    def fully_qualified_db_class_name
-      @domain_class.name + 'DB'
     end
 
     def build_class_config
