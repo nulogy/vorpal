@@ -28,6 +28,7 @@ module Vorpal
     def key(key_object)
       return nil unless key_object
       raise "Cannot put entity '#{key_object.inspect}' into IdentityMap without an id." if key_object.id.nil?
+      raise "Cannot put entity '#{key_object.inspect}' into IdentityMap without a Class with a name." if key_object.class.name.nil?
       [key_object.id, key_object.class.name]
     end
   end

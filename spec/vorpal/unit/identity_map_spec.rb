@@ -5,7 +5,7 @@ require 'vorpal/identity_map'
 describe Vorpal::IdentityMap do
   let(:map) { Vorpal::IdentityMap.new }
 
-  it 'does not rely on the key objects implementation of hash and eql?' do
+  it "does not rely on the key object's implementation of hash and eql?" do
     funny1 = build_funny_entity(1)
     map.set(funny1, 'funny 1')
 
@@ -15,8 +15,19 @@ describe Vorpal::IdentityMap do
     expect(map.get(funny1)).to eq('funny 1')
   end
 
-  it 'raises an exception when the key object does not have an id set' do
+  it "raises an exception when the key object does not have an id set" do
     entity = build_entity(nil)
+
+    expect { map.set(entity, 'something') }.to raise_error(/Cannot put entity/)
+  end
+
+  it 'raises an exception when the key object extends a class with no name (such as anonymous classes)' do
+    anonymous_class = Class.new do
+      attr_accessor :id
+    end
+
+    entity = anonymous_class.new
+    entity.id = 1
 
     expect { map.set(entity, 'something') }.to raise_error(/Cannot put entity/)
   end
