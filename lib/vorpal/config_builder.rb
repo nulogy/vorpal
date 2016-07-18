@@ -87,15 +87,7 @@ module Vorpal
 
     # @private
     def build_db_class
-      # Module#parent comes from 'active_support/core_ext/module/introspection'
-      parent_module = @domain_class.parent
-
-      return parent_module.const_get(db_class_name) if parent_module.const_defined?(db_class_name, false)
-
-      db_class = @db_driver.build_db_class(table_name)
-      parent_module.const_set(db_class_name, db_class)
-
-      db_class
+      @db_driver.build_db_class(table_name)
     end
 
     private
