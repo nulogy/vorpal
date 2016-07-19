@@ -85,15 +85,10 @@ module Vorpal
       @class_options[:table_name] || ActiveSupport::Inflector.tableize(@domain_class.name)
     end
 
-    # @private
-    def build_db_class
-      @db_driver.build_db_class(table_name)
-    end
-
     private
 
-    def db_class_name
-      ActiveSupport::Inflector.demodulize(@domain_class.name) + 'DB'
+    def build_db_class
+      @db_driver.build_db_class(table_name)
     end
 
     def build_class_config
