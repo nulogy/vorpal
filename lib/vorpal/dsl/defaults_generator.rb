@@ -4,6 +4,7 @@ require 'active_support/inflector/methods'
 require 'active_support/core_ext/module/introspection'
 
 module Vorpal
+  module Dsl
   class DefaultsGenerator
     def initialize(domain_class, db_driver)
       @domain_class = domain_class
@@ -39,5 +40,6 @@ module Vorpal
       parent_module = @domain_class.parent
       parent_module.const_get(ActiveSupport::Inflector.classify(association_name.to_s))
     end
+  end
   end
 end

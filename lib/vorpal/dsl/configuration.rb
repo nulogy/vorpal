@@ -1,7 +1,8 @@
 require 'vorpal/engine'
-require 'vorpal/config_builder'
+require 'vorpal/dsl/config_builder'
 
 module Vorpal
+  module Dsl
   module Configuration
 
     # Configures and creates a {Engine} instance.
@@ -50,5 +51,6 @@ module Vorpal
       self.instance_exec(&block)
       MasterConfig.new(@class_configs)
     end
+  end
   end
 end

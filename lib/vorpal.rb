@@ -1,5 +1,5 @@
 require "vorpal/version"
-require "vorpal/configuration"
+require "vorpal/dsl/configuration"
 
 # Allows easy creation of {Vorpal::Engine} instances.
 #
@@ -25,5 +25,5 @@ require "vorpal/configuration"
 # mapper = engine.mapper_for(Tree)
 # ```
 module Vorpal
-  extend Vorpal::Configuration
+  extend Vorpal::Dsl::Configuration
 end

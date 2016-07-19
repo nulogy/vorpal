@@ -1,9 +1,9 @@
 require 'unit_spec_helper'
 
-require 'vorpal/defaults_generator'
+require 'vorpal/dsl/defaults_generator'
 require 'vorpal/db_driver'
 
-describe Vorpal::DefaultsGenerator do
+describe Vorpal::Dsl::DefaultsGenerator do
   class Tester; end
   class Author; end
   module Namespace
@@ -70,6 +70,6 @@ describe Vorpal::DefaultsGenerator do
   end
 
   def build_generator(domain_clazz)
-    Vorpal::DefaultsGenerator.new(domain_clazz, db_driver)
+    Vorpal::Dsl::DefaultsGenerator.new(domain_clazz, db_driver)
   end
 end

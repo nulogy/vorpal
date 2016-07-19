@@ -1,7 +1,8 @@
 require 'vorpal/configs'
-require 'vorpal/defaults_generator'
+require 'vorpal/dsl/defaults_generator'
 
 module Vorpal
+  module Dsl
   class ConfigBuilder
 
     # @private
@@ -121,5 +122,6 @@ module Vorpal
       options[:owned] = options.fetch(:owned, true)
       Vorpal::BelongsToConfig.new(options)
     end
+  end
   end
 end

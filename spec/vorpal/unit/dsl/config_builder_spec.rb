@@ -1,12 +1,12 @@
 require 'unit_spec_helper'
 
-require 'vorpal/config_builder'
+require 'vorpal/dsl/config_builder'
 require 'vorpal/db_driver'
 
-describe Vorpal::ConfigBuilder do
+describe Vorpal::Dsl::ConfigBuilder do
   class Tester; end
 
-  let(:builder) { Vorpal::ConfigBuilder.new(Tester, {}, nil) }
+  let(:builder) { Vorpal::Dsl::ConfigBuilder.new(Tester, {}, nil) }
 
   describe 'mapping attributes' do
     it 'allows the \'attributes\' method to be called multiple times' do
