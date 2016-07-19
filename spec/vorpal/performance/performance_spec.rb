@@ -100,46 +100,46 @@ describe 'performance' do
     end
   end
 
-  it 'creates aggregates quickly' do
-    trees = build_trees(1000)
-
-    puts 'starting persistence benchmark'
-    puts Benchmark.measure {
-      tree_mapper.persist(trees)
-    }
-  end
-
-  it 'updates aggregates quickly' do
-    trees = build_trees(1000)
-
-    tree_mapper.persist(trees)
-
-    puts 'starting update benchmark'
-    puts Benchmark.measure {
-      tree_mapper.persist(trees)
-    }
-  end
-
-  it 'loads aggregates quickly' do
-    trees = build_trees(1000)
-    tree_mapper.persist(trees)
-    ids = trees.map(&:id)
-
-    puts 'starting loading benchmark'
-    puts Benchmark.measure {
-      tree_mapper.query.where(id: ids).load_many
-    }
-  end
-
-  it 'destroys aggregates quickly' do
-    trees = build_trees(1000)
-    tree_mapper.persist(trees)
-
-    puts 'starting destruction benchmark'
-    puts Benchmark.measure {
-      tree_mapper.destroy(trees)
-    }
-  end
+  # it 'creates aggregates quickly' do
+  #   trees = build_trees(1000)
+  #
+  #   puts 'starting persistence benchmark'
+  #   puts Benchmark.measure {
+  #     tree_mapper.persist(trees)
+  #   }
+  # end
+  #
+  # it 'updates aggregates quickly' do
+  #   trees = build_trees(1000)
+  #
+  #   tree_mapper.persist(trees)
+  #
+  #   puts 'starting update benchmark'
+  #   puts Benchmark.measure {
+  #     tree_mapper.persist(trees)
+  #   }
+  # end
+  #
+  # it 'loads aggregates quickly' do
+  #   trees = build_trees(1000)
+  #   tree_mapper.persist(trees)
+  #   ids = trees.map(&:id)
+  #
+  #   puts 'starting loading benchmark'
+  #   puts Benchmark.measure {
+  #     tree_mapper.query.where(id: ids).load_many
+  #   }
+  # end
+  #
+  # it 'destroys aggregates quickly' do
+  #   trees = build_trees(1000)
+  #   tree_mapper.persist(trees)
+  #
+  #   puts 'starting destruction benchmark'
+  #   puts Benchmark.measure {
+  #     tree_mapper.destroy(trees)
+  #   }
+  # end
 
   def build_trees(count)
     (1..count).map do |i|
