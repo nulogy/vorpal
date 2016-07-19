@@ -1,8 +1,5 @@
-require 'simple_serializer/serializer'
-require 'simple_serializer/deserializer'
 require 'vorpal/configs'
-require 'active_support/inflector/methods'
-require 'active_support/core_ext/module/introspection'
+require 'vorpal/defaults_generator'
 
 module Vorpal
   class ConfigBuilder
@@ -11,11 +8,11 @@ module Vorpal
     def initialize(clazz, options, db_driver)
       @domain_class = clazz
       @class_options = options
-      @db_driver = db_driver
       @has_manys = []
       @has_ones = []
       @belongs_tos = []
       @attributes = []
+      @defaults_generator = DefaultsGenerator.new(clazz, db_driver)
     end
 
     # Maps the given attributes to and from the domain object and the DB. Not needed
@@ -80,23 +77,14 @@ module Vorpal
       [:id].concat @attributes
     end
 
-    # @private
-    def table_name
-      @class_options[:table_name] || ActiveSupport::Inflector.tableize(@domain_class.name)
-    end
-
     private
-
-    def build_db_class
-      @db_driver.build_db_class(table_name)
-    end
 
     def build_class_config
       Vorpal::ClassConfig.new(
         domain_class: @domain_class,
-        db_class: @class_options[:to] || build_db_class,
-        serializer: @class_options[:serializer] || serializer(attributes_with_id),
-        deserializer: @class_options[:deserializer] || deserializer(attributes_with_id),
+        db_class: @class_options[:to] || @defaults_generator.build_db_class(@class_options[:table_name]),
+        serializer: @class_options[:serializer] || @defaults_generator.serializer(attributes_with_id),
+        deserializer: @class_options[:deserializer] || @defaults_generator.deserializer(attributes_with_id),
       )
     end
 
@@ -105,20 +93,10 @@ module Vorpal
     end
 
     def build_has_many(options)
-      options[:child_class] ||= child_class(options[:name])
-      options[:fk] ||= foreign_key(@domain_class.name)
+      options[:child_class] ||= @defaults_generator.child_class(options[:name])
+      options[:fk] ||= @defaults_generator.foreign_key(@domain_class.name)
       options[:owned] = options.fetch(:owned, true)
       Vorpal::HasManyConfig.new(options)
-    end
-
-    def foreign_key(name)
-      ActiveSupport::Inflector.foreign_key(name.to_s)
-    end
-
-    def child_class(association_name)
-      # Module#parent comes from 'active_support/core_ext/module/introspection'
-      parent_module = @domain_class.parent
-      parent_module.const_get(ActiveSupport::Inflector.classify(association_name.to_s))
     end
 
     def build_has_ones
@@ -126,8 +104,8 @@ module Vorpal
     end
 
     def build_has_one(options)
-      options[:child_class] ||= child_class(options[:name])
-      options[:fk] ||= foreign_key(@domain_class.name)
+      options[:child_class] ||= @defaults_generator.child_class(options[:name])
+      options[:fk] ||= @defaults_generator.foreign_key(@domain_class.name)
       options[:owned] = options.fetch(:owned, true)
       Vorpal::HasOneConfig.new(options)
     end
@@ -137,23 +115,11 @@ module Vorpal
     end
 
     def build_belongs_to(options)
-      child_class = options[:child_classes] || options[:child_class] || child_class(options[:name])
+      child_class = options[:child_classes] || options[:child_class] || @defaults_generator.child_class(options[:name])
       options[:child_classes] = Array(child_class)
-      options[:fk] ||= foreign_key(options[:name])
+      options[:fk] ||= @defaults_generator.foreign_key(options[:name])
       options[:owned] = options.fetch(:owned, true)
       Vorpal::BelongsToConfig.new(options)
-    end
-
-    def serializer(attrs)
-      Class.new(SimpleSerializer::Serializer) do
-        hash_attributes *attrs
-      end
-    end
-
-    def deserializer(attrs)
-      Class.new(SimpleSerializer::Deserializer) do
-        object_attributes *attrs
-      end
     end
   end
 end
