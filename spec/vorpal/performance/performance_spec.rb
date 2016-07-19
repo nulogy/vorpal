@@ -83,6 +83,13 @@ describe 'performance' do
   # update    2.240000   0.180000   2.420000 (  2.745321)
   # load      2.130000   0.020000   2.150000 (  2.223182)
   # destroy   0.930000   0.010000   0.940000 (  1.038624)
+  #
+  # Vorpal 0.1.0:
+  # user     system      total        real
+  # create    0.870000   0.100000   0.970000 (  1.320534)
+  # update    1.820000   0.210000   2.030000 (  2.351518)
+  # load      1.310000   0.010000   1.320000 (  1.394192)
+  # destroy   0.930000   0.010000   0.940000 (  1.030910)
   it 'benchmarks all operations' do
     trees = build_trees(1000)
     Benchmark.bm(7) do |x|
@@ -93,7 +100,7 @@ describe 'performance' do
     end
   end
 
-  it 'persists aggregates quickly' do
+  it 'creates aggregates quickly' do
     trees = build_trees(1000)
 
     puts 'starting persistence benchmark'
