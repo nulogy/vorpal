@@ -60,26 +60,9 @@ module Vorpal
     # @param table_name [String] Name of the DB table the DB class should interface with.
     # @return [Class] ActiveRecord::Base Class
     def build_db_class(table_name)
-      db_class = Class.new(ActiveRecord::Base) do
-        # This is overridden for two reasons:
-        # 1) For anonymous classes, #name normally returns nil. Class names in Ruby come from the
-        #   name of the constant they are assigned to.
-        # 2) Because the default implementation for Class#name for anonymous classes is very, very
-        #   slow. https://bugs.ruby-lang.org/issues/11119
-        # Remove this override once #2 has been fixed!
-        def self.name
-          @name ||= "Vorpal Generated ActiveRecord::Base Class for #{table_name}. Object ID: #{object_id}"
-        end
-
-        # Overridden because, like #name, the default implementation for anonymous classes is very,
-        # very slow.
-        def self.to_s
-          name
-        end
-      end
-
+      db_class = Class.new(ActiveRecord::Base)
       db_class.table_name = table_name
-      db_class
+      Class.const_set("#{table_name.capitalize}_#{db_class.object_id}", db_class)
     end
 
     # Builds a composable query object (e.g. ActiveRecord::Relation) with Vorpal methods mixed in.
