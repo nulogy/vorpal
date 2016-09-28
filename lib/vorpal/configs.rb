@@ -1,4 +1,5 @@
 require 'vorpal/util/hash_initialization'
+require 'vorpal/exceptions'
 require 'equalizer'
 
 module Vorpal
@@ -10,7 +11,9 @@ module Vorpal
     end
 
     def config_for(clazz)
-      @class_configs.detect { |conf| conf.domain_class == clazz }
+      config = @class_configs.detect { |conf| conf.domain_class == clazz }
+      raise Vorpal::ConfigurationNotFound.new("No configuration found for #{clazz}") unless config
+      config
     end
 
     def config_for_db_object(db_object)

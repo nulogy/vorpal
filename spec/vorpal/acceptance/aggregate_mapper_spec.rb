@@ -858,7 +858,7 @@ private
     end
     engine.mapper_for(Tree)
   end
-  
+
   def configure(options={})
     engine = Vorpal.define(options) do
       map Tree do

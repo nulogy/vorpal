@@ -49,6 +49,16 @@ describe Vorpal::MasterConfig do
     end
   end
 
+  describe 'nice user feedback' do
+    it 'lets the user know what the problem is when a configuration is missing' do
+      master_config = Vorpal::MasterConfig.new([])
+
+      expect {
+        master_config.config_for(String)
+      }.to raise_error(Vorpal::ConfigurationNotFound, "No configuration found for String")
+    end
+  end
+
   describe Vorpal::AssociationConfig do
     describe 'associate' do
       let(:post) { Post.new }
