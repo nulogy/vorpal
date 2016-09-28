@@ -1,7 +1,5 @@
-require 'unit_spec_helper'
+require 'integration_spec_helper'
 require 'vorpal'
-require 'virtus'
-require 'active_record'
 
 describe Vorpal::DbDriver do
   describe '#build_db_class' do
