@@ -1,4 +1,4 @@
-# Vorpal
+# Vorpal [![Build Status](https://travis-ci.org/nulogy/vorpal.svg?branch=master)](https://travis-ci.org/nulogy/vorpal)
 
 Separate your domain model from your persistence mechanism. Some problems call for a really sharp tool.
 
