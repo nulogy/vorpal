@@ -68,7 +68,7 @@ module Vorpal
         #   slow. https://bugs.ruby-lang.org/issues/11119
         # Remove this override once #2 has been fixed!
         def self.name
-          @name ||= "Vorpal Generated ActiveRecord::Base Class for #{table_name}. Object ID: #{object_id}"
+          @name ||= "Vorpal_Generated_ActiveRecord::Base_Class_for_#{table_name}_Object_ID_#{object_id}"
         end
 
         # Overridden because, like #name, the default implementation for anonymous classes is very,
