@@ -91,8 +91,8 @@ describe Vorpal::DbLoader do
     best_comment_db.post_id = post_db.id
 
     driver = instance_double("Vorpal::DbDriver")
-    expect(driver).to receive(:load_by_id).with(post_config, [post_db.id]).and_return([post_db])
-    expect(driver).to receive(:load_by_id).with(comment_config, [best_comment_db.id]).and_return([best_comment_db])
+    expect(driver).to receive(:load_by_id).with(PostDB, [post_db.id]).and_return([post_db])
+    expect(driver).to receive(:load_by_id).with(CommentDB, [best_comment_db.id]).and_return([best_comment_db])
     expect(driver).to receive(:load_by_foreign_key).and_return([best_comment_db])
 
     loader = Vorpal::DbLoader.new(false, driver)

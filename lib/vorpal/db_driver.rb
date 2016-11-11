@@ -9,9 +9,9 @@ module Vorpal
       @sequence_names = {}
     end
 
-    def insert(class_config, db_objects)
+    def insert(db_class, db_objects)
       if defined? ActiveRecord::Import
-        class_config.db_class.import(db_objects, validate: false)
+        db_class.import(db_objects, validate: false)
       else
         db_objects.each do |db_object|
           db_object.save!(validate: false)
@@ -19,41 +19,42 @@ module Vorpal
       end
     end
 
-    def update(class_config, db_objects)
+    def update(db_class, db_objects)
       db_objects.each do |db_object|
         db_object.save!(validate: false)
       end
     end
 
-    def destroy(class_config, ids)
-      class_config.db_class.delete_all(id: ids)
+    def destroy(db_class, ids)
+      db_class.delete_all(id: ids)
     end
 
     # Loads instances of the given class by primary key.
     #
-    # @param class_config [ClassConfig]
+    # @param db_class [Class] A subclass of ActiveRecord::Base
     # @return [[Object]] An array of entities.
-    def load_by_id(class_config, ids)
-      class_config.db_class.where(id: ids).to_a
+    def load_by_id(db_class, ids)
+      db_class.where(id: ids).to_a
     end
 
     # Loads instances of the given class whose foreign key has the given value.
     #
-    # @param class_config [ClassConfig]
-    # @param foreign_key_info [ForeignKeyInfo]
+    # @param db_class [Class] A subclass of ActiveRecord::Base
+    # @param id [Integer] The value of the foreign key to find by. (Can also be an array of ids.)
+    # @param foreign_key_info [ForeignKeyInfo] Meta data for the foreign key.
     # @return [[Object]] An array of entities.
-    def load_by_foreign_key(class_config, id, foreign_key_info)
-      arel = class_config.db_class.where(foreign_key_info.fk_column => id)
+    def load_by_foreign_key(db_class, id, foreign_key_info)
+      arel = db_class.where(foreign_key_info.fk_column => id)
       arel = arel.where(foreign_key_info.fk_type_column => foreign_key_info.fk_type) if foreign_key_info.polymorphic?
       arel.order(:id).to_a
     end
 
     # Fetches primary key values to be used for new entities.
     #
-    # @param class_config [ClassConfig] Config of the entity whose primary keys are being fetched.
+    # @param db_class [Class] A subclass of ActiveRecord::Base
     # @return [[Integer]] An array of unused primary keys.
-    def get_primary_keys(class_config, count)
-      result = execute("select nextval($1) from generate_series(1,$2);", [sequence_name(class_config), count])
+    def get_primary_keys(db_class, count)
+      result = execute("select nextval($1) from generate_series(1,$2);", [sequence_name(db_class), count])
       result.rows.map(&:first).map(&:to_i)
     end
 
@@ -90,19 +91,20 @@ module Vorpal
       db_class
     end
 
-    # Builds a composable query object (e.g. ActiveRecord::Relation) with Vorpal methods mixed in.
+    # Builds a composable query object (e.g. ActiveRecord::Relation) with Vorpal methods mixed in
+    # for querying for instances of the given AR::Base class.
     #
-    # @param class_config [ClassConfig] Config of the entity whose db representations should be returned.
-    def query(class_config, aggregate_mapper)
-      class_config.db_class.unscoped.extending(ArelQueryMethods.new(aggregate_mapper))
+    # @param db_class [Class] A subclass of ActiveRecord::Base
+    def query(db_class, aggregate_mapper)
+      db_class.unscoped.extending(ArelQueryMethods.new(aggregate_mapper))
     end
 
     private
 
-    def sequence_name(class_config)
-      @sequence_names[class_config] ||= execute(
+    def sequence_name(db_class)
+      @sequence_names[db_class] ||= execute(
         "SELECT substring(column_default from '''(.*)''') FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = $1 AND column_name = 'id' LIMIT 1",
-        [class_config.db_class.table_name]
+        [db_class.table_name]
       ).rows.first.first
     end
 
