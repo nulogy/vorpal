@@ -1,7 +1,7 @@
 require 'unit_spec_helper'
 
 require 'vorpal/dsl/defaults_generator'
-require 'vorpal/db_driver'
+require 'vorpal/driver/postgresql'
 
 describe Vorpal::Dsl::DefaultsGenerator do
   class Tester; end
@@ -11,7 +11,7 @@ describe Vorpal::Dsl::DefaultsGenerator do
     class Author; end
   end
 
-  let(:db_driver) { instance_double(Vorpal::DbDriver)}
+  let(:db_driver) { instance_double(Vorpal::Driver::Postgresql)}
 
   describe '#build_db_class' do
     it 'derives the table_name from the domain class name' do

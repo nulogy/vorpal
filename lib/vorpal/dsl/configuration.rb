@@ -1,5 +1,6 @@
 require 'vorpal/engine'
 require 'vorpal/dsl/config_builder'
+require 'vorpal/driver/postgresql'
 
 module Vorpal
   module Dsl
@@ -9,12 +10,12 @@ module Vorpal
     #
     # @param options [Hash] Global configuration options for the engine instance.
     # @option options [Object] :db_driver (Object that will be used to interact with the DB.)
-    #  Must be duck-type compatible with {DbDriver}.
+    #  Must be duck-type compatible with {Postgresql}.
     #
     # @return [Engine] Instance of the mapping engine.
     def define(options={}, &block)
       master_config = build_config(&block)
-      db_driver = options.fetch(:db_driver, DbDriver.new)
+      db_driver = options.fetch(:db_driver, Driver::Postgresql.new)
       Engine.new(db_driver, master_config)
     end
 
@@ -40,7 +41,7 @@ module Vorpal
 
     # @private
     def build_class_config(domain_class, options={}, &block)
-      builder = ConfigBuilder.new(domain_class, options, DbDriver.new)
+      builder = ConfigBuilder.new(domain_class, options, Driver::Postgresql.new)
       builder.instance_exec(&block) if block_given?
       builder.build
     end

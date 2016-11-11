@@ -1,6 +1,5 @@
 require 'vorpal/loaded_objects'
 require 'vorpal/util/array_hash'
-require 'vorpal/db_driver'
 
 module Vorpal
   # Handles loading of objects from the database.

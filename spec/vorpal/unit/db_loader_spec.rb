@@ -54,7 +54,7 @@ describe Vorpal::DbLoader do
   #
   #   master_config = Vorpal::MasterConfig.new([post_config, comment_config])
   #
-  #   driver = Vorpal::DbDriver.new
+  #   driver = Vorpal::Postgresql.new
   #
   #   best_comment_db = CommentDB.create!
   #   post_db = PostDB.create!(best_comment_id: best_comment_db.id)
@@ -90,7 +90,7 @@ describe Vorpal::DbLoader do
     post_db.id = 100
     best_comment_db.post_id = post_db.id
 
-    driver = instance_double("Vorpal::DbDriver")
+    driver = instance_double("Vorpal::Driver::Postgresql")
     expect(driver).to receive(:load_by_id).with(PostDB, [post_db.id]).and_return([post_db])
     expect(driver).to receive(:load_by_id).with(CommentDB, [best_comment_db.id]).and_return([best_comment_db])
     expect(driver).to receive(:load_by_foreign_key).and_return([best_comment_db])

@@ -1,10 +1,9 @@
 require 'vorpal/util/string_utils.rb'
 
 module Vorpal
-  # Interface between the database and Vorpal
-  #
-  # Currently only works for PostgreSQL via ActiveRecord.
-  class DbDriver
+  module Driver
+  # Interface between the database and Vorpal for PostgreSQL using ActiveRecord.
+  class Postgresql
     def initialize
       @sequence_names = {}
     end
@@ -141,5 +140,6 @@ module Vorpal
         @vorpal_aggregate_mapper.load_one(db_root)
       end
     end
+  end
   end
 end

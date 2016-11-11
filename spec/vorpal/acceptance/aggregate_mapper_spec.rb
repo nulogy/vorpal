@@ -95,7 +95,7 @@ describe 'AggregateMapper' do
 
   describe 'on error' do
     it 'nils ids of new objects' do
-      db_driver = Vorpal::DbDriver.new
+      db_driver = Vorpal::Driver::Postgresql.new
       test_mapper = configure(db_driver: db_driver)
 
       tree_db = db_class_for(Tree, test_mapper).create!

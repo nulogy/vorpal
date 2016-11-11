@@ -1,7 +1,6 @@
 require 'unit_spec_helper'
 
 require 'vorpal/dsl/config_builder'
-require 'vorpal/db_driver'
 
 describe Vorpal::Dsl::ConfigBuilder do
   class Tester; end
