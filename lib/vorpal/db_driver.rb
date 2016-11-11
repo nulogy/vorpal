@@ -1,3 +1,5 @@
+require 'vorpal/util/string_utils.rb'
+
 module Vorpal
   # Interface between the database and Vorpal
   #
@@ -57,27 +59,33 @@ module Vorpal
 
     # Builds an ORM Class for accessing data in the given DB table.
     #
+    # @param model_class [Class] The PORO class that we are creating a DB interface class for.
     # @param table_name [String] Name of the DB table the DB class should interface with.
     # @return [Class] ActiveRecord::Base Class
-    def build_db_class(table_name)
+    def build_db_class(model_class, table_name)
       db_class = Class.new(ActiveRecord::Base) do
-        # This is overridden for two reasons:
-        # 1) For anonymous classes, #name normally returns nil. Class names in Ruby come from the
-        #   name of the constant they are assigned to.
-        # 2) Because the default implementation for Class#name for anonymous classes is very, very
-        #   slow. https://bugs.ruby-lang.org/issues/11119
-        # Remove this override once #2 has been fixed!
-        def self.name
-          @name ||= "Vorpal_Generated_ActiveRecord_Base_Class_for_#{table_name}_Object_ID_#{object_id}"
-        end
+        class << self
+          # This is overridden for two reasons:
+          # 1) For anonymous classes, #name normally returns nil. Class names in Ruby come from the
+          #   name of the constant they are assigned to.
+          # 2) Because the default implementation for Class#name for anonymous classes is very, very
+          #   slow. https://bugs.ruby-lang.org/issues/11119
+          # Remove this override once #2 has been fixed!
+          def name
+            @name ||= "Vorpal_generated_ActiveRecord__Base_class_for_#{vorpal_model_class_name}"
+          end
 
-        # Overridden because, like #name, the default implementation for anonymous classes is very,
-        # very slow.
-        def self.to_s
-          name
+          # Overridden because, like #name, the default implementation for anonymous classes is very,
+          # very slow.
+          def to_s
+            name
+          end
+
+          attr_accessor :vorpal_model_class_name
         end
       end
 
+      db_class.vorpal_model_class_name = Util::StringUtils.escape_class_name(model_class.name)
       db_class.table_name = table_name
       db_class
     end

@@ -16,14 +16,14 @@ describe Vorpal::Dsl::DefaultsGenerator do
   describe '#build_db_class' do
     it 'derives the table_name from the domain class name' do
       generator = build_generator(Tester)
-      expect(db_driver).to receive(:build_db_class).with("testers")
+      expect(db_driver).to receive(:build_db_class).with(Tester, "testers")
 
       generator.build_db_class(nil)
     end
 
     it 'specifies the table_name manually' do
       generator = build_generator(Tester)
-      expect(db_driver).to receive(:build_db_class).with("override")
+      expect(db_driver).to receive(:build_db_class).with(Tester, "override")
 
       generator.build_db_class("override")
     end
