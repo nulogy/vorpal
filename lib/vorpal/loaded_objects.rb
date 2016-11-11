@@ -5,7 +5,7 @@ module Vorpal
 
   # @private
   class LoadedObjects
-    include ArrayHash
+    include Util::ArrayHash
     extend Forwardable
     include Enumerable
 

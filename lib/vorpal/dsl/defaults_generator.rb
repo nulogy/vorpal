@@ -12,7 +12,7 @@ module Vorpal
     end
 
     def build_db_class(user_table_name)
-      @db_driver.build_db_class(user_table_name || table_name)
+      @db_driver.build_db_class(@domain_class, user_table_name || table_name)
     end
 
     def table_name

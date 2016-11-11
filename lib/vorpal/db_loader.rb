@@ -72,7 +72,7 @@ module Vorpal
 
   # @private
   class LookupInstructions
-    include ArrayHash
+    include Util::ArrayHash
     def initialize
       @lookup_by_id = {}
       @lookup_by_fk = {}
