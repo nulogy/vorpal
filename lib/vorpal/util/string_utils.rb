@@ -1,5 +1,5 @@
 module Vorpal
-  class Util
+  module Util
     # @private
     module StringUtils
       extend self

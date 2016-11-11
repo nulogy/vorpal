@@ -266,7 +266,7 @@ module Vorpal
 
   # @private
   class HasManyConfig
-    include HashInitialization
+    include Util::HashInitialization
     include RemoteEndConfig
     include ToManyConfig
 
@@ -276,7 +276,7 @@ module Vorpal
 
   # @private
   class HasOneConfig
-    include HashInitialization
+    include Util::HashInitialization
     include RemoteEndConfig
     include ToOneConfig
 
@@ -286,7 +286,7 @@ module Vorpal
 
   # @private
   class BelongsToConfig
-    include HashInitialization
+    include Util::HashInitialization
     include LocalEndConfig
     include ToOneConfig
 
