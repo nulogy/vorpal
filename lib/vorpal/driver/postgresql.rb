@@ -45,7 +45,7 @@ module Vorpal
       def load_by_foreign_key(db_class, id, foreign_key_info)
         arel = db_class.where(foreign_key_info.fk_column => id)
         arel = arel.where(foreign_key_info.fk_type_column => foreign_key_info.fk_type) if foreign_key_info.polymorphic?
-        arel.order(:id).to_a
+        arel.to_a
       end
 
       # Fetches primary key values to be used for new entities.
