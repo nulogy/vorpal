@@ -45,8 +45,6 @@ Or install it yourself as:
 
 ## Usage
 
-**Warning! API still in flux! Expect it to change with every release until 0.1.0. After this point, semantic versioning will be used.**
-
 Start with a domain model of POROs and AR::Base objects that form an aggregate:
 
 ```ruby
