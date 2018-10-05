@@ -34,7 +34,7 @@ module DbHelpers
 
   # when you change a table's columns, set force to true to re-generate the table in the DB
   def define_table(table_name, columns, force)
-    if !db_connection.table_exists?(table_name) || force
+    if !db_connection.data_source_exists?(table_name) || force
       db_connection.create_table(table_name, force: true) do |t|
         columns.each do |name, type|
           t.send(type, name)

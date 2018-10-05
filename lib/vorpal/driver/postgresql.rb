@@ -25,7 +25,7 @@ module Vorpal
       end
 
       def destroy(db_class, ids)
-        db_class.delete_all(id: ids)
+        db_class.where(id: ids).delete_all
       end
 
       # Loads instances of the given class by primary key.
