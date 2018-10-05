@@ -239,6 +239,17 @@ For example:
   * Modify `spec/helpers/db_helpers.rb`.
 3. Run `rake` from the terminal.
 
+### Running Tests for the non-default versions of Rails
+
+1. Start a PostgreSQL server.
+2. Either:
+  * Create a DB user called `vorpal` with password `pass`. OR:
+  * Modify `spec/helpers/db_helpers.rb`.
+3. Run `appraisal <rails version> rake` from the terminal.
+  * Where `<rails version>` is one of the options defined in the `./Appraisal` file.
+
+Please see the [Appraisal gem docs](https://github.com/thoughtbot/appraisal) for more information.
+
 ## Contributors
 
 * [Sean Kirby](https://github.com/sskirby)

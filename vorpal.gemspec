@@ -18,16 +18,17 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = ">= 2.1.6"
-
   spec.add_runtime_dependency "simple_serializer", "~> 1.0"
   spec.add_runtime_dependency "equalizer"
   spec.add_runtime_dependency "activesupport"
 
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
-  spec.add_development_dependency "activerecord", "~> 4.0"
-  spec.add_development_dependency "pg", "~> 0.17.0"
   spec.add_development_dependency "virtus", "~> 1.0"
+  spec.add_development_dependency "appraisal", "~> 2.2"
+
+  spec.required_ruby_version = ">= 2.1.6"
+  spec.add_development_dependency "activerecord", "~> 4.1.0"
+  spec.add_development_dependency "pg", "~> 0.17.0"
   spec.add_development_dependency "activerecord-import", "~> 0.10.0"
 end
