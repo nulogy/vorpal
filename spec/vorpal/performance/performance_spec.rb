@@ -90,6 +90,34 @@ describe 'performance' do
   # update    1.820000   0.210000   2.030000 (  2.351518)
   # load      1.310000   0.010000   1.320000 (  1.394192)
   # destroy   0.930000   0.010000   0.940000 (  1.030910)
+  #
+  # Vorpal 1.0.0, Ruby 2.1.6, ActiveRecord 4.1.16, AR:Import 0.10.0
+  #               user     system      total        real
+  # create    0.980000   0.140000   1.120000 (  1.671115)
+  # update    2.030000   0.250000   2.280000 (  2.748697)
+  # load      1.230000   0.010000   1.240000 (  1.395219)
+  # destroy   0.830000   0.010000   0.840000 (  1.042960)
+  #
+  # Vorpal 1.0.0, Ruby 2.3.3, ActiveRecord 4.1.16, AR:Import 0.10.0
+  #               user     system      total        real
+  # create    0.940000   0.120000   1.060000 (  1.579334)
+  # update    1.880000   0.250000   2.130000 (  2.601979)
+  # load      1.130000   0.010000   1.140000 (  1.292817)
+  # destroy   0.730000   0.000000   0.730000 (  0.930980)
+  #
+  # Vorpal 1.0.0, Ruby 2.3.3, ActiveRecord 4.2.10, AR:Import 0.10.0
+  #               user     system      total        real
+  # create    1.230000   0.130000   1.360000 (  1.864400)
+  # update    2.660000   0.260000   2.920000 (  3.416604)
+  # load      1.310000   0.010000   1.320000 (  1.479030)
+  # destroy   0.840000   0.010000   0.850000 (  1.037512)
+  #
+  # Vorpal 1.0.0, Ruby 2.3.3, ActiveRecord 5.0.7, AR:Import 0.13.0
+  #               user     system      total        real
+  # create    0.960000   0.120000   1.080000 (  1.631415)
+  # update    2.810000   0.270000   3.080000 (  3.633569)
+  # load      1.340000   0.010000   1.350000 (  1.510898)
+  # destroy   0.900000   0.010000   0.910000 (  1.085288)
   it 'benchmarks all operations' do
     trees = build_trees(1000)
     Benchmark.bm(7) do |x|
