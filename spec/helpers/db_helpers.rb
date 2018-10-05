@@ -34,7 +34,7 @@ module DbHelpers
 
   # when you change a table's columns, set force to true to re-generate the table in the DB
   def define_table(table_name, columns, force)
-    if !db_connection.data_source_exists?(table_name) || force
+    if table_name_is_free?(table_name) || force
       db_connection.create_table(table_name, force: true) do |t|
         columns.each do |name, type|
           t.send(type, name)
@@ -46,6 +46,19 @@ module DbHelpers
   def defineAr(table_name)
     Class.new(ActiveRecord::Base) do
       self.table_name = table_name
+    end
+  end
+
+  private
+
+  def table_name_is_free?(table_name)
+    if ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR == 1
+      !db_connection.table_exists?(table_name)
+    elsif (ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR == 2) ||
+      (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0)
+      !db_connection.data_source_exists?(table_name)
+    else
+      raise "ActiveRecord Version #{ActiveRecord::VERSION::STRING} is not supported!"
     end
   end
 end
