@@ -118,6 +118,12 @@ describe 'performance' do
   # update    2.810000   0.270000   3.080000 (  3.633569)
   # load      1.340000   0.010000   1.350000 (  1.510898)
   # destroy   0.900000   0.010000   0.910000 (  1.085288)
+  #
+  # Vorpal 1.0.0, Ruby 2.3.3, ActiveRecord 5.1.6, AR:Import 0.13.0
+  # create    0.960000   0.120000   1.080000 (  1.588142)
+  # update    3.030000   0.290000   3.320000 (  3.839557)
+  # load      1.340000   0.010000   1.350000 (  1.509182)
+  # destroy   0.950000   0.010000   0.960000 (  1.155866)
   it 'benchmarks all operations' do
     trees = build_trees(1000)
     Benchmark.bm(7) do |x|

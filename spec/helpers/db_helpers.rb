@@ -55,7 +55,8 @@ module DbHelpers
     if ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR == 1
       !db_connection.table_exists?(table_name)
     elsif (ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR == 2) ||
-      (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0)
+      (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0) ||
+      (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 1)
       !db_connection.data_source_exists?(table_name)
     else
       raise "ActiveRecord Version #{ActiveRecord::VERSION::STRING} is not supported!"

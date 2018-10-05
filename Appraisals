@@ -18,3 +18,10 @@ appraise "rails-5-0" do
   gem "pg", "~> 0.18.0"
   gem "activerecord-import", "= 0.13.0"
 end
+
+appraise "rails-5-1" do
+  ruby ">= 2.2.2"
+  gem "activerecord", "~> 5.1.0"
+  gem "pg", "~> 0.18.0"
+  gem "activerecord-import", "= 0.13.0"
+end
