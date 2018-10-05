@@ -231,7 +231,26 @@ For example:
 
 **A.** You can use [ActiveModel::Serialization](http://api.rubyonrails.org/classes/ActiveModel/Serialization.html) or [ActiveModel::Serializers](https://github.com/rails-api/active_model_serializers) but they are not heartily recommended. The former is too coupled to the model and the latter is too coupled to Rails controllers. Vorpal uses [SimpleSerializer](https://github.com/nulogy/simple_serializer) for this purpose.
 
-## Running Tests
+## Contributing
+
+1. Fork it ( https://github.com/nulogy/vorpal/fork )
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
+
+### Setup DirEnv
+
+Using this gem's bin stubs (contained in the `bin` dir) is much easier if [DirEnv](https://github.com/direnv/direnv) is installed.
+
+On OSX using ZSH DirEnv can be installed like so:
+
+1. `brew install direnv`
+2. `echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc`
+
+Please see the [DirEnv docs](https://direnv.net/) if your environment is different.
+
+### Running Tests
 
 1. Start a PostgreSQL server.
 2. Either:
@@ -252,14 +271,4 @@ Please see the [Appraisal gem docs](https://github.com/thoughtbot/appraisal) for
 
 ## Contributors
 
-* [Sean Kirby](https://github.com/sskirby)
-* [Paul Sobocinski](https://github.com/psobocinski)
-* [Jason Cheong-Kee-You](https://github.com/jchunky)
-
-## Contributing
-
-1. Fork it ( https://github.com/nulogy/vorpal/fork )
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+See who's [contributed](https://github.com/nulogy/vorpal/graphs/contributors)!
