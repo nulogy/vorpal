@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "appraisal", "~> 2.2"
 
   spec.required_ruby_version = ">= 2.1.6"
-  spec.add_development_dependency "activerecord", "~> 4.1.0"
-  spec.add_development_dependency "pg", "~> 0.17.0"
-  spec.add_development_dependency "activerecord-import", "~> 0.10.0"
+  spec.add_development_dependency "activerecord"
+  spec.add_development_dependency "pg"
+  spec.add_development_dependency "activerecord-import"
 end

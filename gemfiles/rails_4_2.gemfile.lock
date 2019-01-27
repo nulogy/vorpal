@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    vorpal (1.0.0)
+    vorpal (1.0.1)
       activesupport
       equalizer
       simple_serializer (~> 1.0)
@@ -87,4 +87,4 @@ RUBY VERSION
    ruby 2.3.3p222
 
 BUNDLED WITH
-   1.16.2
+   1.16.6
