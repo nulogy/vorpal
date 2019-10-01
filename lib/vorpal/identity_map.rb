@@ -1,22 +1,23 @@
 module Vorpal
+  # Maps DB rows to Entities
   class IdentityMap
     def initialize
       @entities = {}
     end
 
-    def get(key_object)
-      @entities[key(key_object)]
+    def get(db_row)
+      @entities[key(db_row)]
     end
 
-    def set(key_object, object)
-      @entities[key(key_object)] = object
+    def set(db_row, entity)
+      @entities[key(db_row)] = entity
     end
 
-    def get_and_set(key_object)
-      object = get(key_object)
-      object = yield if object.nil?
-      set(key_object, object)
-      object
+    def get_and_set(db_row)
+      entity = get(db_row)
+      entity = yield if entity.nil?
+      set(db_row, entity)
+      entity
     end
 
     def map(key_objects)
@@ -25,11 +26,11 @@ module Vorpal
 
     private
 
-    def key(key_object)
-      return nil unless key_object
-      raise "Cannot put entity '#{key_object.inspect}' into IdentityMap without an id." if key_object.id.nil?
-      raise "Cannot put entity '#{key_object.inspect}' into IdentityMap without a Class with a name." if key_object.class.name.nil?
-      [key_object.id, key_object.class.name]
+    def key(db_row)
+      return nil unless db_row
+      raise "Cannot map a DB row without an id '#{db_row.inspect}' to an entity." if db_row.id.nil?
+      raise "Cannot map a DB row without a Class with a name '#{db_row.inspect}' to an entity." if db_row.class.name.nil?
+      [db_row.id, db_row.class.name]
     end
   end
 end

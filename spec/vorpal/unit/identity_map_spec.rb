@@ -18,7 +18,7 @@ describe Vorpal::IdentityMap do
   it "raises an exception when the key object does not have an id set" do
     entity = build_entity(nil)
 
-    expect { map.set(entity, 'something') }.to raise_error(/Cannot put entity/)
+    expect { map.set(entity, 'something') }.to raise_error(/Cannot map a DB row/)
   end
 
   it 'raises an exception when the key object extends a class with no name (such as anonymous classes)' do
@@ -29,7 +29,7 @@ describe Vorpal::IdentityMap do
     entity = anonymous_class.new
     entity.id = 1
 
-    expect { map.set(entity, 'something') }.to raise_error(/Cannot put entity/)
+    expect { map.set(entity, 'something') }.to raise_error(/Cannot map a DB row/)
   end
 
   def build_entity(id)
