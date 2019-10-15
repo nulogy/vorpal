@@ -1,4 +1,6 @@
 language: ruby
+services:
+  - postgresql
 matrix:
   include:
     - rvm: 2.2
