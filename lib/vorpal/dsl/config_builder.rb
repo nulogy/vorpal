@@ -22,43 +22,58 @@ module Vorpal
       @attributes.concat(attributes)
     end
 
-    # Defines a one-to-many association with a list of objects of the same type.
+    # Defines a one-to-many association to another type where the foreign key is stored on the child.
     #
-    # @param name [String] Name of the attribute that will refer to the other object.
+    # In Object-Oriented programming, associations are *directed*. This means that they can only be
+    # traversed in one direction: from the type that defines the association (the one with the
+    # getter) to the type that is associated. They end that defines the association is called the
+    # 'Parent' and the end that is associated is called the 'Child'.
+    #
+    # @param name [String] Name of the association getter.
     # @param options [Hash]
-    # @option options [Boolean] :owned
-    # @option options [String] :fk
-    # @option options [String] :fk_type
-    # @option options [Class] :child_class
+    # @option options [Boolean] :owned (True) True if the child type belongs to the aggregate. Changes to any object belonging to the aggregate will be persisted when the aggregate is persisted.
+    # @option options [String] :fk (Parent class name converted to snakecase and appended with a '_id') The name of the DB column on the child that contains the foreign key reference to the parent.
+    # @option options [String] :fk_type The name of the DB column on the child that contains the parent class name. Only needed when there is an association from the child side that is polymorphic.
+    # @option options [Class] :child_class (name converted to a Class) The child class.
     def has_many(name, options={})
       @has_manys << {name: name}.merge(options)
     end
 
-    # Defines a one-to-one association with another object where the foreign key
-    # is stored on the other object.
+    # Defines a one-to-one association to another type where the foreign key
+    # is stored on the child.
     #
-    # @param name [String] Name of the attribute that will refer to the other object.
+    # In Object-Oriented programming, associations are *directed*. This means that they can only be
+    # traversed in one direction: from the type that defines the association (the one with the
+    # getter) to the type that is associated. They end that defines the association is called the
+    # 'Parent' and the end that is associated is called the 'Child'.
+    #
+    # @param name [String] Name of the association getter.
     # @param options [Hash]
-    # @option options [Boolean] :owned
-    # @option options [String] :fk
-    # @option options [String] :fk_type
-    # @option options [Class] :child_class
+    # @option options [Boolean] :owned (True) True if the child type belongs to the aggregate. Changes to any object belonging to the aggregate will be persisted when the aggregate is persisted.
+    # @option options [String] :fk (Parent class name converted to snakecase and appended with a '_id') The name of the DB column on the child that contains the foreign key reference to the parent.
+    # @option options [String] :fk_type The name of the DB column on the child that contains the parent class name. Only needed when there is an association from the child side that is polymorphic.
+    # @option options [Class] :child_class (name converted to a Class) The child class.
     def has_one(name, options={})
       @has_ones << {name: name}.merge(options)
     end
 
-    # Defines a one-to-one association with another object where the foreign key
-    # is stored on this object.
+    # Defines a one-to-one association with another type where the foreign key
+    # is stored on the parent.
     #
-    # This association can be polymorphic. i.e.
+    # This association can be polymorphic. I.E. children can be of different types.
     #
-    # @param name [String] Name of the attribute that will refer to the other object.
+    # In Object-Oriented programming, associations are *directed*. This means that they can only be
+    # traversed in one direction: from the type that defines the association (the one with the
+    # getter) to the type that is associated. They end that defines the association is called the
+    # 'Parent' and the end that is associated is called the 'Child'.
+    #
+    # @param name [String] Name of the association getter.
     # @param options [Hash]
-    # @option options [Boolean] :owned
-    # @option options [String] :fk
-    # @option options [String] :fk_type
-    # @option options [Class] :child_class
-    # @option options [[Class]] :child_classes
+    # @option options [Boolean] :owned (True) True if the child type belongs to the aggregate. Changes to any object belonging to the aggregate will be persisted when the aggregate is persisted.
+    # @option options [String] :fk (Child class name converted to snakecase and appended with a '_id') The name of the DB column on the parent that contains the foreign key reference to the child.
+    # @option options [String] :fk_type The name of the DB column on the parent that contains the child class name. Only needed when the association is polymorphic.
+    # @option options [Class] :child_class (name converted to a Class) The child class.
+    # @option options [[Class]] :child_classes The list of possible classes that can be children. This is for polymorphic associations. Takes precedence over `:child_class`.
     def belongs_to(name, options={})
       @belongs_tos << {name: name}.merge(options)
     end

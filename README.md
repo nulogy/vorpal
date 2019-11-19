@@ -143,7 +143,8 @@ module TreeRepository
 end
 ```
 
-Here we've used the `owned` flag on the `belongs_to` from the Tree to the Gardener to show that the Gardener is on the aggregate boundary.
+Here we've used the `owned: false` flag on the `belongs_to` from the Tree to the Gardener to show
+that the Gardener is on the aggregate boundary.
 
 And use it:
 
@@ -174,7 +175,7 @@ It also does not do some things that you might expect from other ORMs:
 1. No lazy loading of associations. This might sound like a big deal, but with [correctly designed aggregates](http://dddcommunity.org/library/vernon_2011/) it turns out not to be.
 1. No managing of transactions. It is the strong opinion of the authors that managing transactions is an application-level concern.
 1. No support for validations. Validations are not a persistence concern.
-1. No AR-style callbacks. Use Infrastructure, Application, or Domain [services](http://martinfowler.com/bliki/EvansClassification.html) instead.
+1. No AR-style callbacks. Use [Infrastructure, Application, or Domain services](http://martinfowler.com/bliki/EvansClassification.html) instead.
 1. No has-many-through associations. Use two has-many associations to a join entity instead.
 1. The `id` attribute is reserved for database primary keys. If you have a natural key/id on your domain model, name it something that makes sense for your domain. It is the strong opinion of the authors that using natural keys as foreign keys is a bad idea. This mixes domain and persistence concerns.
 
