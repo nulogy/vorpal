@@ -10,19 +10,19 @@ begin
 
   namespace :spec do
     RSpec::Core::RakeTask.new(:acceptance) do |t|
-      t.pattern = "spec/vorpal/acceptance/**/*_spec.rb"
+      t.pattern = "spec/acceptance/**/*_spec.rb"
     end
 
     RSpec::Core::RakeTask.new(:integration) do |t|
-      t.pattern = "spec/vorpal/integration/**/*_spec.rb"
+      t.pattern = "spec/integration/**/*_spec.rb"
     end
 
     RSpec::Core::RakeTask.new(:performance) do |t|
-      t.pattern = "spec/vorpal/performance/**/*_spec.rb"
+      t.pattern = "spec/performance/**/*_spec.rb"
     end
 
     RSpec::Core::RakeTask.new(:unit) do |t|
-      t.pattern = "spec/vorpal/unit/**/*_spec.rb"
+      t.pattern = "spec/unit/**/*_spec.rb"
     end
 
     desc "Run all non-performance related specs"
