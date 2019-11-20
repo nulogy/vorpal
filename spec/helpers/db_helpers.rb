@@ -6,10 +6,16 @@ module DbHelpers
     host: 'localhost',
     database: 'vorpal_test',
     min_messages: 'error',
-    # Change the following to reflect your database settings
-    # username: 'vorpal',
-    # password: 'pass',
   }
+
+  if !ENV["TRAVIS"]
+    # These settings need to agree with what is in the docker-compose.yml file
+    CONNECTION_SETTINGS.merge!(
+      port: 55433,
+      username: 'vorpal',
+      password: 'pass',
+    )
+  end
 
   def ensure_database_exists
     test_database_name = CONNECTION_SETTINGS.fetch(:database)
@@ -52,10 +58,7 @@ module DbHelpers
   private
 
   def table_name_is_free?(table_name)
-    if ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR == 1
-      !db_connection.table_exists?(table_name)
-    elsif (ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR == 2) ||
-      (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0) ||
+    if (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0) ||
       (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 1) ||
       (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 2)
       !db_connection.data_source_exists?(table_name)

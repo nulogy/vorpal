@@ -1,0 +1,19 @@
+version: "3.6"
+
+services:
+  vorpal_postgres:
+    hostname: vorpal_postgres
+    command: -p 55433
+    image: postgres:11.4
+    ports:
+      - "55433:55433"
+    volumes:
+      - vorpal_postgres_volume:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: vorpal
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: vorpal_development
+    restart: unless-stopped
+
+volumes:
+  vorpal_postgres_volume:

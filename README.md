@@ -253,20 +253,17 @@ Please see the [DirEnv docs](https://direnv.net/) if your environment is differe
 
 ### Running Tests
 
-1. Start a PostgreSQL server.
-2. Either:
-  * Create a DB user called `vorpal` with password `pass`. OR:
-  * Modify `spec/helpers/db_helpers.rb`.
-3. Run `rake` from the terminal.
+1. Start a PostgreSQL server using `docker-compose up`
+2. Copy the contents of `gemfiles/rails_<version>.gemfile.lock` into a `Gemfile.lock` file
+  at the root of the project.
+3. Run `rake` from the terminal to run all specs or `rspec <path to spec file>` to
+  run a single spec.
 
-### Running Tests for the non-default versions of Rails
+### Running Tests for a specific version of Rails
 
-1. Start a PostgreSQL server.
-2. Either:
-  * Create a DB user called `vorpal` with password `pass`. OR:
-  * Modify `spec/helpers/db_helpers.rb`.
-3. Run `appraisal <rails version> rake` from the terminal.
-  * Where `<rails version>` is one of the options defined in the `./Appraisal` file.
+1. Start a PostgreSQL server using `docker-compose up`
+2. Run `appraisal rails-5-2 rake` from the terminal to run all specs or
+  `appraisal rails-5-2 rspec <path to spec file>` to run a single spec.
 
 Please see the [Appraisal gem docs](https://github.com/thoughtbot/appraisal) for more information.
 
