@@ -7,23 +7,32 @@ end
 
 begin
   require 'rspec/core/rake_task'
-  RSpec::Core::RakeTask.new(:acceptance_specs) do |t|
-    t.pattern = "spec/vorpal/acceptance/**/*_spec.rb"
+
+  namespace :spec do
+    RSpec::Core::RakeTask.new(:acceptance) do |t|
+      t.pattern = "spec/vorpal/acceptance/**/*_spec.rb"
+    end
+
+    RSpec::Core::RakeTask.new(:integration) do |t|
+      t.pattern = "spec/vorpal/integration/**/*_spec.rb"
+    end
+
+    RSpec::Core::RakeTask.new(:performance) do |t|
+      t.pattern = "spec/vorpal/performance/**/*_spec.rb"
+    end
+
+    RSpec::Core::RakeTask.new(:unit) do |t|
+      t.pattern = "spec/vorpal/unit/**/*_spec.rb"
+    end
+
+    desc "Run all non-performance related specs"
+    task non_perf: [:unit, :integration, :acceptance]
+
+    desc "Run all specs"
+    task all: [:acceptance, :integration, :unit, :performance]
   end
 
-  RSpec::Core::RakeTask.new(:integration_specs) do |t|
-    t.pattern = "spec/vorpal/integration/**/*_spec.rb"
-  end
-
-  RSpec::Core::RakeTask.new(:performance_specs) do |t|
-    t.pattern = "spec/vorpal/performance/**/*_spec.rb"
-  end
-
-  RSpec::Core::RakeTask.new(:unit_specs) do |t|
-    t.pattern = "spec/vorpal/unit/**/*_spec.rb"
-  end
-
-  task :default => [:acceptance_specs, :integration_specs, :unit_specs, :performance_specs]
+  task default: :'spec:all'
 rescue LoadError
   # Allow the Rakefile to be used in environments where the RSpec gem is unavailable
   # (e.g. Production)
