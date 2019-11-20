@@ -6,10 +6,16 @@ module DbHelpers
     host: 'localhost',
     database: 'vorpal_test',
     min_messages: 'error',
-    # Change the following to reflect your database settings
-    # username: 'vorpal',
-    # password: 'pass',
   }
+
+  if !ENV["TRAVIS"]
+    # These settings need to agree with what is in the docker-compose.yml file
+    CONNECTION_SETTINGS.merge!(
+      port: 55433,
+      username: 'vorpal',
+      password: 'pass',
+    )
+  end
 
   def ensure_database_exists
     test_database_name = CONNECTION_SETTINGS.fetch(:database)

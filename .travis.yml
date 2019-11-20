@@ -15,4 +15,4 @@ matrix:
       gemfile: gemfiles/rails_5_2.gemfile
 cache:
   - bundler
-script: "bundle exec rake spec"
+script: "bundle exec rake"
