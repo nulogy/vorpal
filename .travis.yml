@@ -3,15 +3,13 @@ services:
   - postgresql
 matrix:
   include:
-    - rvm: 2.2
-      gemfile: gemfiles/rails_4_2.gemfile
-    - rvm: 2.3
+    - rvm: 2.4.5
       gemfile: gemfiles/rails_5_0.gemfile
-    - rvm: 2.3
+    - rvm: 2.5.3
       gemfile: gemfiles/rails_5_1.gemfile
-    - rvm: 2.4
+    - rvm: 2.6
       gemfile: gemfiles/rails_5_1.gemfile
-    - rvm: 2.4
+    - rvm: 2.6
       gemfile: gemfiles/rails_5_2.gemfile
 cache:
   - bundler

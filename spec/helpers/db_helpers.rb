@@ -58,8 +58,7 @@ module DbHelpers
   private
 
   def table_name_is_free?(table_name)
-    if (ActiveRecord::VERSION::MAJOR == 4 && ActiveRecord::VERSION::MINOR == 2) ||
-      (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0) ||
+    if (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0) ||
       (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 1) ||
       (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 2)
       !db_connection.data_source_exists?(table_name)

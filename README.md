@@ -254,8 +254,16 @@ Please see the [DirEnv docs](https://direnv.net/) if your environment is differe
 ### Running Tests
 
 1. Start a PostgreSQL server using `docker-compose up`
-3. Run `bundle exec appraisal rails-5-2 rake` from the terminal to run all specs or
-  `bundle exec appraisal rails-5-2 rspec <path to spec file>` to run a single spec.
+2. Copy the contents of `gemfiles/rails_<version>.gemfile.lock` into a `Gemfile.lock` file
+  at the root of the project.
+3. Run `rake` from the terminal to run all specs or `rspec <path to spec file>` to
+  run a single spec.
+
+### Running Tests for a specific version of Rails
+
+1. Start a PostgreSQL server using `docker-compose up`
+2. Run `appraisal rails-5-2 rake` from the terminal to run all specs or
+  `appraisal rails-5-2 rspec <path to spec file>` to run a single spec.
 
 Please see the [Appraisal gem docs](https://github.com/thoughtbot/appraisal) for more information.
 
