@@ -240,22 +240,23 @@ For example:
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
 
-### Setup DirEnv
+## OSX Environment setup
 
-Using this gem's bin stubs (contained in the `bin` dir) is much easier if [DirEnv](https://github.com/direnv/direnv) is installed.
-
-On OSX using ZSH DirEnv can be installed like so:
-
-1. `brew install direnv`
-2. `echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc`
-
-Please see the [DirEnv docs](https://direnv.net/) if your environment is different.
+1. Install [Homebrew](https://brew.sh/)
+2. Install [rbenv](https://github.com/rbenv/rbenv#installation) ([RVM](https://rvm.io/) can work too)
+3. Install [DirEnv](https://direnv.net/docs/installation.html) (`brew install direnv`)
+4. Install Docker Desktop Community Edition (`brew cask install docker`)
+5. Start Docker Desktop Community Edition (`CMD+space docker ENTER`)
+6. Install Ruby (`rbenv install 2.6.3`)
+7. Install PostgreSQL (`brew install postgresql`)
+8. Clone the repo (`git clone git@github.com:nulogy/vorpal.git`) and `cd` to the project root.
+8. Copy the contents of `gemfiles/rails_<version>.gemfile.lock` into a `Gemfile.lock` file
+  at the root of the project. (`cp gemfiles/rails_5_2.gemfile.lock gemfile.lock`)
+9. `bundle`
 
 ### Running Tests
 
 1. Start a PostgreSQL server using `docker-compose up`
-2. Copy the contents of `gemfiles/rails_<version>.gemfile.lock` into a `Gemfile.lock` file
-  at the root of the project.
 3. Run `rake` from the terminal to run all specs or `rspec <path to spec file>` to
   run a single spec.
 

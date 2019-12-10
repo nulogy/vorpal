@@ -76,7 +76,7 @@ DEPENDENCIES
   activerecord-import (= 0.13.0)
   appraisal (~> 2.2)
   pg (~> 0.18.0)
-  rake (~> 10.0)
+  rake (~> 10)
   rspec (~> 3.0)
   virtus (~> 1.0)
   vorpal!
