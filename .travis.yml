@@ -14,3 +14,5 @@ matrix:
 cache:
   - bundler
 script: "bundle exec rake"
+env:
+  - CODECOV_TOKEN="fab4ddb8-ba2c-47cb-a407-941209ad54a4"

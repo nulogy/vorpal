@@ -31,4 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "activerecord"
   spec.add_development_dependency "pg"
   spec.add_development_dependency "activerecord-import"
+  spec.add_development_dependency "codecov"
 end

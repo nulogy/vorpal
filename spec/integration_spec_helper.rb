@@ -1,6 +1,13 @@
 require 'active_record'
 require 'pg'
 require 'helpers/db_helpers'
+require 'helpers/codecov_helper'
+begin
+  require 'activerecord-import/base'
+rescue LoadError
+  puts "Not using activerecord-import!"
+end
+
 
 DbHelpers.ensure_database_exists
 DbHelpers.establish_connection

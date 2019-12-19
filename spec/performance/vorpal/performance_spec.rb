@@ -1,7 +1,6 @@
 require 'integration_spec_helper'
 require 'vorpal'
 require 'virtus'
-require 'activerecord-import/base'
 
 module Performance
 describe 'performance' do
