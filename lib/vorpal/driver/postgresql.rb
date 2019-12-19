@@ -18,7 +18,7 @@ module Vorpal
         end
       end
 
-      def update(db_class, db_objects)
+      def update(_db_class, db_objects)
         db_objects.each do |db_object|
           db_object.save!(validate: false)
         end

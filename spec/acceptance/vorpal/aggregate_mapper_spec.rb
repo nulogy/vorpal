@@ -71,7 +71,7 @@ describe 'AggregateMapper' do
     it 'sets the id when first saved' do
       test_mapper = configure
 
-      tree = Tree.new()
+      tree = Tree.new
       test_mapper.persist(tree)
 
       expect(tree.id).to_not be nil
@@ -203,7 +203,7 @@ describe 'AggregateMapper' do
 
   describe 'cycles' do
     it 'persists' do
-     test_mapper = configure_with_cycle
+      test_mapper = configure_with_cycle
 
       tree = Tree.new
       long_branch = Branch.new(length: 100, tree: tree)
