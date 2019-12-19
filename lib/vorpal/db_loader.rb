@@ -11,11 +11,13 @@ module Vorpal
       @db_driver = db_driver
     end
 
+    # @return LoadedObjects
     def load_from_db(ids, config)
       db_roots = @db_driver.load_by_id(config.db_class, ids)
       load_from_db_objects(db_roots, config)
     end
 
+    # @return LoadedObjects
     def load_from_db_objects(db_roots, config)
       @loaded_objects = LoadedObjects.new
       @loaded_objects.add(config, db_roots)
@@ -64,7 +66,7 @@ module Vorpal
     def lookup_by_fk(db_object, has_some_config)
       child_config = has_some_config.child_config
       fk_info = has_some_config.foreign_key_info
-      fk_value = db_object.id
+      fk_value = db_object.id # PRIMARY KEY
       @lookup_instructions.lookup_by_fk(child_config, fk_info, fk_value)
     end
   end

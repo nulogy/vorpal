@@ -90,7 +90,7 @@ module Vorpal
 
     # @private
     def attributes_with_id
-      [:id].concat @attributes
+      [:id].concat @attributes # PRIMARY KEY
     end
 
     private

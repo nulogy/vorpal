@@ -28,9 +28,9 @@ module Vorpal
 
     def key(db_row)
       return nil unless db_row
-      raise "Cannot map a DB row without an id '#{db_row.inspect}' to an entity." if db_row.id.nil?
+      raise "Cannot map a DB row without an id '#{db_row.inspect}' to an entity." if db_row.id.nil? # PRIMARY KEY
       raise "Cannot map a DB row without a Class with a name '#{db_row.inspect}' to an entity." if db_row.class.name.nil?
-      [db_row.id, db_row.class.name]
+      [db_row.id, db_row.class.name] # PRIMARY KEY
     end
   end
 end

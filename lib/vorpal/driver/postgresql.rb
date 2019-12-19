@@ -25,7 +25,7 @@ module Vorpal
       end
 
       def destroy(db_class, ids)
-        db_class.where(id: ids).delete_all
+        db_class.where(id: ids).delete_all # PRIMARY KEY
       end
 
       # Loads instances of the given class by primary key.
@@ -33,7 +33,7 @@ module Vorpal
       # @param db_class [Class] A subclass of ActiveRecord::Base
       # @return [[Object]] An array of entities.
       def load_by_id(db_class, ids)
-        db_class.where(id: ids).to_a
+        db_class.where(id: ids).to_a # PRIMARY KEY
       end
 
       # Loads instances of the given class whose foreign key has the given value.
@@ -102,7 +102,7 @@ module Vorpal
 
       def sequence_name(db_class)
         @sequence_names[db_class] ||= execute(
-          "SELECT substring(column_default from '''(.*)''') FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = $1 AND column_name = 'id' LIMIT 1",
+          "SELECT substring(column_default from '''(.*)''') FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = $1 AND column_name = 'id' LIMIT 1", # PRIMARY KEY
           [db_class.table_name]
         ).rows.first.first
       end

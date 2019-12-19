@@ -29,7 +29,7 @@ module Vorpal
 
       all_owned_objects = all_owned_objects(roots)
       mapping = {}
-      loaded_db_objects = load_owned_from_db(roots.map(&:id).compact, roots.first.class)
+      loaded_db_objects = load_owned_from_db(roots.map(&:id).compact, roots.first.class) # PRIMARY KEY
 
       serialize(all_owned_objects, mapping, loaded_db_objects)
       new_objects = get_unsaved_objects(mapping.keys)
@@ -68,7 +68,7 @@ module Vorpal
       return roots if roots.empty?
       raise InvalidAggregateRoot, 'Nil aggregate roots are not allowed.' if roots.any?(&:nil?)
 
-      destroy_by_id(roots.map(&:id), roots.first.class)
+      destroy_by_id(roots.map(&:id), roots.first.class) # PRIMARY KEY
       roots
     end
 
@@ -79,7 +79,7 @@ module Vorpal
 
       loaded_db_objects = load_owned_from_db(ids, domain_class)
       loaded_db_objects.each do |config, db_objects|
-        @db_driver.destroy(config.db_class, db_objects.map(&:id))
+        @db_driver.destroy(config.db_class, db_objects.map(&:id)) # PRIMARY KEY
       end
       ids
     end
@@ -107,6 +107,7 @@ module Vorpal
       AggregateUtils.group_by_type(roots, @configs)
     end
 
+    # @return LoadedObjects
     def load_from_db(ids, domain_class, only_owned=false)
       DbLoader.new(only_owned, @db_driver).load_from_db(ids, @configs.config_for(domain_class))
     end
@@ -150,10 +151,10 @@ module Vorpal
     def serialize_object(object, config, loaded_db_objects)
       if config.serialization_required?
         attributes = config.serialize(object)
-        if object.id.nil?
+        if object.id.nil? # PRIMARY KEY
           config.build_db_object(attributes)
         else
-          db_object = loaded_db_objects.find_by_id(config, object.id)
+          db_object = loaded_db_objects.find_by_id(config, object.id) # PRIMARY KEY
           config.set_db_object_attributes(db_object, attributes)
           db_object
         end
@@ -164,11 +165,11 @@ module Vorpal
 
     def set_primary_keys(owned_objects, mapping)
       owned_objects.each do |config, objects|
-        in_need_of_primary_keys = objects.find_all { |obj| obj.id.nil? }
+        in_need_of_primary_keys = objects.find_all { |obj| obj.id.nil? } # PRIMARY KEY
         primary_keys = @db_driver.get_primary_keys(config.db_class, in_need_of_primary_keys.length)
         in_need_of_primary_keys.zip(primary_keys).each do |object, primary_key|
-          mapping[object].id = primary_key
-          object.id = primary_key
+          mapping[object].id = primary_key # PRIMARY KEY
+          object.id = primary_key # PRIMARY KEY
         end
       end
       mapping.rehash # needs to happen because setting the id on an AR::Base model changes its hash value
@@ -225,12 +226,12 @@ module Vorpal
     end
 
     def get_unsaved_objects(objects)
-      objects.find_all { |object| object.id.nil? }
+      objects.find_all { |object| object.id.nil? } # PRIMARY KEY
     end
 
     def nil_out_object_ids(objects)
       objects ||= []
-      objects.each { |object| object.id = nil }
+      objects.each { |object| object.id = nil } # PRIMARY KEY
     end
   end
 end
