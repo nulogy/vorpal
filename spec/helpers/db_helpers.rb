@@ -58,9 +58,9 @@ module DbHelpers
   private
 
   def table_name_is_free?(table_name)
-    if (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 0) ||
-      (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 1) ||
-      (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 2)
+    if (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 1) ||
+      (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 2) ||
+      (ActiveRecord::VERSION::MAJOR == 6 && ActiveRecord::VERSION::MINOR == 0)
       !db_connection.data_source_exists?(table_name)
     else
       raise "ActiveRecord Version #{ActiveRecord::VERSION::STRING} is not supported!"
