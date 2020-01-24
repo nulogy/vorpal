@@ -129,6 +129,49 @@ describe 'performance' do
   # update    3.010000   0.290000   3.300000 (  3.850101)
   # load      1.380000   0.010000   1.390000 (  1.561047)
   # destroy   1.050000   0.010000   1.060000 (  1.260379)
+  #
+  # Vorpal 1.0.1, Ruby 2.5.7, ActiveRecord 5.1.7, AR:Import 0.13.0, OSX
+  #               user     system      total        real
+  # create    0.865771   0.102388   0.968159 (  1.525707)
+  # update    2.644134   0.206294   2.850428 (  3.318751)
+  # load      1.246217   0.009570   1.255787 (  1.416289)
+  # destroy   0.743522   0.002833   0.746355 (  0.951756)
+  #
+  # Vorpal 1.0.1, Ruby 2.5.7, ActiveRecord 5.1.7, AR:Import 0.13.0, Dockerized Test DB, OSX
+  #               user     system      total        real
+  # create    0.928937   0.132224   1.061161 (  5.779951)
+  # update    2.980097   0.266119   3.246216 ( 12.187891)
+  # load      1.254854   0.010550   1.265404 (  1.368346)
+  # destroy   0.758912   0.003954   0.762866 (  0.888106)
+  #
+  # Vorpal 1.0.1, Ruby 2.6.3, ActiveRecord 5.2.4.1, AR:Import 0.13.0, OSX
+  #               user     system      total        real
+  # create    0.732053   0.096794   0.828847 (  1.301937)
+  # update    2.041864   0.190059   2.231923 (  2.717304)
+  # load      1.067965   0.006396   1.074361 (  1.244547)
+  # destroy   0.685867   0.002530   0.688397 (  0.910923)
+  #
+  # Vorpal 1.0.1, Ruby 2.6.3, ActiveRecord 5.2.4.1, AR:Import 0.13.0, Dockerized Test DB, OSX
+  #               user     system      total        real
+  # create    0.867153   0.144517   1.011670 (  6.219567)
+  # update    2.429280   0.268099   2.697379 ( 11.714242)
+  # load      1.068408   0.005479   1.073887 (  1.168998)
+  # destroy   0.681347   0.002968   0.684315 (  0.803671)
+  #
+  # Vorpal 1.0.1, Ruby 2.7.0, ActiveRecord 6.0.2, AR:Import 1.0.3, OSX
+  #               user     system      total        real
+  # create    0.637130   0.005220   0.642350 (  0.725564)
+  # update    1.488417   0.010347   1.498764 (  1.685821)
+  # load      1.209270   0.014584   1.223854 (  1.443170)
+  # destroy   0.692401   0.003984   0.696385 (  0.926835)
+  #
+  # Vorpal 1.0.1, Ruby 2.7.0, ActiveRecord 6.0.2, AR:Import 1.0.3, Dockerized Test DB, OSX
+  #               user     system      total        real
+  # create    0.661741   0.008410   0.670151 (  0.785426)
+  # update    1.419727   0.005630   1.425357 (  1.539234)
+  # load      1.042127   0.006379   1.048506 (  1.156116)
+  # destroy   0.693851   0.003333   0.697184 (  0.829565)
+  #
   it 'benchmarks all operations' do
     trees = build_trees(1000)
     Benchmark.bm(7) do |x|
