@@ -2,15 +2,12 @@
 
 Separate your domain model from your persistence mechanism. Some problems call for a really sharp tool.
 
-
-> One, two! One, two! and through and through
-
-> The vorpal blade went snicker-snack!
-
-> He left it dead, and with its head
-
+> One, two! One, two! and through and through<br/>
+> The vorpal blade went snicker-snack!<br/>
+> He left it dead, and with its head<br/>
 > He went galumphing back.
 
+\- [Jabberwocky](https://www.poetryfoundation.org/poems/42916/jabberwocky) by Lewis Carroll
 
 ## Overview
 Vorpal is a [Data Mapper](http://martinfowler.com/eaaCatalog/dataMapper.html)-style ORM (object relational mapper) framelet that persists POROs (plain old Ruby objects) to a relational DB. It has been heavily influenced by concepts from [Domain Driven Design](http://www.infoq.com/minibooks/domain-driven-design-quickly).
