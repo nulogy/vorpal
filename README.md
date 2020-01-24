@@ -244,11 +244,11 @@ For example:
 3. Install [DirEnv](https://direnv.net/docs/installation.html) (`brew install direnv`)
 4. Install Docker Desktop Community Edition (`brew cask install docker`)
 5. Start Docker Desktop Community Edition (`CMD+space docker ENTER`)
-6. Install Ruby (`rbenv install 2.6.3`)
+6. Install Ruby (`rbenv install 2.7.0`)
 7. Install PostgreSQL (`brew install postgresql`)
 8. Clone the repo (`git clone git@github.com:nulogy/vorpal.git`) and `cd` to the project root.
 8. Copy the contents of `gemfiles/rails_<version>.gemfile.lock` into a `Gemfile.lock` file
-  at the root of the project. (`cp gemfiles/rails_5_2.gemfile.lock gemfile.lock`)
+  at the root of the project. (`cp gemfiles/rails_6_0.gemfile.lock gemfile.lock`)
 9. `bundle`
 
 ### Running Tests
