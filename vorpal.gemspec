@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "equalizer"
   spec.add_runtime_dependency "activesupport"
 
-  spec.add_development_dependency "rake", "~> 10"
+  spec.add_development_dependency "rake", "~> 13"
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "virtus", "~> 1.0"
   spec.add_development_dependency "appraisal", "~> 2.2"
