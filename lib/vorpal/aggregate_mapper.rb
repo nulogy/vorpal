@@ -84,6 +84,17 @@ module Vorpal
       @engine
     end
 
+    # Returns a 'Vorpal-aware' [ActiveRecord::Relation](https://api.rubyonrails.org/classes/ActiveRecord/Relation.html)
+    # for the ActiveRecord object underlying the domain entity mapped by this mapper.
+    #
+    # This method allows you to easily access the power of ActiveRecord::Relation to do more complex
+    # queries in your repositories.
+    #
+    # The ActiveRecord::Relation is 'Vorpal-aware' because it has the {#load_one} and {#load_many} methods
+    # mixed in so that you can get the POROs from your domain model instead of the ActiveRecord
+    # objects normally returned by ActiveRecord::Relation.
+    #
+    # @return [ActiveRecord::Relation]
     def query
       @engine.query(@domain_class)
     end

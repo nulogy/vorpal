@@ -203,11 +203,12 @@ It also does not do some things that you might expect from other ORMs:
 
 **A.** Create a method on a [Repository](http://martinfowler.com/eaaCatalog/repository.html)! They have full access to the DB/ORM so you can use [Arel](https://github.com/rails/arel) and go [crazy](http://asciicasts.com/episodes/239-activerecord-relation-walkthrough) or use direct SQL if you want. 
 
-For example:
+For example, use the [#query](https://rubydoc.info/github/nulogy/vorpal/master/Vorpal/AggregateMapper#query-instance_method) method on the [AggregateMapper](https://rubydoc.info/github/nulogy/vorpal/master/Vorpal/AggregateMapper) to access the underyling [ActiveRecordRelation](https://api.rubyonrails.org/classes/ActiveRecord/Relation.html):
 
 ```ruby
-  def find_all
-    @mapper.query.load_all # use the mapper to load all the aggregates
+  def find_special_ones
+    # use `load_all` or `load_one` to convert from ActiveRecord objects to domain POROs.
+    @mapper.query.where(special: true).load_all 
   end
 ```
 
