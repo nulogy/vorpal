@@ -73,7 +73,8 @@ describe Vorpal::Driver::Postgresql do
     it 'sets the updated_at column' do
       actor = create_actor
 
-      Timecop.freeze(Time.local(2000, 1, 1)) do
+      travel_to(Time.local(2000, 1, 1)) do
+        actor.touch
         db_driver.update(PostgresDriverSpec::Actor, [actor])
       end
 
@@ -83,7 +84,7 @@ describe Vorpal::Driver::Postgresql do
 
     it 'leaves the created_at column alone' do
       actor = create_actor
-      old_created_at = actor.created_at
+      old_created_at = actor.reload.created_at # reload because older versions of PG will truncate timestamps
 
       db_driver.update(PostgresDriverSpec::Actor, [actor])
 
