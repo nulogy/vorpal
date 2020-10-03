@@ -181,13 +181,11 @@ It also does not do some things that you might expect from other ORMs:
 1. Only supports PostgreSQL.
 
 ## Future Enhancements
-* Aggregate updated_at.
-* Support for other DBMSs (no MySQL support until ids can be generated without inserting into a table!)
-* Support for other ORMs.
-* Value objects.
-* Remove dependency on ActiveRecord (optimistic locking? updated_at, created_at support? Data type conversions? TimeZone support?)
-* More efficient updates (use fewer queries.)
+* Support for UUID primary keys.
 * Nicer DSL for specifying attributes that have different names in the domain model than in the DB.
+* Show how to implement POROs without using Virtus (it is unsupported and can be crazy slow)
+* Aggregate updated_at.
+* Better support for value objects.
 
 ## FAQ
 
@@ -229,6 +227,10 @@ For example, use the [#query](https://rubydoc.info/github/nulogy/vorpal/master/V
 **Q.** How do I get serialization?
 
 **A.** You can use [ActiveModel::Serialization](http://api.rubyonrails.org/classes/ActiveModel/Serialization.html) or [ActiveModel::Serializers](https://github.com/rails-api/active_model_serializers) but they are not heartily recommended. The former is too coupled to the model and the latter is too coupled to Rails controllers. Vorpal uses [SimpleSerializer](https://github.com/nulogy/simple_serializer) for this purpose.
+
+**Q.** Are `updated_at` and `created_at` supported?
+
+**A.** Yes. If they exist on your database tables, they will behave exactly as if you were using vanilla ActiveRecord.
 
 ## Contributing
 
