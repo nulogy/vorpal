@@ -9,7 +9,12 @@ module Vorpal
       end
 
       def insert(db_class, db_objects)
-        if defined? ActiveRecord::Import
+        if ActiveRecord::VERSION::MAJOR >= 6
+          return if db_objects.empty?
+
+          update_timestamps_on_create(db_class, db_objects)
+          db_class.insert_all!(db_objects.map(&:attributes))
+        elsif defined? ActiveRecord::Import
           db_class.import(db_objects, validate: false)
         else
           db_objects.each do |db_object|
@@ -19,8 +24,15 @@ module Vorpal
       end
 
       def update(db_class, db_objects)
-        db_objects.each do |db_object|
-          db_object.save!(validate: false)
+        if ActiveRecord::VERSION::MAJOR >= 6
+          return if db_objects.empty?
+
+          update_timestamps_on_update(db_class, db_objects)
+          db_class.upsert_all(db_objects.map(&:attributes))
+        else
+          db_objects.each do |db_object|
+            db_object.save!(validate: false)
+          end
         end
       end
 
@@ -99,6 +111,30 @@ module Vorpal
       end
 
       private
+
+      # Adapted from https://github.com/rails/rails/blob/614580270d7789e5275defc3da020ce27b3b2302/activerecord/lib/active_record/timestamp.rb#L99
+      def update_timestamps_on_create(db_class, db_objects)
+        return unless db_class.record_timestamps
+
+        current_time = db_class.current_time_from_proper_timezone
+        db_objects.each do |db_object|
+          db_class.all_timestamp_attributes_in_model.each do |column|
+            db_object.write_attribute(column, current_time) unless db_object.read_attribute(column)
+          end
+        end
+      end
+
+      #Adapted from https://github.com/rails/rails/blob/614580270d7789e5275defc3da020ce27b3b2302/activerecord/lib/active_record/timestamp.rb#L111
+      def update_timestamps_on_update(db_class, db_objects)
+        return unless db_class.record_timestamps
+
+        current_time = db_class.current_time_from_proper_timezone
+        db_objects.each do |db_object|
+          db_class.timestamp_attributes_for_update_in_model.each do |column|
+            db_object.write_attribute(column, current_time)
+          end
+        end
+      end
 
       def sequence_name(db_class)
         @sequence_names[db_class] ||= execute(

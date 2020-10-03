@@ -49,6 +49,16 @@ module DbHelpers
     end
   end
 
+  # Has the same API as the Rails create_table, except doesn't die when the
+  # table already exists
+  def create_table(table_name, force: nil, **options)
+    return unless table_name_is_free?(table_name) || force
+
+    db_connection.create_table(table_name, **{ force: force, **options }) do |t|
+      yield t
+    end
+  end
+
   def defineAr(table_name)
     Class.new(ActiveRecord::Base) do
       self.table_name = table_name
