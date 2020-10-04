@@ -1,37 +1,15 @@
 require 'unit_spec_helper'
 require 'vorpal'
-require 'virtus'
 
 describe Vorpal::DbLoader do
 
   class Post; end
 
-  class Comment
-    include Virtus.model
+  class Comment; end
 
-    attribute :id, Integer
-    attribute :post, Post
-  end
+  PostDB = Struct.new(:id, :best_comment_id, keyword_init: true)
 
-  class Post
-    include Virtus.model
-
-    attribute :id, Integer
-    attribute :best_comment, Comment
-    attribute :comments, Array[Comment]
-  end
-
-  class PostDB
-    include Virtus.model
-    attribute :id, Integer
-    attribute :best_comment_id, Integer
-  end
-
-  class CommentDB
-    include Virtus.model
-    attribute :id, Integer
-    attribute :post_id, Integer
-  end
+  CommentDB = Struct.new(:id, :post_id, keyword_init: true)
 
   before(:all) do
     # define_table('comments', {post_id: :integer}, false)

@@ -1,51 +1,60 @@
 require 'integration_spec_helper'
 require 'vorpal'
-require 'virtus'
 
 describe 'AggregateMapper' do
-
   # for testing polymorphic associations
   class Bug
-    include Virtus.model
+    attr_accessor :id
+    attr_accessor :name
+    attr_accessor :lives_on
 
-    attribute :id, Integer
-    attribute :name, String
-    attribute :lives_on, Object
+    def initialize(id: nil, name: "", lives_on: nil)
+      @id, @name, @lives_on = id, name, lives_on
+    end
   end
 
-  class Tree; end
-
   class Trunk
-    include Virtus.model
+    attr_accessor :id
+    attr_accessor :length
+    attr_accessor :bugs
+    attr_accessor :tree
 
-    attribute :id, Integer
-    attribute :length, Decimal
-    attribute :bugs, Array[Bug]
-    attribute :tree, Tree
+    def initialize(id: nil, length: 0, bugs: [], tree: nil)
+      @id, @length, @bugs, @tree = id, length, bugs, tree
+    end
   end
 
   class Branch
-    include Virtus.model
+    attr_accessor :id
+    attr_accessor :length
+    attr_accessor :tree
+    attr_accessor :branches
+    attr_accessor :bugs
 
-    attribute :id, Integer
-    attribute :length, Decimal
-    attribute :tree, Tree
-    attribute :branches, Array[Branch]
-    attribute :bugs, Array[Bug]
+    def initialize(id: nil, length: 0, tree: nil, branches: [], bugs: [])
+      @id, @length, @tree, @branches, @bugs = id, length, tree, branches, bugs
+    end
   end
 
   class Fissure < ActiveRecord::Base; end
   class Swamp < ActiveRecord::Base; end
 
   class Tree
-    include Virtus.model
+    attr_accessor :id
+    attr_accessor :name
+    attr_accessor :trunk
+    attr_accessor :environment
+    attr_accessor :fissures
+    attr_accessor :branches
 
-    attribute :id, Integer
-    attribute :name, String
-    attribute :trunk, Trunk
-    attribute :environment, Object
-    attribute :fissures, Array[Fissure]
-    attribute :branches, Array[Branch]
+    def initialize(id: nil, name: "", trunk: nil, environment: nil, fissures: [], branches: [])
+      @id = id
+      @name = name
+      @trunk = trunk
+      @environment = environment
+      @fissures = fissures
+      @branches = branches
+    end
   end
 
   before(:all) do
