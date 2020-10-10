@@ -1,6 +1,8 @@
 language: ruby
 services:
   - postgresql
+before_install:
+  - gem install bundler
 matrix:
   include:
     - rvm: 2.5
