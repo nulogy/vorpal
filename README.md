@@ -50,10 +50,6 @@ class Branch
   attr_accessor :length
   attr_accessor :diameter
   attr_accessor :tree
-
-  def initialize(id: nil, length: 0, diameter: nil, tree: nil)
-    @id, @length, @diameter, @tree = id, length, diameter, tree
-  end
 end
 
 class Gardener
@@ -64,10 +60,6 @@ class Tree
   attr_accessor :name
   attr_accessor :gardener
   attr_accessor :branches
-
-  def initialize(id: nil, name: "", gardener: nil, branches: [])
-    @id, @name, @gardener, @branches = id, name, gardener, branches
-  end
 end
 ```
 
