@@ -1,13 +1,15 @@
 require 'unit_spec_helper'
 
-require 'virtus'
 require 'vorpal/loaded_objects'
 require 'vorpal/configs'
 
 describe Vorpal::LoadedObjects do
   class TestObject
-    include Virtus.model
-    attribute :id, Integer
+    def initialize(id:)
+      @id = id
+    end
+
+    attr_reader :id
   end
 
   it 'does not accept duplicate objects' do

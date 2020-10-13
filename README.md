@@ -45,27 +45,21 @@ Or install it yourself as:
 Start with a domain model of POROs and AR::Base objects that form an aggregate:
 
 ```ruby
-class Tree; end
-
 class Branch
-  include Virtus.model
-
-  attribute :id, Integer
-  attribute :length, Decimal
-  attribute :diameter, Decimal
-  attribute :tree, Tree
+  attr_accessor :id
+  attr_accessor :length
+  attr_accessor :diameter
+  attr_accessor :tree
 end
 
-class Gardener < ActiveRecord::Base
+class Gardener
 end
 
 class Tree
-  include Virtus.model
-
-  attribute :id, Integer
-  attribute :name, String
-  attribute :gardener, Gardener
-  attribute :branches, Array[Branch]
+  attr_accessor :id
+  attr_accessor :name
+  attr_accessor :gardener
+  attr_accessor :branches
 end
 ```
 

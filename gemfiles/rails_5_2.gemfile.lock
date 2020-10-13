@@ -27,24 +27,15 @@ GEM
       rake
       thor (>= 0.14.0)
     arel (9.0.0)
-    axiom-types (0.1.1)
-      descendants_tracker (~> 0.0.4)
-      ice_nine (~> 0.11.0)
-      thread_safe (~> 0.3, >= 0.3.1)
     codecov (0.2.11)
       json
       simplecov
-    coercible (1.0.0)
-      descendants_tracker (~> 0.0.1)
     concurrent-ruby (1.1.7)
-    descendants_tracker (0.0.4)
-      thread_safe (~> 0.3, >= 0.3.1)
     diff-lcs (1.4.4)
     docile (1.3.2)
     equalizer (0.0.11)
     i18n (1.8.5)
       concurrent-ruby (~> 1.0)
-    ice_nine (0.11.2)
     json (2.3.1)
     minitest (5.14.2)
     pg (0.18.4)
@@ -71,11 +62,6 @@ GEM
     thread_safe (0.3.6)
     tzinfo (1.2.7)
       thread_safe (~> 0.1)
-    virtus (1.0.5)
-      axiom-types (~> 0.1)
-      coercible (~> 1.0)
-      descendants_tracker (~> 0.0, >= 0.0.3)
-      equalizer (~> 0.0, >= 0.0.9)
 
 PLATFORMS
   ruby
@@ -88,11 +74,10 @@ DEPENDENCIES
   pg (~> 0.18.0)
   rake (~> 13)
   rspec (~> 3.0)
-  virtus (~> 1.0)
   vorpal!
 
 RUBY VERSION
    ruby 2.6.3p62
 
 BUNDLED WITH
-   1.17.3
+   2.1.4

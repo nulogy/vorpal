@@ -1,37 +1,43 @@
 require 'integration_spec_helper'
 require 'vorpal'
-require 'virtus'
 
 module Performance
 describe 'performance' do
-
-  class Bug
-    include Virtus.model
-
-    attribute :id, Integer
-    attribute :name, String
-    attribute :lives_on, Object
+  class Model
+    def initialize(attributes = {})
+      attributes.each do |name, value|
+        instance_variable_set("@#{name}", value)
+      end
+    end
   end
 
-  class Tree; end
-
-  class Trunk
-    include Virtus.model
-
-    attribute :id, Integer
-    attribute :length, Decimal
-    attribute :bugs, Array[Bug]
-    attribute :tree, Tree
+  class Bug < Model
+    attr_accessor :id
+    attr_accessor :name
+    attr_accessor :lives_on
   end
 
-  class Branch
-    include Virtus.model
+  class Tree < Model; end
 
-    attribute :id, Integer
-    attribute :length, Decimal
-    attribute :tree, Tree
-    attribute :branches, Array[Branch]
-    attribute :bugs, Array[Bug]
+  class Trunk < Model
+    attr_accessor :id
+    attr_accessor :length
+    attr_accessor :bugs
+    attr_accessor :tree
+  end
+
+  class Branch < Model
+    attr_accessor :id
+    attr_accessor :length
+    attr_accessor :tree
+    attr_accessor :branches
+    attr_accessor :bugs
+
+    def initialize(*args)
+      @branches = []
+      @bugs = []
+      super
+    end
 
     def add_branch(branch_options)
       branch = Branch.new(branch_options.merge(branch: self))
@@ -40,13 +46,16 @@ describe 'performance' do
     end
   end
 
-  class Tree
-    include Virtus.model
+  class Tree < Model
+    attr_accessor :id
+    attr_accessor :name
+    attr_accessor :trunk
+    attr_accessor :branches
 
-    attribute :id, Integer
-    attribute :name, String
-    attribute :trunk, Trunk
-    attribute :branches, Array[Branch]
+    def initialize(*args)
+      @branches = []
+      super
+    end
 
     def set_trunk(trunk)
       trunk.tree = self
