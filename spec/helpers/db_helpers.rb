@@ -39,9 +39,11 @@ module DbHelpers
   end
 
   # when you change a table's columns, set force to true to re-generate the table in the DB
-  def define_table(table_name, columns, force)
+  def define_table(table_name, columns, force, primary_key = :id)
     if table_name_is_free?(table_name) || force
-      db_connection.create_table(table_name, force: true) do |t|
+      options = { force: true }
+      options.merge!(primary_key: primary_key, id: false) unless primary_key == :id
+      db_connection.create_table(table_name, **options) do |t|
         columns.each do |name, type|
           t.send(type, name)
         end

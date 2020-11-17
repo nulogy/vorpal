@@ -102,9 +102,9 @@ describe 'AggregateMapper' do
     define_table('trees', {name: :text, trunk_id: :integer, environment_id: :integer, environment_type: :string}, false)
     define_table('trunks', {length: :decimal}, false)
     define_table('swamps', {}, false)
-    define_table('professors', {uuid: :uuid, name: :string}, false)
-    define_table('courses', {uuid: :uuid, class_code: :string, professor_uuid: :uuid}, false)
-    define_table('lectures', {uuid: :uuid, topic: :string, course_uuid: :uuid}, false)
+    define_table('professors', {uuid: :uuid, name: :string}, true, :uuid)
+    define_table('courses', {uuid: :uuid, class_code: :string, professor_uuid: :uuid}, true, :uuid)
+    define_table('lectures', {uuid: :uuid, topic: :string, course_uuid: :uuid}, true, :uuid)
   end
 
   describe 'new records' do
@@ -149,6 +149,9 @@ describe 'AggregateMapper' do
         test_mapper.persist(course)
 
         expect(course.uuid).to_not be nil
+
+        course_db = db_class_for(Course, test_mapper).first
+        expect(course_db.uuid).to eq course.uuid
       end
     end
   end
