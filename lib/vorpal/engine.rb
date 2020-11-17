@@ -154,7 +154,7 @@ module Vorpal
         if object.send(config.primary_key).nil?
           config.build_db_object(attributes)
         else
-          db_object = loaded_db_objects.find_by_id(config, object.id)
+          db_object = loaded_db_objects.find_by_id(config, object.send(config.primary_key))
           config.set_db_object_attributes(db_object, attributes)
           db_object
         end

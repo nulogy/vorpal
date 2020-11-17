@@ -19,8 +19,8 @@ module Vorpal
 
     def add(config, objects)
       objects_to_add = objects.map do |object|
-        if !already_loaded?(config, object.id)
-          @objects_by_id[[config.domain_class.name, object.id]] = object
+        if !already_loaded?(config, object.send(config.primary_key))
+          @objects_by_id[[config.domain_class.name, object.send(config.primary_key)]] = object
         end
       end
       add_to_hash(@objects, config, objects_to_add.compact)

@@ -137,6 +137,8 @@ module Vorpal
       @belongs_tos = []
       @has_ones = []
       @local_association_configs = []
+      @primary_key = :id
+      @primary_key_type = :integer
 
       attrs.each do |k,v|
         instance_variable_set("@#{k}", v)

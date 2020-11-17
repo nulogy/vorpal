@@ -14,7 +14,7 @@ module Vorpal
       @belongs_tos = []
       @attributes = []
       @primary_key = :id
-      @primary_key_type = nil
+      @primary_key_type = :integer
       @defaults_generator = DefaultsGenerator.new(clazz, db_driver)
     end
 
@@ -25,8 +25,8 @@ module Vorpal
     end
 
     def primary_key(primary_key, **options)
-      @primary_key = primary_key
-      @primary_key_type = options.fetch(:type, :integer)
+      @primary_key = primary_key if primary_key.present?
+      @primary_key_type = options[:type] if options.key?(:type)
     end
 
     # Defines a one-to-many association to another type where the foreign key is stored on the child.

@@ -44,8 +44,8 @@ module Vorpal
       #
       # @param db_class [Class] A subclass of ActiveRecord::Base
       # @return [[Object]] An array of entities.
-      def load_by_id(db_class, ids)
-        db_class.where(id: ids).to_a
+      def load_by_id(db_class, ids, field = :id)
+        db_class.where(field => ids).to_a
       end
 
       # Loads instances of the given class whose foreign key has the given value.

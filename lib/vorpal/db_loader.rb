@@ -12,7 +12,7 @@ module Vorpal
     end
 
     def load_from_db(ids, config)
-      db_roots = @db_driver.load_by_id(config.db_class, ids)
+      db_roots = @db_driver.load_by_id(config.db_class, ids, config.primary_key)
       load_from_db_objects(db_roots, config)
     end
 
