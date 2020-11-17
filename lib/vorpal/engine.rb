@@ -29,7 +29,8 @@ module Vorpal
 
       all_owned_objects = all_owned_objects(roots)
       mapping = {}
-      loaded_db_objects = load_owned_from_db(roots.map(&:id).compact, roots.first.class)
+      config = @configs.config_for(roots.first.class)
+      loaded_db_objects = load_owned_from_db(roots.map(&config.primary_key).compact, roots.first.class)
 
       serialize(all_owned_objects, mapping, loaded_db_objects)
       new_objects = get_unsaved_objects(mapping.keys)
@@ -150,7 +151,7 @@ module Vorpal
     def serialize_object(object, config, loaded_db_objects)
       if config.serialization_required?
         attributes = config.serialize(object)
-        if object.id.nil?
+        if object.send(config.primary_key).nil?
           config.build_db_object(attributes)
         else
           db_object = loaded_db_objects.find_by_id(config, object.id)
@@ -164,11 +165,11 @@ module Vorpal
 
     def set_primary_keys(owned_objects, mapping)
       owned_objects.each do |config, objects|
-        in_need_of_primary_keys = objects.find_all { |obj| obj.id.nil? }
-        primary_keys = @db_driver.get_primary_keys(config.db_class, in_need_of_primary_keys.length)
+        in_need_of_primary_keys = objects.find_all { |obj| obj.send(config.primary_key).nil? }
+        primary_keys = @db_driver.get_primary_keys(config.db_class, in_need_of_primary_keys.length, config.primary_key)
         in_need_of_primary_keys.zip(primary_keys).each do |object, primary_key|
           mapping[object].id = primary_key
-          object.id = primary_key
+          object.send("#{config.primary_key}=", primary_key)
         end
       end
       mapping.rehash # needs to happen because setting the id on an AR::Base model changes its hash value
@@ -225,12 +226,16 @@ module Vorpal
     end
 
     def get_unsaved_objects(objects)
-      objects.find_all { |object| object.id.nil? }
+      config = @configs.config_for(objects.first.class) if objects
+      objects.find_all do |object|
+        object.send(config.primary_key).nil?
+      end
     end
 
     def nil_out_object_ids(objects)
       objects ||= []
-      objects.each { |object| object.id = nil }
+      config = @configs.config_for(objects.first.class) if objects.length > 0
+      objects.each { |object| object.send("#{config.primary_key}=", nil) }
     end
   end
 end

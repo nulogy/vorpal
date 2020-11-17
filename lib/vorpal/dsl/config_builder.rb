@@ -13,6 +13,7 @@ module Vorpal
       @has_ones = []
       @belongs_tos = []
       @attributes = []
+      @primary_key = :id
       @defaults_generator = DefaultsGenerator.new(clazz, db_driver)
     end
 
@@ -20,6 +21,10 @@ module Vorpal
     # if a serializer and deserializer were provided.
     def attributes(*attributes)
       @attributes.concat(attributes)
+    end
+
+    def primary_key(primary_key)
+      @primary_key = primary_key
     end
 
     # Defines a one-to-many association to another type where the foreign key is stored on the child.
@@ -90,7 +95,7 @@ module Vorpal
 
     # @private
     def attributes_with_id
-      [:id].concat @attributes
+      [@primary_key].concat @attributes
     end
 
     private
@@ -101,6 +106,7 @@ module Vorpal
         db_class: @class_options[:to] || @defaults_generator.build_db_class(@class_options[:table_name]),
         serializer: @class_options[:serializer] || @defaults_generator.serializer(attributes_with_id),
         deserializer: @class_options[:deserializer] || @defaults_generator.deserializer(attributes_with_id),
+        primary_key: @primary_key,
       )
     end
 

@@ -129,7 +129,7 @@ module Vorpal
   # @private
   class ClassConfig
     include Equalizer.new(:domain_class, :db_class)
-    attr_reader :serializer, :deserializer, :domain_class, :db_class, :local_association_configs
+    attr_reader :serializer, :deserializer, :domain_class, :db_class, :local_association_configs, :primary_key
     attr_accessor :has_manys, :belongs_tos, :has_ones
 
     def initialize(attrs)

@@ -57,6 +57,44 @@ describe 'AggregateMapper' do
     end
   end
 
+  class Professor
+    attr_accessor :uuid
+    attr_accessor :name
+    attr_accessor :courses
+
+    def initialize(uuid: nil, name: "", courses: [])
+      @uuid = uuid
+      @name = name
+      @courses = courses
+    end
+  end
+
+  class Course
+    attr_accessor :uuid
+    attr_accessor :class_code
+    attr_accessor :professor
+    attr_accessor :lectures
+
+    def initialize(uuid: nil, class_code: "", professor: nil, lectures: [])
+      @uuid = uuid
+      @class_code = class_code
+      @professor = professor
+      @lectures = lectures
+    end
+  end
+
+  class Lecture
+    attr_accessor :uuid
+    attr_accessor :topic
+    attr_accessor :course
+
+    def initialize(uuid: nil, topic: "", course: nil)
+      @uuid = uuid
+      @topic = topic
+      @course = course
+    end
+  end
+
   before(:all) do
     define_table('branches', {length: :decimal, tree_id: :integer, branch_id: :integer}, false)
     define_table('bugs', {name: :text, lives_on_id: :integer, lives_on_type: :string}, false)
@@ -64,6 +102,9 @@ describe 'AggregateMapper' do
     define_table('trees', {name: :text, trunk_id: :integer, environment_id: :integer, environment_type: :string}, false)
     define_table('trunks', {length: :decimal}, false)
     define_table('swamps', {}, false)
+    define_table('professors', {uuid: :uuid, name: :string}, false)
+    define_table('courses', {uuid: :uuid, class_code: :string, professor_uuid: :uuid}, false)
+    define_table('lectures', {uuid: :uuid, topic: :string, course_uuid: :uuid}, false)
   end
 
   describe 'new records' do
@@ -98,6 +139,17 @@ describe 'AggregateMapper' do
       test_mapper.persist(tree)
 
       expect(Fissure.first.length).to eq 21
+    end
+
+    context 'when using uuid as primary key' do
+      it 'sets the uuid when first saved' do
+        test_mapper = configure_with_uuid_primary_key
+
+        course = Course.new(class_code: "ORMs")
+        test_mapper.persist(course)
+
+        expect(course.uuid).to_not be nil
+      end
     end
   end
 
@@ -887,6 +939,28 @@ private
       map Fissure, to: Fissure
     end
     engine.mapper_for(Tree)
+  end
+
+  def configure_with_uuid_primary_key
+    engine = Vorpal.define do
+      map Course do
+        attributes :class_code
+        primary_key :uuid
+        belongs_to :professor, fk: "professor_uuid"
+        has_many :lectures
+      end
+
+      map Professor do
+        attributes :name
+        primary_key :uuid
+      end
+
+      map Lecture do
+        attributes :topic
+        primary_key :uuid
+      end
+    end
+    engine.mapper_for(Course)
   end
 
   def configure_has_one

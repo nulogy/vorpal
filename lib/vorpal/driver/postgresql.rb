@@ -64,9 +64,9 @@ module Vorpal
       #
       # @param db_class [Class] A subclass of ActiveRecord::Base
       # @return [[Integer]] An array of unused primary keys.
-      def get_primary_keys(db_class, count)
-        result = execute("select nextval($1) from generate_series(1,$2);", [sequence_name(db_class), count])
-        result.rows.map(&:first).map(&:to_i)
+      def get_primary_keys(db_class, count, type = :integer)
+        raise if !respond_to?("generate_primary_keys_#{type}", true)
+        send("generate_primary_keys_#{type}", db_class, count)
       end
 
       # Builds an ORM Class for accessing data in the given DB table.
@@ -111,6 +111,15 @@ module Vorpal
       end
 
       private
+
+      def generate_primary_keys_integer(db_class, count)
+        result = execute("select nextval($1) from generate_series(1,$2);", [sequence_name(db_class), count])
+        result.rows.map(&:first).map(&:to_i)
+      end
+
+      def generate_primary_keys_uuid(_db_class, count)
+        Array.new(count) { SecureRandom.uuid }
+      end
 
       # Adapted from https://github.com/rails/rails/blob/614580270d7789e5275defc3da020ce27b3b2302/activerecord/lib/active_record/timestamp.rb#L99
       def update_timestamps_on_create(db_class, db_objects)
