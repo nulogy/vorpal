@@ -945,7 +945,7 @@ private
     engine = Vorpal.define do
       map Course do
         attributes :class_code
-        primary_key :uuid
+        primary_key :uuid, type: :uuid
         belongs_to :professor, fk: "professor_uuid"
         has_many :lectures
       end

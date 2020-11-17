@@ -166,7 +166,7 @@ module Vorpal
     def set_primary_keys(owned_objects, mapping)
       owned_objects.each do |config, objects|
         in_need_of_primary_keys = objects.find_all { |obj| obj.send(config.primary_key).nil? }
-        primary_keys = @db_driver.get_primary_keys(config.db_class, in_need_of_primary_keys.length, config.primary_key)
+        primary_keys = @db_driver.get_primary_keys(config.db_class, in_need_of_primary_keys.length, config.primary_key_type)
         in_need_of_primary_keys.zip(primary_keys).each do |object, primary_key|
           mapping[object].id = primary_key
           object.send("#{config.primary_key}=", primary_key)
