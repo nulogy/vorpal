@@ -105,7 +105,7 @@ module Vorpal
     def build_class_config
       Vorpal::ClassConfig.new(
         domain_class: @domain_class,
-        db_class: @class_options[:to] || @defaults_generator.build_db_class(@class_options[:table_name]),
+        db_class: @class_options[:to] || @defaults_generator.build_db_class(@class_options[:table_name],  @primary_key),
         serializer: @class_options[:serializer] || @defaults_generator.serializer(attributes_with_id),
         deserializer: @class_options[:deserializer] || @defaults_generator.deserializer(attributes_with_id),
         primary_key: @primary_key,

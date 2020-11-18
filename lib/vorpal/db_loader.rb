@@ -37,11 +37,11 @@ module Vorpal
     def explore_objects(config, objects_to_explore)
       objects_to_explore.each do |db_object|
         config.has_manys.each do |has_many_config|
-          lookup_by_fk(db_object, has_many_config) if explore_association?(has_many_config)
+          lookup_by_fk(db_object, has_many_config, config.primary_key) if explore_association?(has_many_config)
         end
 
         config.has_ones.each do |has_one_config|
-          lookup_by_fk(db_object, has_one_config) if explore_association?(has_one_config)
+          lookup_by_fk(db_object, has_one_config, config.primary_key) if explore_association?(has_one_config)
         end
 
         config.belongs_tos.each do |belongs_to_config|
@@ -61,10 +61,10 @@ module Vorpal
       @lookup_instructions.lookup_by_id(child_config, id)
     end
 
-    def lookup_by_fk(db_object, has_some_config)
+    def lookup_by_fk(db_object, has_some_config, primary_key)
       child_config = has_some_config.child_config
       fk_info = has_some_config.foreign_key_info
-      fk_value = db_object.id
+      fk_value = db_object.send(primary_key)
       @lookup_instructions.lookup_by_fk(child_config, fk_info, fk_value)
     end
   end

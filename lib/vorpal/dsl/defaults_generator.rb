@@ -11,8 +11,8 @@ module Vorpal
       @db_driver = db_driver
     end
 
-    def build_db_class(user_table_name)
-      @db_driver.build_db_class(@domain_class, user_table_name || table_name)
+    def build_db_class(user_table_name, primary_key)
+      @db_driver.build_db_class(@domain_class, user_table_name || table_name, primary_key)
     end
 
     def table_name

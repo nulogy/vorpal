@@ -74,12 +74,14 @@ describe 'AggregateMapper' do
     attr_accessor :class_code
     attr_accessor :professor
     attr_accessor :lectures
+    attr_accessor :assignments
 
-    def initialize(uuid: nil, class_code: "", professor: nil, lectures: [])
+    def initialize(uuid: nil, class_code: "", professor: nil, lectures: [], assignments: [])
       @uuid = uuid
       @class_code = class_code
       @professor = professor
       @lectures = lectures
+      @assignments = assignments
     end
   end
 
@@ -94,6 +96,7 @@ describe 'AggregateMapper' do
       @course = course
     end
   end
+  class Assignment < ActiveRecord::Base; end
 
   before(:all) do
     define_table('branches', {length: :decimal, tree_id: :integer, branch_id: :integer}, false)
@@ -102,9 +105,10 @@ describe 'AggregateMapper' do
     define_table('trees', {name: :text, trunk_id: :integer, environment_id: :integer, environment_type: :string}, false)
     define_table('trunks', {length: :decimal}, false)
     define_table('swamps', {}, false)
-    define_table('professors', {uuid: :uuid, name: :string}, true, :uuid)
-    define_table('courses', {uuid: :uuid, class_code: :string, professor_uuid: :uuid}, true, :uuid)
-    define_table('lectures', {uuid: :uuid, topic: :string, course_uuid: :uuid}, true, :uuid)
+    define_table('professors', {name: :string}, false, :uuid)
+    define_table('courses', {class_code: :string, professor_uuid: :uuid}, false, :uuid)
+    define_table('lectures', {topic: :string, course_uuid: :uuid}, false, :uuid)
+    define_table('assignments', {topic: :string, course_uuid: :uuid}, false, :uuid)
   end
 
   describe 'new records' do
@@ -142,16 +146,37 @@ describe 'AggregateMapper' do
     end
 
     context 'when using uuid as primary key' do
+      it 'saves attributes' do
+        test_mapper = configure_with_uuid_primary_key
+
+        course = Course.new(class_code: "ORMS1000")
+        test_mapper.persist(course)
+
+        course_db = db_class_for(Course, test_mapper).first
+        expect(course_db.class_code).to eq 'ORMS1000'
+      end
+
       it 'sets the uuid when first saved' do
         test_mapper = configure_with_uuid_primary_key
 
-        course = Course.new(class_code: "ORMs")
+        course = Course.new
         test_mapper.persist(course)
 
         expect(course.uuid).to_not be nil
 
         course_db = db_class_for(Course, test_mapper).first
         expect(course_db.uuid).to eq course.uuid
+      end
+
+      it 'saves AR::Base objects' do
+        test_mapper = configure_with_uuid_primary_key
+
+        assignment = Assignment.new(topic: "objects")
+        course = Course.new(assignments: [assignment])
+
+        test_mapper.persist(course)
+
+        expect(Assignment.first.topic).to eq "objects"
       end
     end
   end
@@ -174,6 +199,25 @@ describe 'AggregateMapper' do
 
       expect(fissure.id).to eq nil
       expect(tree.id).to_not eq nil
+    end
+
+    it 'nils ids of new objects with a primary key override' do
+      db_driver = Vorpal::Driver::Postgresql.new
+      test_mapper = configure_with_uuid_primary_key(db_driver: db_driver)
+
+      course_db = db_class_for(Course, test_mapper).create!(uuid: SecureRandom.uuid)
+
+      expect(db_driver).to receive(:update).and_raise('not so good')
+
+      assignment = Assignment.new
+      course = Course.new(uuid: course_db.uuid, assignments: [assignment])
+
+      expect {
+        test_mapper.persist(course)
+      }.to raise_error(Exception)
+
+      expect(assignment.uuid).to eq nil
+      expect(course.uuid).to_not eq nil
     end
   end
 
@@ -241,6 +285,73 @@ describe 'AggregateMapper' do
       test_mapper.persist(tree)
 
       expect(db_class_for(Branch, test_mapper).count).to eq 1
+    end
+
+    context "with a primary key override" do
+      it 'updates attributes' do
+        test_mapper = configure_with_uuid_primary_key
+
+        course = Course.new(class_code: 'ORMS1000')
+        test_mapper.persist(course)
+
+        course.class_code = 'DBMS1000'
+        test_mapper.persist(course)
+
+        # course_db = db_class_for(Course, test_mapper).first
+        # expect(course_db.name).to eq 'DBMS1000'
+      end
+
+      it 'does not change the id on update' do
+        test_mapper = configure
+
+        tree = Tree.new
+        test_mapper.persist(tree)
+
+        original_id = tree.id
+
+        tree.name = 'change it'
+        test_mapper.persist(tree)
+
+        expect(tree.id).to eq original_id
+      end
+
+      it 'does not create additional records' do
+        test_mapper = configure
+
+        tree = Tree.new
+        test_mapper.persist(tree)
+
+        tree.name = 'change it'
+        test_mapper.persist(tree)
+
+        expect(db_class_for(Tree, test_mapper).count).to eq 1
+      end
+
+      it 'removes orphans' do
+        test_mapper = configure
+
+        tree_db = db_class_for(Tree, test_mapper).create!
+        db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
+
+        tree = Tree.new(id: tree_db.id, branches: [])
+
+        test_mapper.persist(tree)
+
+        expect(db_class_for(Branch, test_mapper).count).to eq 0
+      end
+
+      it 'does not remove orphans from unowned associations' do
+        test_mapper = configure_unowned
+
+        tree_db = db_class_for(Tree, test_mapper).create!
+        db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
+
+        tree = Tree.new(id: tree_db.id, branches: [])
+
+        test_mapper.persist(tree)
+
+        expect(db_class_for(Branch, test_mapper).count).to eq 1
+      end
     end
   end
 
@@ -944,23 +1055,28 @@ private
     engine.mapper_for(Tree)
   end
 
-  def configure_with_uuid_primary_key
-    engine = Vorpal.define do
+  def configure_with_uuid_primary_key(options={})
+    engine = Vorpal.define(options) do
       map Course do
         attributes :class_code
         primary_key :uuid, type: :uuid
         belongs_to :professor, fk: "professor_uuid"
-        has_many :lectures
+        has_many :lectures, fk: "course_uuid"
+        has_many :assignments, fk: "course_uuid"
       end
 
       map Professor do
         attributes :name
-        primary_key :uuid
+        primary_key :uuid, type: :uuid
       end
 
       map Lecture do
         attributes :topic
-        primary_key :uuid
+        primary_key :uuid, type: :uuid
+      end
+
+      map Assignment, to: Assignment do
+        primary_key :uuid, type: :uuid
       end
     end
     engine.mapper_for(Course)

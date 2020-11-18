@@ -74,7 +74,7 @@ module Vorpal
       # @param model_class [Class] The PORO class that we are creating a DB interface class for.
       # @param table_name [String] Name of the DB table the DB class should interface with.
       # @return [Class] ActiveRecord::Base Class
-      def build_db_class(model_class, table_name)
+      def build_db_class(model_class, table_name, primary_key = :id)
         db_class = Class.new(ActiveRecord::Base) do
           class << self
             # This is overridden for two reasons:
@@ -97,6 +97,7 @@ module Vorpal
           end
         end
 
+        db_class.primary_key = primary_key unless primary_key == :id
         db_class.vorpal_model_class_name = Util::StringUtils.escape_class_name(model_class.name)
         db_class.table_name = table_name
         db_class
