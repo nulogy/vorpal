@@ -212,7 +212,7 @@ describe 'AggregateMapper' do
 
   describe 'cycles' do
     it 'persists' do
-     test_mapper = configure_with_cycle
+      test_mapper = configure_with_cycle
 
       tree = Tree.new
       long_branch = Branch.new(length: 100, tree: tree)
@@ -295,7 +295,7 @@ describe 'AggregateMapper' do
 
       trunk.length = 21
 
-      expect{ test_mapper.persist(tree) }.to_not change{ db_class_for(Trunk, test_mapper).count }
+      expect { test_mapper.persist(tree) }.to_not(change { db_class_for(Trunk, test_mapper).count })
     end
 
     it 'only saves entities that are owned' do
