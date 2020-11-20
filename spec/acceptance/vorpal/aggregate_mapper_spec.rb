@@ -115,7 +115,7 @@ describe 'AggregateMapper' do
 
       expect {
         test_mapper.persist(tree)
-      }.to raise_error(Exception)
+      }.to raise_error('not so good')
 
       expect(fissure.id).to eq nil
       expect(tree.id).to_not eq nil
