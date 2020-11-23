@@ -35,6 +35,10 @@ module Vorpal
     #   object.
     #
     #   Must have a `(Object) deserialize(Object, Hash)` method.
+    #  @option options [Symbol] :primary_key_type [:serial, :uuid] (:serial)
+    #    The type of primary key for the class. :serial for auto-incrementing integer, :uuid for a UUID
+    #  @option options [Symbol] :id
+    #    Same as :primary_key_type. Exists for compatibility with the Rails API.
     def map(domain_class, options={}, &block)
       @class_configs << build_class_config(domain_class, options, &block)
     end

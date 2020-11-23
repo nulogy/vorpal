@@ -101,6 +101,7 @@ module Vorpal
         db_class: @class_options[:to] || @defaults_generator.build_db_class(@class_options[:table_name]),
         serializer: @class_options[:serializer] || @defaults_generator.serializer(attributes_with_id),
         deserializer: @class_options[:deserializer] || @defaults_generator.deserializer(attributes_with_id),
+        primary_key_type: @class_options[:primary_key_type] || @class_options[:id] || :serial,
       )
     end
 
