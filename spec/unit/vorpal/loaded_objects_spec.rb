@@ -14,7 +14,7 @@ describe Vorpal::LoadedObjects do
 
   it 'does not accept duplicate objects' do
     object = TestObject.new(id: 22)
-    config = Vorpal::ClassConfig.new({domain_class: Object})
+    config = Vorpal::Config::ClassConfig.new({domain_class: Object})
 
     subject.add(config, [object, object])
     subject.add(config, [object])
