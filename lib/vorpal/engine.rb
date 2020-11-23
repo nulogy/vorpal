@@ -34,6 +34,9 @@ module Vorpal
       serialize(all_owned_objects, mapping, loaded_db_objects)
       new_objects = get_unsaved_objects(mapping.keys)
       begin
+        # Primary keys are set eagerly (instead of waiting for them to be set by ActiveRecord upon create)
+        # because we want to support non-null FK constraints without needing to figure the correct
+        # order to save entities in.
         set_primary_keys(all_owned_objects, mapping)
         set_foreign_keys(all_owned_objects, mapping)
         remove_orphans(mapping, loaded_db_objects)
