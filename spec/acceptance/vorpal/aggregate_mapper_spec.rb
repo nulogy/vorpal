@@ -739,6 +739,37 @@ describe 'AggregateMapper' do
     end
   end
 
+  class TreeUUID
+    attr_accessor :id
+    attr_accessor :name
+
+    def initialize(id: nil, name: "")
+      @id = id
+      @name = name
+    end
+  end
+
+  describe 'UUID support' do
+    before(:all) do
+      db_connection.enable_extension 'pgcrypto'
+      define_table('tree_uuids', { name: :text }, true, id: :uuid)
+    end
+
+    it 'generates a UUID as a PK on create' do
+      engine = Vorpal.define do
+        map TreeUUID, id: :uuid do
+          attributes :name
+        end
+      end
+      mapper = engine.mapper_for(TreeUUID)
+
+      tree = TreeUUID.new(name: 'new tree')
+      mapper.persist([tree])
+
+      expect(tree.id).to be_a(String)
+    end
+  end
+
 private
 
   def db_class_for(clazz, mapper)
