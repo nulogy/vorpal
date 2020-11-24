@@ -1,4 +1,4 @@
-# Vorpal [![Build Status](https://travis-ci.com/nulogy/vorpal.svg?branch=master)](https://travis-ci.com/nulogy/vorpal) [![Code Climate](https://codeclimate.com/github/nulogy/vorpal/badges/gpa.svg)](https://codeclimate.com/github/nulogy/vorpal) [![Code Coverage](https://codecov.io/gh/nulogy/vorpal/branch/master/graph/badge.svg)](https://codecov.io/gh/nulogy/vorpal/branch/master)
+# Vorpal [![Build Status](https://travis-ci.com/nulogy/vorpal.svg?branch=main)](https://travis-ci.com/nulogy/vorpal) [![Code Climate](https://codeclimate.com/github/nulogy/vorpal/badges/gpa.svg)](https://codeclimate.com/github/nulogy/vorpal) [![Code Coverage](https://codecov.io/gh/nulogy/vorpal/branch/main/graph/badge.svg)](https://codecov.io/gh/nulogy/vorpal/branch/main)
 
 Separate your domain model from your persistence mechanism. Some problems call for a really sharp tool.
 
@@ -158,7 +158,7 @@ TreeRepository.destroy_by_id(dead_tree_id)
 
 ## API Documentation
 
-http://rubydoc.info/github/nulogy/vorpal/master/frames
+http://rubydoc.info/github/nulogy/vorpal/main/frames
 
 ## Caveats
 It also does not do some things that you might expect from other ORMs:
@@ -195,7 +195,7 @@ It also does not do some things that you might expect from other ORMs:
 
 **A.** Create a method on a [Repository](http://martinfowler.com/eaaCatalog/repository.html)! They have full access to the DB/ORM so you can use [Arel](https://github.com/rails/arel) and go [crazy](http://asciicasts.com/episodes/239-activerecord-relation-walkthrough) or use direct SQL if you want. 
 
-For example, use the [#query](https://rubydoc.info/github/nulogy/vorpal/master/Vorpal/AggregateMapper#query-instance_method) method on the [AggregateMapper](https://rubydoc.info/github/nulogy/vorpal/master/Vorpal/AggregateMapper) to access the underyling [ActiveRecordRelation](https://api.rubyonrails.org/classes/ActiveRecord/Relation.html):
+For example, use the [#query](https://rubydoc.info/github/nulogy/vorpal/main/Vorpal/AggregateMapper#query-instance_method) method on the [AggregateMapper](https://rubydoc.info/github/nulogy/vorpal/main/Vorpal/AggregateMapper) to access the underyling [ActiveRecordRelation](https://api.rubyonrails.org/classes/ActiveRecord/Relation.html):
 
 ```ruby
   def find_special_ones

@@ -30,7 +30,7 @@ describe Vorpal::DbLoader do
   #     attributes :length
   #   end
   #
-  #   master_config = Vorpal::MasterConfig.new([post_config, comment_config])
+  #   main_config = Vorpal::MainConfig.new([post_config, comment_config])
   #
   #   driver = Vorpal::Postgresql.new
   #
@@ -39,11 +39,11 @@ describe Vorpal::DbLoader do
   #   best_comment_db.update_attributes!(post_id: post_db.id)
   #
   #   loader = Vorpal::DbLoader.new(false, driver)
-  #   loaded_objects = loader.load_from_db([post_db.id], master_config.config_for(Post))
+  #   loaded_objects = loader.load_from_db([post_db.id], main_config.config_for(Post))
   #   p loaded_objects.all_objects
   #   # expect(loaded_objects.all_objects.size).to eq(2)
   #
-  #   repo = Vorpal::AggregateMapper.new(driver, master_config)
+  #   repo = Vorpal::AggregateMapper.new(driver, main_config)
   #   post = repo.load(post_db.id, Post)
   #   p post
   #   expect(post.comments.size).to eq(1)

@@ -36,12 +36,12 @@ module Vorpal
       #
       # @return [Engine] Instance of the mapping engine.
       def define(options={}, &block)
-        @master_config = MasterConfig.new
+        @main_config = MainConfig.new
         instance_exec(&block)
-        @master_config.initialize_association_configs
+        @main_config.initialize_association_configs
         db_driver = options.fetch(:db_driver, Driver::Postgresql.new)
-        engine = Engine.new(db_driver, @master_config)
-        @master_config = nil # make sure this MasterConfig is never re-used by accident.
+        engine = Engine.new(db_driver, @main_config)
+        @main_config = nil # make sure this MainConfig is never re-used by accident.
         engine
       end
 
@@ -67,7 +67,7 @@ module Vorpal
       #    Same as :primary_key_type. Exists for compatibility with the Rails API.
       def map(domain_class, options={}, &block)
         class_config = build_class_config(domain_class, options, &block)
-        @master_config.add_class_config(class_config)
+        @main_config.add_class_config(class_config)
         class_config
       end
 

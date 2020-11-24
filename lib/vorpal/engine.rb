@@ -7,9 +7,9 @@ require 'vorpal/exceptions'
 module Vorpal
   class Engine
     # @private
-    def initialize(db_driver, master_config)
+    def initialize(db_driver, main_config)
       @db_driver = db_driver
-      @configs = master_config
+      @configs = main_config
     end
 
     # Creates a mapper for saving/updating/loading/destroying an aggregate to/from

@@ -5,7 +5,7 @@ require 'equalizer'
 
 module Vorpal
   # @private
-  class MasterConfig
+  class MainConfig
     def initialize
       @class_configs = []
     end
