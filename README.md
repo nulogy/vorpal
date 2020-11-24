@@ -156,6 +156,32 @@ TreeRepository.destroy(dead_tree)
 TreeRepository.destroy_by_id(dead_tree_id)
 ```
 
+### Ids
+
+Vorpal by default will use auto-incrementing Integers from a DB sequence for ids. However, UUID v4 ids are also 
+supported:
+
+```ruby
+Vorpal.define do
+  # UUID v4 id!
+  map Tree, primary_key_type: :uuid do
+    # ..
+  end
+
+  # Also a UUID v4 id, the Rails Way!
+  map Trunk, id: :uuid do
+    # ..
+  end
+
+  # If you feel the need to specify an auto-incrementing integer id.
+  map Branch, primary_key_type: :serial do
+    # ..
+  end
+end
+```
+
+CAVEAT: Vorpal currently does NOT SUPPORT anyone but Vorpal setting the id of an entity!
+
 ## API Documentation
 
 http://rubydoc.info/github/nulogy/vorpal/main/frames
@@ -175,9 +201,8 @@ It also does not do some things that you might expect from other ORMs:
 1. Only supports PostgreSQL.
 
 ## Future Enhancements
-* Support for UUID primary keys.
+* Support for clients to set UUID-based ids.
 * Nicer DSL for specifying attributes that have different names in the domain model than in the DB.
-* Show how to implement POROs without using Virtus (it is unsupported and can be crazy slow)
 * Aggregate updated_at.
 * Better support for value objects.
 
