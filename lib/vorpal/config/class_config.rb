@@ -5,8 +5,10 @@ module Vorpal
     # @private
     class ClassConfig
       include Equalizer.new(:domain_class, :db_class)
-      attr_reader :serializer, :deserializer, :domain_class, :db_class, :local_association_configs, :primary_key_type
+      attr_reader :serializer, :deserializer, :domain_class, :db_class, :primary_key_type, :local_association_configs
       attr_accessor :has_manys, :belongs_tos, :has_ones
+
+      ALLOWED_PRIMARY_KEY_TYPE_OPTIONS = [:serial, :uuid]
 
       def initialize(attrs)
         @has_manys = []
@@ -14,9 +16,12 @@ module Vorpal
         @has_ones = []
         @local_association_configs = []
 
-        attrs.each do |k,v|
-          instance_variable_set("@#{k}", v)
-        end
+        @serializer = attrs[:serializer]
+        @deserializer = attrs[:deserializer]
+        @domain_class = attrs[:domain_class]
+        @db_class = attrs[:db_class]
+        @primary_key_type = attrs[:primary_key_type]
+        raise "Invalid primary_key_type: '#{@primary_key_type}'" unless ALLOWED_PRIMARY_KEY_TYPE_OPTIONS.include?(@primary_key_type)
       end
 
       def build_db_object(attributes)

@@ -11,8 +11,8 @@ describe Vorpal::MainConfig do
     attr_accessor :post
   end
 
-  let(:post_config) { Vorpal::Config::ClassConfig.new(domain_class: Post) }
-  let(:comment_config) { Vorpal::Config::ClassConfig.new(domain_class: Comment) }
+  let(:post_config) { Vorpal::Config::ClassConfig.new(domain_class: Post, primary_key_type: :serial) }
+  let(:comment_config) { Vorpal::Config::ClassConfig.new(domain_class: Comment, primary_key_type: :serial) }
   let(:post_has_many_comments_config) { Vorpal::HasManyConfig.new(name: 'comments', fk: 'post_id', child_class: Comment) }
   let(:post_has_one_comment_config) { Vorpal::HasOneConfig.new(name: 'best_comment', fk: 'post_id', child_class: Comment) }
   let(:comment_belongs_to_post_config) { Vorpal::BelongsToConfig.new(name: 'post', fk: 'post_id', child_classes: [Post]) }
