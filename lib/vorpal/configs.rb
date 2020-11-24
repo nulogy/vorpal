@@ -6,9 +6,8 @@ require 'equalizer'
 module Vorpal
   # @private
   class MasterConfig
-    def initialize(class_configs = [])
-      @class_configs = class_configs
-      initialize_association_configs
+    def initialize
+      @class_configs = []
     end
 
     def config_for(clazz)

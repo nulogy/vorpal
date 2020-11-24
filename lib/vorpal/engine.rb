@@ -92,8 +92,14 @@ module Vorpal
       @configs.config_for(domain_class).db_class
     end
 
+    # Try to use {AggregateMapper#query} instead.
     def query(domain_class)
       @db_driver.query(@configs.config_for(domain_class).db_class, mapper_for(domain_class))
+    end
+
+    # @private
+    def class_config(domain_class)
+      @configs.config_for(domain_class)
     end
 
     private

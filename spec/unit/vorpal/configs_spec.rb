@@ -21,7 +21,7 @@ describe Vorpal::MasterConfig do
     it 'builds an association_config for a belongs_to' do
       comment_config.belongs_tos << comment_belongs_to_post_config
 
-      Vorpal::MasterConfig.new([post_config, comment_config])
+      initialize_association_configs([post_config, comment_config])
 
       expect(comment_config.local_association_configs.size).to eq(1)
       expect(post_config.local_association_configs.size).to eq(0)
@@ -31,7 +31,7 @@ describe Vorpal::MasterConfig do
       comment_config.belongs_tos << comment_belongs_to_post_config
       post_config.has_manys << post_has_many_comments_config
 
-      Vorpal::MasterConfig.new([post_config, comment_config])
+      initialize_association_configs([post_config, comment_config])
 
       association_config = comment_config.local_association_configs.first
 
@@ -42,16 +42,24 @@ describe Vorpal::MasterConfig do
     it 'builds an association_config for a has_many' do
       post_config.has_manys << post_has_many_comments_config
 
-      Vorpal::MasterConfig.new([post_config, comment_config])
+      initialize_association_configs([post_config, comment_config])
 
       expect(comment_config.local_association_configs.size).to eq(1)
       expect(post_config.local_association_configs.size).to eq(0)
     end
   end
 
+  def initialize_association_configs(configs)
+    master_config = Vorpal::MasterConfig.new
+    configs.each do |config|
+      master_config.add_class_config(config)
+    end
+    master_config.initialize_association_configs
+  end
+
   describe 'nice user feedback' do
     it 'lets the user know what the problem is when a configuration is missing' do
-      master_config = Vorpal::MasterConfig.new([])
+      master_config = Vorpal::MasterConfig.new
 
       expect {
         master_config.config_for(String)

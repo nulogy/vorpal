@@ -50,17 +50,17 @@ describe Vorpal::DbLoader do
   # end
 
   it 'loads an object once even when referred to by different associations of different types with stubs' do
-    post_config = Vorpal.build_class_config(Post, to: PostDB) do
-      attributes :name
-      belongs_to :best_comment, child_class: Comment
-      has_many :comments
-    end
+    engine = Vorpal.define do
+      map(Post, to: PostDB) do
+        attributes :name
+        belongs_to :best_comment, child_class: Comment
+        has_many :comments
+      end
 
-    comment_config = Vorpal.build_class_config(Comment, to: CommentDB) do
-      attributes :length
+      map(Comment, to: CommentDB) do
+        attributes :length
+      end
     end
-
-    Vorpal::MasterConfig.new([post_config, comment_config])
 
     best_comment_db = CommentDB.new
     best_comment_db.id = 99
@@ -74,7 +74,7 @@ describe Vorpal::DbLoader do
     expect(driver).to receive(:load_by_foreign_key).and_return([best_comment_db])
 
     loader = Vorpal::DbLoader.new(false, driver)
-    loaded_objects = loader.load_from_db([post_db.id], post_config)
+    loaded_objects = loader.load_from_db([post_db.id], engine.class_config(Post))
 
     expect(loaded_objects.all_objects).to contain_exactly(post_db, best_comment_db)
   end
