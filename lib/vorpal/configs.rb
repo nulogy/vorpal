@@ -6,7 +6,7 @@ require 'equalizer'
 module Vorpal
   # @private
   class MasterConfig
-    def initialize(class_configs)
+    def initialize(class_configs = [])
       @class_configs = class_configs
       initialize_association_configs
     end
@@ -21,7 +21,9 @@ module Vorpal
       @class_configs.detect { |conf| conf.db_class == db_object.class }
     end
 
-    private
+    def add_class_config(class_config)
+      @class_configs << class_config
+    end
 
     def initialize_association_configs
       association_configs = {}
@@ -50,6 +52,8 @@ module Vorpal
         association_config.local_class_config.local_association_configs << association_config
       end
     end
+
+    private
 
     def build_association_config(association_configs, local_config, fk, fk_type)
       association_config = AssociationConfig.new(local_config, fk, fk_type)
