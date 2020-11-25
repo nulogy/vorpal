@@ -1,4 +1,4 @@
-# Vorpal [![Build Status](https://travis-ci.com/nulogy/vorpal.svg?branch=master)](https://travis-ci.com/nulogy/vorpal) [![Code Climate](https://codeclimate.com/github/nulogy/vorpal/badges/gpa.svg)](https://codeclimate.com/github/nulogy/vorpal) [![Code Coverage](https://codecov.io/gh/nulogy/vorpal/branch/master/graph/badge.svg)](https://codecov.io/gh/nulogy/vorpal/branch/master)
+# Vorpal [![Build Status](https://travis-ci.com/nulogy/vorpal.svg?branch=main)](https://travis-ci.com/nulogy/vorpal) [![Code Climate](https://codeclimate.com/github/nulogy/vorpal/badges/gpa.svg)](https://codeclimate.com/github/nulogy/vorpal) [![Code Coverage](https://codecov.io/gh/nulogy/vorpal/branch/main/graph/badge.svg)](https://codecov.io/gh/nulogy/vorpal/branch/main)
 
 Separate your domain model from your persistence mechanism. Some problems call for a really sharp tool.
 
@@ -156,9 +156,35 @@ TreeRepository.destroy(dead_tree)
 TreeRepository.destroy_by_id(dead_tree_id)
 ```
 
+### Ids
+
+Vorpal by default will use auto-incrementing Integers from a DB sequence for ids. However, UUID v4 ids are also 
+supported:
+
+```ruby
+Vorpal.define do
+  # UUID v4 id!
+  map Tree, primary_key_type: :uuid do
+    # ..
+  end
+
+  # Also a UUID v4 id, the Rails Way!
+  map Trunk, id: :uuid do
+    # ..
+  end
+
+  # If you feel the need to specify an auto-incrementing integer id.
+  map Branch, primary_key_type: :serial do
+    # ..
+  end
+end
+```
+
+CAVEAT: Vorpal currently does NOT SUPPORT anyone but Vorpal setting the id of an entity!
+
 ## API Documentation
 
-http://rubydoc.info/github/nulogy/vorpal/master/frames
+http://rubydoc.info/github/nulogy/vorpal/main/frames
 
 ## Caveats
 It also does not do some things that you might expect from other ORMs:
@@ -175,9 +201,8 @@ It also does not do some things that you might expect from other ORMs:
 1. Only supports PostgreSQL.
 
 ## Future Enhancements
-* Support for UUID primary keys.
+* Support for clients to set UUID-based ids.
 * Nicer DSL for specifying attributes that have different names in the domain model than in the DB.
-* Show how to implement POROs without using Virtus (it is unsupported and can be crazy slow)
 * Aggregate updated_at.
 * Better support for value objects.
 
@@ -195,7 +220,7 @@ It also does not do some things that you might expect from other ORMs:
 
 **A.** Create a method on a [Repository](http://martinfowler.com/eaaCatalog/repository.html)! They have full access to the DB/ORM so you can use [Arel](https://github.com/rails/arel) and go [crazy](http://asciicasts.com/episodes/239-activerecord-relation-walkthrough) or use direct SQL if you want. 
 
-For example, use the [#query](https://rubydoc.info/github/nulogy/vorpal/master/Vorpal/AggregateMapper#query-instance_method) method on the [AggregateMapper](https://rubydoc.info/github/nulogy/vorpal/master/Vorpal/AggregateMapper) to access the underyling [ActiveRecordRelation](https://api.rubyonrails.org/classes/ActiveRecord/Relation.html):
+For example, use the [#query](https://rubydoc.info/github/nulogy/vorpal/main/Vorpal/AggregateMapper#query-instance_method) method on the [AggregateMapper](https://rubydoc.info/github/nulogy/vorpal/main/Vorpal/AggregateMapper) to access the underyling [ActiveRecordRelation](https://api.rubyonrails.org/classes/ActiveRecord/Relation.html):
 
 ```ruby
   def find_special_ones

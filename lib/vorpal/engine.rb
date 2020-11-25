@@ -7,9 +7,9 @@ require 'vorpal/exceptions'
 module Vorpal
   class Engine
     # @private
-    def initialize(db_driver, master_config)
+    def initialize(db_driver, main_config)
       @db_driver = db_driver
-      @configs = master_config
+      @configs = main_config
     end
 
     # Creates a mapper for saving/updating/loading/destroying an aggregate to/from
@@ -34,6 +34,9 @@ module Vorpal
       serialize(all_owned_objects, mapping, loaded_db_objects)
       new_objects = get_unsaved_objects(mapping.keys)
       begin
+        # Primary keys are set eagerly (instead of waiting for them to be set by ActiveRecord upon create)
+        # because we want to support non-null FK constraints without needing to figure the correct
+        # order to save entities in.
         set_primary_keys(all_owned_objects, mapping)
         set_foreign_keys(all_owned_objects, mapping)
         remove_orphans(mapping, loaded_db_objects)
@@ -89,8 +92,14 @@ module Vorpal
       @configs.config_for(domain_class).db_class
     end
 
+    # Try to use {AggregateMapper#query} instead.
     def query(domain_class)
       @db_driver.query(@configs.config_for(domain_class).db_class, mapper_for(domain_class))
+    end
+
+    # @private
+    def class_config(domain_class)
+      @configs.config_for(domain_class)
     end
 
     private
@@ -165,7 +174,11 @@ module Vorpal
     def set_primary_keys(owned_objects, mapping)
       owned_objects.each do |config, objects|
         in_need_of_primary_keys = objects.find_all { |obj| obj.id.nil? }
-        primary_keys = @db_driver.get_primary_keys(config.db_class, in_need_of_primary_keys.length)
+        if config.primary_key_type == :uuid
+          primary_keys = Array.new(in_need_of_primary_keys.length) { SecureRandom.uuid }
+        elsif config.primary_key_type == :serial
+          primary_keys = @db_driver.get_primary_keys(config.db_class, in_need_of_primary_keys.length)
+        end
         in_need_of_primary_keys.zip(primary_keys).each do |object, primary_key|
           mapping[object].id = primary_key
           object.id = primary_key
