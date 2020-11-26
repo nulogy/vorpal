@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    vorpal (1.1.0)
+    vorpal (1.2.1)
       activesupport
       equalizer
       simple_serializer (~> 1.0)
