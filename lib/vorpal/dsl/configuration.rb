@@ -1,6 +1,7 @@
 require 'vorpal/engine'
 require 'vorpal/dsl/config_builder'
 require 'vorpal/driver/postgresql'
+require 'vorpal/main_config'
 
 module Vorpal
   module Dsl
