@@ -30,7 +30,7 @@ describe Vorpal::DbLoader do
   #     attributes :length
   #   end
   #
-  #   main_config = Vorpal::MainConfig.new([post_config, comment_config])
+  #   main_config = Vorpal::Config::MainConfig.new([post_config, comment_config])
   #
   #   driver = Vorpal::Postgresql.new
   #

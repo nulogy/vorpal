@@ -1,7 +1,7 @@
 require 'vorpal/engine'
 require 'vorpal/dsl/config_builder'
 require 'vorpal/driver/postgresql'
-require 'vorpal/main_config'
+require 'vorpal/config/main_config'
 
 module Vorpal
   module Dsl
@@ -37,7 +37,7 @@ module Vorpal
       #
       # @return [Engine] Instance of the mapping engine.
       def define(options={}, &block)
-        @main_config = MainConfig.new
+        @main_config = Config::MainConfig.new
         instance_exec(&block)
         @main_config.initialize_association_configs
         db_driver = options.fetch(:db_driver, Driver::Postgresql.new)

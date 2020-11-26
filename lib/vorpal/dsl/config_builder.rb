@@ -1,4 +1,4 @@
-require 'vorpal/configs'
+require 'vorpal/config/class_config'
 require 'vorpal/dsl/defaults_generator'
 
 module Vorpal

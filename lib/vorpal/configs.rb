@@ -1,6 +1,5 @@
 require 'vorpal/util/hash_initialization'
 require 'vorpal/exceptions'
-require 'vorpal/config/class_config'
 require 'equalizer'
 
 module Vorpal

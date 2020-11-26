@@ -1,7 +1,9 @@
 require 'unit_spec_helper'
 require 'vorpal/configs'
+require 'vorpal/config/main_config'
+require 'vorpal/config/class_config'
 
-describe Vorpal::MainConfig do
+describe Vorpal::Config::MainConfig do
   class Post
     attr_accessor :comments
     attr_accessor :best_comment
@@ -50,7 +52,7 @@ describe Vorpal::MainConfig do
   end
 
   def initialize_association_configs(configs)
-    main_config = Vorpal::MainConfig.new
+    main_config = Vorpal::Config::MainConfig.new
     configs.each do |config|
       main_config.add_class_config(config)
     end
@@ -59,7 +61,7 @@ describe Vorpal::MainConfig do
 
   describe 'nice user feedback' do
     it 'lets the user know what the problem is when a configuration is missing' do
-      main_config = Vorpal::MainConfig.new
+      main_config = Vorpal::Config::MainConfig.new
 
       expect {
         main_config.config_for(String)
