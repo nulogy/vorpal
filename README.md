@@ -285,6 +285,14 @@ For example, use the [#query](https://rubydoc.info/github/nulogy/vorpal/main/Vor
 
 Please see the [Appraisal gem docs](https://github.com/thoughtbot/appraisal) for more information.
 
+### Releasing
+
+1. Update the version number in `lib/vorpal/version.rb`
+2. Update the version of Vorpal in the Appraisal gemfiles (otherwise Travis CI will fail): `appraisal install`
+3. Commit the above changes with the message: `Bump version to <X.Y.Z>`
+4. Release the new version to Rubygems: `rake release`
+5. Profit!
+
 ## Contributors
 
 See who's [contributed](https://github.com/nulogy/vorpal/graphs/contributors)!
