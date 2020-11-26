@@ -180,8 +180,6 @@ Vorpal.define do
 end
 ```
 
-CAVEAT: Vorpal currently does NOT SUPPORT anyone but Vorpal setting the id of an entity!
-
 ## API Documentation
 
 http://rubydoc.info/github/nulogy/vorpal/main/frames

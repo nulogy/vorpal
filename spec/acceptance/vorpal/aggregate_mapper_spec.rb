@@ -89,6 +89,18 @@ describe 'AggregateMapper' do
       expect(tree_db.id).to eq tree.id
     end
 
+    it 'allows the id to be set by clients' do
+      test_mapper = configure
+
+      tree = Tree.new(id: 999999)
+      test_mapper.persist(tree)
+
+      expect(tree.id).to be 999999
+
+      tree_db = db_class_for(Tree, test_mapper).first
+      expect(tree_db.id).to eq 999999
+    end
+
     it 'saves AR::Base objects' do
       test_mapper = configure
 
@@ -756,12 +768,7 @@ describe 'AggregateMapper' do
     end
 
     it 'generates a UUID as a PK on create' do
-      engine = Vorpal.define do
-        map TreeUUID, id: :uuid do
-          attributes :name
-        end
-      end
-      mapper = engine.mapper_for(TreeUUID)
+      mapper = configure_uuid_id
 
       tree = TreeUUID.new(name: 'new tree')
       mapper.persist([tree])
@@ -771,6 +778,15 @@ describe 'AggregateMapper' do
   end
 
 private
+
+  def configure_uuid_id
+    engine = Vorpal.define do
+      map TreeUUID, id: :uuid do
+        attributes :name
+      end
+    end
+    engine.mapper_for(TreeUUID)
+  end
 
   def db_class_for(clazz, mapper)
     mapper.engine.mapper_for(clazz).db_class
