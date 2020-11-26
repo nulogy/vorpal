@@ -199,7 +199,8 @@ It also does not do some things that you might expect from other ORMs:
 1. Only supports PostgreSQL.
 
 ## Future Enhancements
-* Support for clients to set UUID-based ids.
+* Support for having foreign keys point to columns other than primary keys.
+* Support for storing entity ids in a column called something other than "id".
 * Nicer DSL for specifying attributes that have different names in the domain model than in the DB.
 * Aggregate updated_at.
 * Better support for value objects.
