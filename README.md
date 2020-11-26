@@ -182,7 +182,7 @@ end
 
 ## API Documentation
 
-http://rubydoc.info/github/nulogy/vorpal/main/frames
+http://rubydoc.info/github/nulogy/vorpal
 
 ## Caveats
 It also does not do some things that you might expect from other ORMs:
