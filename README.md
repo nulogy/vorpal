@@ -250,6 +250,24 @@ For example, use the [#query](https://rubydoc.info/github/nulogy/vorpal/main/Vor
 
 **A.** Yes. If they exist on your database tables, they will behave exactly as if you were using vanilla ActiveRecord.
 
+**Q.** How do I tell ActiveRecord to ignore certain columns so that I can rename/remove them using zero-downtime deploys?
+
+**A.** You will want to use ActiveRecord's [`ignored_columns=`](https://api.rubyonrails.org/classes/ActiveRecord/ModelSchema/ClassMethods.html#method-i-ignored_columns) method like this:
+
+```ruby
+  engine = Vorpal.define do
+    map Product do
+      attributes(
+        :name,
+        :description,
+        # :column_to_remove
+      )
+    end
+  end
+  product_ar_class = engine.mapper_for(Product).db_class
+  product_ar_class.ignored_columns = [:column_to_remove]
+```
+
 ## Contributing
 
 1. Fork it ( https://github.com/nulogy/vorpal/fork )
