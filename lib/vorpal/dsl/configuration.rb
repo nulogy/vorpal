@@ -87,6 +87,17 @@ module Vorpal
         @builder.attributes(*attributes)
       end
 
+      # Prevents these database columns from appearing in SQL SELECT, INSERT, and UPDATE statements.
+      #
+      # Many ORMs (ActiveRecord included) automatically try to write to every column in a table. This causes problems
+      # when attempting to remove DB columns without downtime because migrations for code to be deployed are usually
+      # run while existing application servers are running. Removing a column that your ActiveRecord is still trying to
+      # use in SQL queries (even if the column isn't being used by your app!) will cause errors in the app servers
+      # running the old code.
+      def ignore_columns(*columns)
+        @builder.ignore_columns(*columns)
+      end
+
       # Defines a one-to-many association to another type where the foreign key is stored on the child.
       #
       # In Object-Oriented programming, associations are *directed*. This means that they can only be

@@ -13,12 +13,18 @@ module Vorpal
       @has_ones = []
       @belongs_tos = []
       @attributes = []
+      @ignore_columns = []
       @defaults_generator = DefaultsGenerator.new(clazz, db_driver)
     end
 
     # @private
     def attributes(*attributes)
       @attributes.concat(attributes)
+    end
+
+    # @private
+    def ignore_columns(*columns)
+      ignore_columns.concat(columns)
     end
 
     # @private
