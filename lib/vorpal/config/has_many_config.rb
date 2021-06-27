@@ -15,10 +15,20 @@ module Vorpal
     class HasManyConfig
       include Util::HashInitialization
       include RemoteEndConfig
-      include ToManyConfig
 
       attr_reader :name, :owned, :fk, :fk_type, :associated_class
       attr_accessor :association_config
+
+      def get_children(parent)
+        parent.send(name)
+      end
+
+      def associate(parent, child)
+        if get_children(parent).nil?
+          parent.send("#{name}=", [])
+        end
+        get_children(parent) << child
+      end
     end
   end
 end

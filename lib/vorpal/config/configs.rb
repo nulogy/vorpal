@@ -46,30 +46,5 @@ module Vorpal
         db_parent.send(fk)
       end
     end
-
-    # @private
-    module ToOneConfig
-      def get_child(parent)
-        parent.send(name)
-      end
-
-      def associate(parent, child)
-        parent.send("#{name}=", child)
-      end
-    end
-
-    # @private
-    module ToManyConfig
-      def get_children(parent)
-        parent.send(name)
-      end
-
-      def associate(parent, child)
-        if get_children(parent).nil?
-          parent.send("#{name}=", [])
-        end
-        get_children(parent) << child
-      end
-    end
   end
 end

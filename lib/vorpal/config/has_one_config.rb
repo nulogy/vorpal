@@ -15,10 +15,17 @@ module Vorpal
     class HasOneConfig
       include Util::HashInitialization
       include RemoteEndConfig
-      include ToOneConfig
 
       attr_reader :name, :owned, :fk, :fk_type, :associated_class
       attr_accessor :association_config
+
+      def get_child(parent)
+        parent.send(name)
+      end
+
+      def associate(parent, child)
+        parent.send("#{name}=", child)
+      end
     end
   end
 end
