@@ -137,8 +137,10 @@ module Vorpal
       # @option options [Boolean] :owned (True) True if the child type belongs to the aggregate. Changes to any object belonging to the aggregate will be persisted when the aggregate is persisted.
       # @option options [String] :fk (Child class name converted to snakecase and appended with a '_id') The name of the DB column on the parent that contains the foreign key reference to the child.
       # @option options [String] :fk_type The name of the DB column on the parent that contains the child class name. Only needed when the association is polymorphic.
-      # @option options [Class] :child_class (name converted to a Class) The child class.
-      # @option options [[Class]] :child_classes The list of possible classes that can be children. This is for polymorphic associations. Takes precedence over `:child_class`.
+      # @option options [Class] :child_class DEPRECATED. Use `associated_class` instead. (name converted to a Class) The associated class.
+      # @option options [Class] :associated_class (name converted to a Class) The associated class.
+      # @option options [[Class]] :child_classes DEPRECATED. Use `associated_classes` instead. The list of possible classes that can be associated. This is for polymorphic associations. Takes precedence over `:associated_class`.
+      # @option options [[Class]] :associated_classes The list of possible classes that can be associated. This is for polymorphic associations. Takes precedence over `:associated_class`.
       def belongs_to(name, options={})
         @builder.belongs_to(name, options)
       end

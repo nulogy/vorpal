@@ -821,7 +821,7 @@ private
     engine = Vorpal.define do
       map Bug do
         attributes :name
-        belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
+        belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, associated_classes: [Trunk, Branch]
       end
 
       map Trunk do
@@ -839,7 +839,7 @@ private
     engine = Vorpal.define do
       map Tree do
         attributes :name
-        belongs_to :environment, owned: false, fk: :environment_id, fk_type: :environment_type, child_class: Swamp
+        belongs_to :environment, owned: false, fk: :environment_id, fk_type: :environment_type, associated_class: Swamp
       end
 
       map Swamp, to: Swamp
@@ -851,7 +851,7 @@ private
     engine = Vorpal.define do
       map Bug do
         attributes :name
-        belongs_to :lives_on, owned: false, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
+        belongs_to :lives_on, owned: false, fk: :lives_on_id, fk_type: :lives_on_type, associated_classes: [Trunk, Branch]
       end
 
       map Trunk do

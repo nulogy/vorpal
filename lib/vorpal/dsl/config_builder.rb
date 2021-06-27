@@ -67,21 +67,21 @@ module Vorpal
     end
 
     def build_has_many(options)
-      options[:child_class] ||= @defaults_generator.child_class(options[:name])
+      options[:child_class] = options[:associated_class] || options[:child_class] || @defaults_generator.associated_class(options[:name])
       options[:fk] ||= @defaults_generator.foreign_key(@domain_class.name)
       options[:owned] = options.fetch(:owned, true)
       Vorpal::Config::HasManyConfig.new(options)
     end
 
     def build_has_one(options)
-      options[:child_class] ||= @defaults_generator.child_class(options[:name])
+      options[:child_class] = options[:associated_class] || options[:child_class] || @defaults_generator.associated_class(options[:name])
       options[:fk] ||= @defaults_generator.foreign_key(@domain_class.name)
       options[:owned] = options.fetch(:owned, true)
       Vorpal::Config::HasOneConfig.new(options)
     end
 
     def build_belongs_to(options)
-      child_class = options[:child_classes] || options[:child_class] || @defaults_generator.child_class(options[:name])
+      child_class = options[:associated_classes] || options[:child_classes] || options[:associated_class] || options[:child_class] || @defaults_generator.associated_class(options[:name])
       options[:child_classes] = Array(child_class)
       options[:fk] ||= @defaults_generator.foreign_key(options[:name])
       options[:owned] = options.fetch(:owned, true)

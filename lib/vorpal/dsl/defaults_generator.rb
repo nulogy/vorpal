@@ -35,7 +35,7 @@ module Vorpal
       ActiveSupport::Inflector.foreign_key(name.to_s)
     end
 
-    def child_class(association_name)
+    def associated_class(association_name)
       module_parent.const_get(ActiveSupport::Inflector.classify(association_name.to_s))
     end
 

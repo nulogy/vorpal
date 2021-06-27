@@ -37,17 +37,17 @@ describe Vorpal::Dsl::DefaultsGenerator do
     end
   end
 
-  describe '#child_class' do
+  describe '#associated_class' do
     it 'resolves the associated class' do
       generator = build_generator(Tester)
-      clazz = generator.child_class("author")
+      clazz = generator.associated_class("author")
 
       expect(clazz.name).to eq("Author")
     end
 
     it 'resolves the associated class in the same namespace as the owning class' do
       generator = build_generator(Namespace::Tester)
-      clazz = generator.child_class("author")
+      clazz = generator.associated_class("author")
 
       expect(clazz.name).to eq("Namespace::Author")
     end
