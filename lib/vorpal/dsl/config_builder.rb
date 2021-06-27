@@ -82,7 +82,7 @@ module Vorpal
 
     def build_belongs_to(options)
       child_class = options[:associated_classes] || options[:child_classes] || options[:associated_class] || options[:child_class] || @defaults_generator.associated_class(options[:name])
-      options[:child_classes] = Array(child_class)
+      options[:associated_classes] = Array(child_class)
       options[:fk] ||= @defaults_generator.foreign_key(options[:name])
       options[:owned] = options.fetch(:owned, true)
       Vorpal::Config::BelongsToConfig.new(options)

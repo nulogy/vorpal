@@ -17,7 +17,7 @@ module MainConfigSpec
     let(:comment_config) { Vorpal::Config::ClassConfig.new(domain_class: Comment, primary_key_type: :serial) }
     let(:post_has_many_comments_config) { Vorpal::Config::HasManyConfig.new(name: 'comments', fk: 'post_id', child_class: Comment) }
     let(:post_has_one_comment_config) { Vorpal::Config::HasOneConfig.new(name: 'best_comment', fk: 'post_id', child_class: Comment) }
-    let(:comment_belongs_to_post_config) { Vorpal::Config::BelongsToConfig.new(name: 'post', fk: 'post_id', child_classes: [Post]) }
+    let(:comment_belongs_to_post_config) { Vorpal::Config::BelongsToConfig.new(name: 'post', fk: 'post_id', associated_classes: [Post]) }
 
     describe 'local_association_configs' do
       it 'builds an association_config for a belongs_to' do

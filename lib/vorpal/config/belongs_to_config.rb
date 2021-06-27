@@ -17,7 +17,7 @@ module Vorpal
       include LocalEndConfig
       include ToOneConfig
 
-      attr_reader :name, :owned, :fk, :fk_type, :child_classes
+      attr_reader :name, :owned, :fk, :fk_type, :associated_classes
       attr_accessor :association_config
     end
   end

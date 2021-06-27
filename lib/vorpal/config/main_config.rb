@@ -37,7 +37,7 @@ module Vorpal
           end
 
           config.belongs_tos.each do |association_end_config|
-            child_configs = association_end_config.child_classes.map(&method(:config_for))
+            child_configs = association_end_config.associated_classes.map(&method(:config_for))
 
             association_config = build_association_config(association_configs, config, association_end_config.fk, association_end_config.fk_type)
             association_config.local_end_config = association_end_config
