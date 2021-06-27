@@ -1,10 +1,9 @@
 require 'unit_spec_helper'
-require 'vorpal/configs'
 require 'vorpal/config/main_config'
 require 'vorpal/config/class_config'
 
 module ConfigsSpec
-  describe Vorpal::AssociationConfig do
+  describe Vorpal::Config::AssociationConfig do
     class Post
       attr_accessor :comments
       attr_accessor :best_comment
@@ -16,16 +15,16 @@ module ConfigsSpec
 
     let(:post_config) { Vorpal::Config::ClassConfig.new(domain_class: Post, primary_key_type: :serial) }
     let(:comment_config) { Vorpal::Config::ClassConfig.new(domain_class: Comment, primary_key_type: :serial) }
-    let(:post_has_many_comments_config) { Vorpal::HasManyConfig.new(name: 'comments', fk: 'post_id', child_class: Comment) }
-    let(:post_has_one_comment_config) { Vorpal::HasOneConfig.new(name: 'best_comment', fk: 'post_id', child_class: Comment) }
-    let(:comment_belongs_to_post_config) { Vorpal::BelongsToConfig.new(name: 'post', fk: 'post_id', child_classes: [Post]) }
+    let(:post_has_many_comments_config) { Vorpal::Config::HasManyConfig.new(name: 'comments', fk: 'post_id', child_class: Comment) }
+    let(:post_has_one_comment_config) { Vorpal::Config::HasOneConfig.new(name: 'best_comment', fk: 'post_id', child_class: Comment) }
+    let(:comment_belongs_to_post_config) { Vorpal::Config::BelongsToConfig.new(name: 'post', fk: 'post_id', child_classes: [Post]) }
 
     describe 'associate' do
       let(:post) { Post.new }
       let(:comment) { Comment.new }
 
       it 'sets both ends of a one-to-one association' do
-        config = Vorpal::AssociationConfig.new(comment_config, 'post_id', nil)
+        config = Vorpal::Config::AssociationConfig.new(comment_config, 'post_id', nil)
         config.add_remote_class_config(post_config)
 
         config.local_end_config = comment_belongs_to_post_config
@@ -38,7 +37,7 @@ module ConfigsSpec
       end
 
       it 'sets both ends of a one-to-many association' do
-        config = Vorpal::AssociationConfig.new(comment_config, 'post_id', nil)
+        config = Vorpal::Config::AssociationConfig.new(comment_config, 'post_id', nil)
         config.add_remote_class_config(post_config)
 
         config.local_end_config = comment_belongs_to_post_config
@@ -53,7 +52,7 @@ module ConfigsSpec
 
     describe 'remote_class_config' do
       it 'works with non-polymorphic associations' do
-        config = Vorpal::AssociationConfig.new(comment_config, 'post_id', nil)
+        config = Vorpal::Config::AssociationConfig.new(comment_config, 'post_id', nil)
         config.add_remote_class_config(post_config)
 
         post = Post.new
@@ -63,7 +62,7 @@ module ConfigsSpec
       end
 
       it 'works with polymorphic associations' do
-        config = Vorpal::AssociationConfig.new(comment_config, 'commented_upon_id', 'commented_upon_type')
+        config = Vorpal::Config::AssociationConfig.new(comment_config, 'commented_upon_id', 'commented_upon_type')
         config.add_remote_class_config(post_config)
         config.add_remote_class_config(comment_config)
 

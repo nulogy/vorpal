@@ -1,4 +1,7 @@
 require 'vorpal/config/class_config'
+require 'vorpal/config/has_many_config'
+require 'vorpal/config/has_one_config'
+require 'vorpal/config/belongs_to_config'
 require 'vorpal/dsl/defaults_generator'
 
 module Vorpal
@@ -67,14 +70,14 @@ module Vorpal
       options[:child_class] ||= @defaults_generator.child_class(options[:name])
       options[:fk] ||= @defaults_generator.foreign_key(@domain_class.name)
       options[:owned] = options.fetch(:owned, true)
-      Vorpal::HasManyConfig.new(options)
+      Vorpal::Config::HasManyConfig.new(options)
     end
 
     def build_has_one(options)
       options[:child_class] ||= @defaults_generator.child_class(options[:name])
       options[:fk] ||= @defaults_generator.foreign_key(@domain_class.name)
       options[:owned] = options.fetch(:owned, true)
-      Vorpal::HasOneConfig.new(options)
+      Vorpal::Config::HasOneConfig.new(options)
     end
 
     def build_belongs_to(options)
@@ -82,7 +85,7 @@ module Vorpal
       options[:child_classes] = Array(child_class)
       options[:fk] ||= @defaults_generator.foreign_key(options[:name])
       options[:owned] = options.fetch(:owned, true)
-      Vorpal::BelongsToConfig.new(options)
+      Vorpal::Config::BelongsToConfig.new(options)
     end
   end
   end

@@ -1,7 +1,7 @@
 require 'unit_spec_helper'
 
 require 'vorpal/loaded_objects'
-require 'vorpal/configs'
+require 'vorpal/config/class_config'
 
 describe Vorpal::LoadedObjects do
   class TestObject

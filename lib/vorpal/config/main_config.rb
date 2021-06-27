@@ -1,5 +1,5 @@
 require 'vorpal/exceptions'
-require 'vorpal/configs'
+require 'vorpal/config/association_config'
 
 module Vorpal
   module Config
