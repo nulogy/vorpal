@@ -22,7 +22,7 @@ describe Vorpal::DbLoader do
   # it 'loads an object once even when referred to by different associations of different types2' do
   #   post_config = Vorpal.build_class_config(Post) do
   #     attributes :name
-  #     belongs_to :best_comment, child_class: Comment
+  #     belongs_to :best_comment, associated_class: Comment
   #     has_many :comments
   #   end
   #

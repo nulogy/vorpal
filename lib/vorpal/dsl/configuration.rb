@@ -91,15 +91,15 @@ module Vorpal
       #
       # In Object-Oriented programming, associations are *directed*. This means that they can only be
       # traversed in one direction: from the type that defines the association (the one with the
-      # getter) to the type that is associated. They end that defines the association is called the
-      # 'Parent' and the end that is associated is called the 'Child'.
+      # getter) to the type that is associated.
       #
       # @param name [String] Name of the association getter.
       # @param options [Hash]
       # @option options [Boolean] :owned (True) True if the child type belongs to the aggregate. Changes to any object belonging to the aggregate will be persisted when the aggregate is persisted.
       # @option options [String] :fk (Parent class name converted to snakecase and appended with a '_id') The name of the DB column on the child that contains the foreign key reference to the parent.
       # @option options [String] :fk_type The name of the DB column on the child that contains the parent class name. Only needed when there is an association from the child side that is polymorphic.
-      # @option options [Class] :child_class (name converted to a Class) The child class.
+      # @option options [Class] :child_class DEPRECATED. Use `associated_class` instead. The associated class.
+      # @option options [Class] :associated_class The associated class.
       def has_many(name, options={})
         @builder.has_many(name, options)
       end
@@ -109,15 +109,15 @@ module Vorpal
       #
       # In Object-Oriented programming, associations are *directed*. This means that they can only be
       # traversed in one direction: from the type that defines the association (the one with the
-      # getter) to the type that is associated. They end that defines the association is called the
-      # 'Parent' and the end that is associated is called the 'Child'.
+      # getter) to the type that is associated.
       #
       # @param name [String] Name of the association getter.
       # @param options [Hash]
       # @option options [Boolean] :owned (True) True if the child type belongs to the aggregate. Changes to any object belonging to the aggregate will be persisted when the aggregate is persisted.
       # @option options [String] :fk (Parent class name converted to snakecase and appended with a '_id') The name of the DB column on the child that contains the foreign key reference to the parent.
       # @option options [String] :fk_type The name of the DB column on the child that contains the parent class name. Only needed when there is an association from the child side that is polymorphic.
-      # @option options [Class] :child_class (name converted to a Class) The child class.
+      # @option options [Class] :child_class DEPRECATED. Use `associated_class` instead. The associated class.
+      # @option options [Class] :associated_class The associated class.
       def has_one(name, options={})
         @builder.has_one(name, options)
       end
@@ -129,16 +129,15 @@ module Vorpal
       #
       # In Object-Oriented programming, associations are *directed*. This means that they can only be
       # traversed in one direction: from the type that defines the association (the one with the
-      # getter) to the type that is associated. They end that defines the association is called the
-      # 'Parent' and the end that is associated is called the 'Child'.
+      # getter) to the type that is associated.
       #
       # @param name [String] Name of the association getter.
       # @param options [Hash]
       # @option options [Boolean] :owned (True) True if the child type belongs to the aggregate. Changes to any object belonging to the aggregate will be persisted when the aggregate is persisted.
       # @option options [String] :fk (Child class name converted to snakecase and appended with a '_id') The name of the DB column on the parent that contains the foreign key reference to the child.
       # @option options [String] :fk_type The name of the DB column on the parent that contains the child class name. Only needed when the association is polymorphic.
-      # @option options [Class] :child_class DEPRECATED. Use `associated_class` instead. (name converted to a Class) The associated class.
-      # @option options [Class] :associated_class (name converted to a Class) The associated class.
+      # @option options [Class] :child_class DEPRECATED. Use `associated_class` instead. The associated class.
+      # @option options [Class] :associated_class The associated class.
       # @option options [[Class]] :child_classes DEPRECATED. Use `associated_classes` instead. The list of possible classes that can be associated. This is for polymorphic associations. Takes precedence over `:associated_class`.
       # @option options [[Class]] :associated_classes The list of possible classes that can be associated. This is for polymorphic associations. Takes precedence over `:associated_class`.
       def belongs_to(name, options={})
