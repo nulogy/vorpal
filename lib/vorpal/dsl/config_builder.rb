@@ -67,14 +67,14 @@ module Vorpal
     end
 
     def build_has_many(options)
-      options[:child_class] = options[:associated_class] || options[:child_class] || @defaults_generator.associated_class(options[:name])
+      options[:associated_class] ||= options[:child_class] || @defaults_generator.associated_class(options[:name])
       options[:fk] ||= @defaults_generator.foreign_key(@domain_class.name)
       options[:owned] = options.fetch(:owned, true)
       Vorpal::Config::HasManyConfig.new(options)
     end
 
     def build_has_one(options)
-      options[:child_class] = options[:associated_class] || options[:child_class] || @defaults_generator.associated_class(options[:name])
+      options[:associated_class] ||= options[:child_class] || @defaults_generator.associated_class(options[:name])
       options[:fk] ||= @defaults_generator.foreign_key(@domain_class.name)
       options[:owned] = options.fetch(:owned, true)
       Vorpal::Config::HasOneConfig.new(options)

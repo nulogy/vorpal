@@ -53,7 +53,7 @@ describe Vorpal::DbLoader do
     engine = Vorpal.define do
       map(Post, to: PostDB) do
         attributes :name
-        belongs_to :best_comment, child_class: Comment
+        belongs_to :best_comment, associated_class: Comment
         has_many :comments
       end
 

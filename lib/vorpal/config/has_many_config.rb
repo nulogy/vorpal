@@ -17,7 +17,7 @@ module Vorpal
       include RemoteEndConfig
       include ToManyConfig
 
-      attr_reader :name, :owned, :fk, :fk_type, :child_class
+      attr_reader :name, :owned, :fk, :fk_type, :associated_class
       attr_accessor :association_config
     end
   end

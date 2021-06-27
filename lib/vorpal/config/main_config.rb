@@ -27,7 +27,7 @@ module Vorpal
         association_configs = {}
         @class_configs.each do |config|
           (config.has_ones + config.has_manys).each do |association_end_config|
-            child_config = config_for(association_end_config.child_class)
+            child_config = config_for(association_end_config.associated_class)
             association_end_config.set_parent_class_config(config)
 
             association_config = build_association_config(association_configs, child_config, association_end_config.fk, association_end_config.fk_type)
