@@ -19,19 +19,19 @@ module Vorpal
       visitor.visit_object(object, config)
 
       config.belongs_tos.each do |belongs_to_config|
-        child = belongs_to_config.get_child(object)
-        accept(child, visitor, already_visited) if visitor.continue_traversal?(belongs_to_config)
+        associate = belongs_to_config.get_associated(object)
+        accept(associate, visitor, already_visited) if visitor.continue_traversal?(belongs_to_config)
       end
 
       config.has_ones.each do |has_one_config|
-        child = has_one_config.get_child(object)
-        accept(child, visitor, already_visited) if visitor.continue_traversal?(has_one_config)
+        associate = has_one_config.get_associated(object)
+        accept(associate, visitor, already_visited) if visitor.continue_traversal?(has_one_config)
       end
 
       config.has_manys.each do |has_many_config|
-        children = has_many_config.get_children(object)
-        children.each do |child|
-          accept(child, visitor, already_visited) if visitor.continue_traversal?(has_many_config)
+        associates = has_many_config.get_associated(object)
+        associates.each do |associate|
+          accept(associate, visitor, already_visited) if visitor.continue_traversal?(has_many_config)
         end
       end
     end

@@ -6,8 +6,8 @@ module Vorpal
     # @private
     # Object association terminology:
     # - All object associations are uni-directional
-    # - The end that holds the association is the 'Parent' and the end that
-    #   is referred to is the 'Child' or 'Children'
+    # - The end that holds the association is the 'Owner' and the end that
+    #   is referred to is the 'Associate' or 'Associates'
     #
     # Relational association terminology:
     # - Local end: has FK

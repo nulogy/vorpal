@@ -55,17 +55,17 @@ module Vorpal
     end
 
     def lookup_by_id(db_object, belongs_to_config)
-      child_config = belongs_to_config.child_config(db_object)
+      associated_class_config = belongs_to_config.associated_class_config(db_object)
       id = belongs_to_config.fk_value(db_object)
-      return if id.nil? || @loaded_objects.already_loaded?(child_config, id)
-      @lookup_instructions.lookup_by_id(child_config, id)
+      return if id.nil? || @loaded_objects.already_loaded?(associated_class_config, id)
+      @lookup_instructions.lookup_by_id(associated_class_config, id)
     end
 
     def lookup_by_fk(db_object, has_some_config)
-      child_config = has_some_config.child_config
+      associated_class_config = has_some_config.associated_class_config
       fk_info = has_some_config.foreign_key_info
       fk_value = db_object.id
-      @lookup_instructions.lookup_by_fk(child_config, fk_info, fk_value)
+      @lookup_instructions.lookup_by_fk(associated_class_config, fk_info, fk_value)
     end
   end
 

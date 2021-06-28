@@ -192,23 +192,23 @@ module Vorpal
         objects.each do |object|
           config.has_manys.each do |has_many_config|
             if has_many_config.owned
-              children = has_many_config.get_children(object)
-              children.each do |child|
-                has_many_config.set_foreign_key(mapping[child], object)
+              associates = has_many_config.get_associated(object)
+              associates.each do |associate|
+                has_many_config.set_foreign_key(mapping[associate], object)
               end
             end
           end
 
           config.has_ones.each do |has_one_config|
             if has_one_config.owned
-              child = has_one_config.get_child(object)
-              has_one_config.set_foreign_key(mapping[child], object)
+              associate = has_one_config.get_associated(object)
+              has_one_config.set_foreign_key(mapping[associate], object)
             end
           end
 
           config.belongs_tos.each do |belongs_to_config|
-            child = belongs_to_config.get_child(object)
-            belongs_to_config.set_foreign_key(mapping[object], child)
+            associate = belongs_to_config.get_associated(object)
+            belongs_to_config.set_foreign_key(mapping[object], associate)
           end
         end
       end

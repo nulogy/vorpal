@@ -5,8 +5,8 @@ module Vorpal
     # @private
     # Object association terminology:
     # - All object associations are uni-directional
-    # - The end that holds the association is the 'Parent' and the end that
-    #   is referred to is the 'Child' or 'Children'
+    # - The end that holds the association is the 'Owner' and the end that
+    #   is referred to is the 'Associate' or 'Associates'
     #
     # Relational association terminology:
     # - Local end: has FK
@@ -19,15 +19,15 @@ module Vorpal
       attr_reader :name, :owned, :fk, :fk_type, :associated_class
       attr_accessor :association_config
 
-      def get_children(parent)
-        parent.send(name)
+      def get_associated(owner)
+        owner.send(name)
       end
 
-      def associate(parent, child)
-        if get_children(parent).nil?
-          parent.send("#{name}=", [])
+      def associate(owner, associates)
+        if get_associated(owner).nil?
+          owner.send("#{name}=", [])
         end
-        get_children(parent) << child
+        get_associated(owner) << associates
       end
     end
   end

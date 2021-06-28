@@ -586,7 +586,7 @@ describe 'AggregateMapper' do
       expect(db_class_for(Tree, test_mapper).count).to eq 0
     end
 
-    it 'removes has many children from the database' do
+    it 'removes entities associated via has many from the database' do
       test_mapper = configure
 
       tree_db = db_class_for(Tree, test_mapper).create!
@@ -597,7 +597,7 @@ describe 'AggregateMapper' do
       expect(db_class_for(Branch, test_mapper).count).to eq 0
     end
 
-    it 'removes belongs to children from the database' do
+    it 'removes entities associated via belongs to from the database' do
       test_mapper = configure
 
       trunk_db = db_class_for(Trunk, test_mapper).create!
@@ -608,7 +608,7 @@ describe 'AggregateMapper' do
       expect(db_class_for(Trunk, test_mapper).count).to eq 0
     end
 
-    it 'removes AR children from the database' do
+    it 'removes associated AR entities from the database' do
       test_mapper = configure
 
       tree_db = db_class_for(Tree, test_mapper).create!
@@ -619,7 +619,7 @@ describe 'AggregateMapper' do
       expect(Fissure.count).to eq 0
     end
 
-    it 'leaves unowned belongs to children in the database' do
+    it 'leaves unowned entities associated via belongs to in the database' do
       test_mapper = configure_unowned
 
       trunk_db = db_class_for(Trunk, test_mapper).create!
@@ -630,7 +630,7 @@ describe 'AggregateMapper' do
       expect(db_class_for(Trunk, test_mapper).count).to eq 1
     end
 
-    it 'leaves unowned has many children in the database' do
+    it 'leaves unowned entities associated via has many in the database' do
       test_mapper = configure_unowned
 
       tree_db = db_class_for(Tree, test_mapper).create!
