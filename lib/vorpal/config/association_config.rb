@@ -67,6 +67,10 @@ module Vorpal
       def foreign_key_info(remote_class_config)
         ForeignKeyInfo.new(@fk, @fk_type, remote_class_config.domain_class.name, polymorphic?)
       end
+
+      def unique_key_name
+        (@local_end_config || @remote_end_config).unique_key_name
+      end
     end
   end
 end

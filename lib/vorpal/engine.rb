@@ -137,8 +137,9 @@ module Vorpal
       loaded_db_objects.each do |config, db_objects|
         db_objects.each do |db_object|
           config.local_association_configs.each do |association_config|
-            db_remote = loaded_db_objects.find_by_id(
+            db_remote = loaded_db_objects.find_by_unique_key(
               association_config.remote_class_config(db_object),
+              association_config.unique_key_name,
               association_config.fk_value(db_object)
             )
             association_config.associate(identity_map.get(db_object), identity_map.get(db_remote))
@@ -159,7 +160,7 @@ module Vorpal
     def serialize_object(object, config, loaded_db_objects)
       if config.serialization_required?
         attributes = config.serialize(object)
-        db_object = loaded_db_objects.find_by_id(config, object.id)
+        db_object = loaded_db_objects.find_by_primary_key(config, object.id)
         if object.id.nil? || db_object.nil? # object doesn't exist in the DB
           config.build_db_object(attributes)
         else

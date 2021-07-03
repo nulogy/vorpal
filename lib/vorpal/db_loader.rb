@@ -56,15 +56,16 @@ module Vorpal
 
     def lookup_by_id(db_object, belongs_to_config)
       associated_class_config = belongs_to_config.associated_class_config(db_object)
-      id = belongs_to_config.fk_value(db_object)
-      return if id.nil? || @loaded_objects.already_loaded?(associated_class_config, id)
-      @lookup_instructions.lookup_by_id(associated_class_config, id)
+      unique_key_value = belongs_to_config.fk_value(db_object)
+      unique_key_name = belongs_to_config.unique_key_name
+      return if unique_key_value.nil? || @loaded_objects.already_loaded_by_unique_key?(associated_class_config, unique_key_name, unique_key_value)
+      @lookup_instructions.lookup_by_unique_key(associated_class_config, unique_key_name, unique_key_value)
     end
 
     def lookup_by_fk(db_object, has_some_config)
       associated_class_config = has_some_config.associated_class_config
       fk_info = has_some_config.foreign_key_info
-      fk_value = db_object.id
+      fk_value = has_some_config.get_unique_key_value(db_object)
       @lookup_instructions.lookup_by_fk(associated_class_config, fk_info, fk_value)
     end
   end
@@ -76,8 +77,8 @@ module Vorpal
       @lookup_by_fk = Util::ArrayHash.new
     end
 
-    def lookup_by_id(config, ids)
-      @lookup_by_id.append(config, ids)
+    def lookup_by_unique_key(config, column_name, values)
+      @lookup_by_id.append([config, column_name], values)
     end
 
     def lookup_by_fk(config, fk_info, fk_value)
@@ -99,8 +100,10 @@ module Vorpal
     private
 
     def pop_id_lookup
-      config, ids = @lookup_by_id.pop
-      LookupById.new(config, ids)
+      key, ids = @lookup_by_id.pop
+      config = key.first
+      column_name = key.last
+      LookupById.new(config, column_name, ids)
     end
 
     def pop_fk_lookup
@@ -114,14 +117,15 @@ module Vorpal
   # @private
   class LookupById
     attr_reader :config
-    def initialize(config, ids)
+    def initialize(config, column_name, ids)
       @config = config
+      @column_name = column_name
       @ids = ids
     end
 
     def load_all(db_driver)
       return [] if @ids.empty?
-      db_driver.load_by_unique_key(@config.db_class, @ids, "id")
+      db_driver.load_by_unique_key(@config.db_class, @ids, @column_name)
     end
   end
 

@@ -26,6 +26,10 @@ module Vorpal
       def associate(owner, associate)
         owner.send("#{name}=", associate)
       end
+
+      def unique_key_name
+        "id"
+      end
     end
   end
 end

@@ -29,6 +29,10 @@ module Vorpal
         end
         get_associated(owner) << associates
       end
+
+      def unique_key_name
+        "id"
+      end
     end
   end
 end
