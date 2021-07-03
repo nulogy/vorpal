@@ -12,7 +12,7 @@ module Vorpal
     end
 
     def load_from_db(ids, config)
-      db_roots = @db_driver.load_by_id(config.db_class, ids)
+      db_roots = @db_driver.load_by_unique_key(config.db_class, ids, "id")
       load_from_db_objects(db_roots, config)
     end
 
@@ -121,7 +121,7 @@ module Vorpal
 
     def load_all(db_driver)
       return [] if @ids.empty?
-      db_driver.load_by_id(@config.db_class, @ids)
+      db_driver.load_by_unique_key(@config.db_class, @ids, "id")
     end
   end
 

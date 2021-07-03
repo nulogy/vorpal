@@ -40,12 +40,12 @@ module Vorpal
         db_class.where(id: ids).delete_all
       end
 
-      # Loads instances of the given class by primary key.
+      # Loads instances of the given class by a unique key.
       #
       # @param db_class [Class] A subclass of ActiveRecord::Base
       # @return [[Object]] An array of entities.
-      def load_by_id(db_class, ids)
-        db_class.where(id: ids).to_a
+      def load_by_unique_key(db_class, ids, column_name)
+        db_class.where(column_name => ids).to_a
       end
 
       # Loads instances of the given class whose foreign key has the given value.
