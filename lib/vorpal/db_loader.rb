@@ -71,18 +71,17 @@ module Vorpal
 
   # @private
   class LookupInstructions
-    include Util::ArrayHash
     def initialize
-      @lookup_by_id = {}
-      @lookup_by_fk = {}
+      @lookup_by_id = Util::ArrayHash.new
+      @lookup_by_fk = Util::ArrayHash.new
     end
 
     def lookup_by_id(config, ids)
-      add_to_hash(@lookup_by_id, config, Array(ids))
+      @lookup_by_id.append(config, ids)
     end
 
     def lookup_by_fk(config, fk_info, fk_value)
-      add_to_hash(@lookup_by_fk, [config, fk_info], fk_value)
+      @lookup_by_fk.append([config, fk_info], fk_value)
     end
 
     def next_lookup
@@ -100,12 +99,12 @@ module Vorpal
     private
 
     def pop_id_lookup
-      config, ids = pop(@lookup_by_id)
+      config, ids = @lookup_by_id.pop
       LookupById.new(config, ids)
     end
 
     def pop_fk_lookup
-      key, fk_values = pop(@lookup_by_fk)
+      key, fk_values = @lookup_by_fk.pop
       config = key.first
       fk_info = key.last
       LookupByFk.new(config, fk_info, fk_values)

@@ -14,11 +14,11 @@ describe Vorpal::LoadedObjects do
 
   it 'does not accept duplicate objects' do
     object = TestObject.new(id: 22)
-    config = Vorpal::Config::ClassConfig.new(domain_class: Object, primary_key_type: :serial)
+    config = Vorpal::Config::ClassConfig.new(domain_class: TestObject, primary_key_type: :serial)
 
     subject.add(config, [object, object])
     subject.add(config, [object])
 
-    expect(subject.objects.values.flatten).to contain_exactly(object)
+    expect(subject.all_objects).to contain_exactly(object)
   end
 end
