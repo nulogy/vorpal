@@ -24,6 +24,10 @@ module Vorpal
         values = @hash.delete(key)
         [key, values]
       end
+
+      def values
+        @hash.values.flatten
+      end
     end
   end
 end
