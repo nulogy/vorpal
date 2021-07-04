@@ -5,15 +5,13 @@ module Vorpal
 
   # @private
   class LoadedObjects
-    include Util::ArrayHash
     extend Forwardable
     include Enumerable
 
-    attr_reader :objects
-    def_delegators :objects, :each
+    def_delegators :@objects, :each
 
     def initialize
-      @objects = Hash.new([])
+      @objects = Util::ArrayHash.new
       @objects_by_id = Hash.new
     end
 
@@ -22,8 +20,9 @@ module Vorpal
         if !already_loaded?(config, object.id)
           @objects_by_id[[config.domain_class.name, object.id]] = object
         end
-      end
-      add_to_hash(@objects, config, objects_to_add.compact)
+      end.compact
+      @objects.append(config, objects_to_add)
+      objects_to_add
     end
 
     def find_by_id(config, id)

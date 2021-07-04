@@ -1,17 +1,27 @@
+require 'forwardable'
+
 module Vorpal
   module Util
     # @private
-    module ArrayHash
-      def add_to_hash(array_hash, key, values)
-        if array_hash[key].nil? || array_hash[key].empty?
-          array_hash[key] = []
-        end
-        array_hash[key].concat(Array(values))
+    class ArrayHash
+      extend Forwardable
+
+      def_delegators :@hash, :each, :empty?
+
+      def initialize
+        @hash = {}
       end
 
-      def pop(array_hash)
-        key = array_hash.first.first
-        values = array_hash.delete(key)
+      def append(key, values)
+        if @hash[key].nil? || @hash[key].empty?
+          @hash[key] = []
+        end
+        @hash[key].concat(Array(values))
+      end
+
+      def pop
+        key = @hash.first.first
+        values = @hash.delete(key)
         [key, values]
       end
     end

@@ -24,9 +24,9 @@ module Vorpal
 
       until @lookup_instructions.empty?
         lookup = @lookup_instructions.next_lookup
-        new_objects = lookup.load_all(@db_driver)
-        @loaded_objects.add(lookup.config, new_objects)
-        explore_objects(lookup.config, new_objects)
+        newly_loaded_objects = lookup.load_all(@db_driver)
+        unexplored_objects = @loaded_objects.add(lookup.config, newly_loaded_objects)
+        explore_objects(lookup.config, unexplored_objects)
       end
 
       @loaded_objects
@@ -55,34 +55,33 @@ module Vorpal
     end
 
     def lookup_by_id(db_object, belongs_to_config)
-      child_config = belongs_to_config.child_config(db_object)
+      associated_class_config = belongs_to_config.associated_class_config(db_object)
       id = belongs_to_config.fk_value(db_object)
-      return if id.nil? || @loaded_objects.already_loaded?(child_config, id)
-      @lookup_instructions.lookup_by_id(child_config, id)
+      return if id.nil? || @loaded_objects.already_loaded?(associated_class_config, id)
+      @lookup_instructions.lookup_by_id(associated_class_config, id)
     end
 
     def lookup_by_fk(db_object, has_some_config)
-      child_config = has_some_config.child_config
+      associated_class_config = has_some_config.associated_class_config
       fk_info = has_some_config.foreign_key_info
       fk_value = db_object.id
-      @lookup_instructions.lookup_by_fk(child_config, fk_info, fk_value)
+      @lookup_instructions.lookup_by_fk(associated_class_config, fk_info, fk_value)
     end
   end
 
   # @private
   class LookupInstructions
-    include Util::ArrayHash
     def initialize
-      @lookup_by_id = {}
-      @lookup_by_fk = {}
+      @lookup_by_id = Util::ArrayHash.new
+      @lookup_by_fk = Util::ArrayHash.new
     end
 
     def lookup_by_id(config, ids)
-      add_to_hash(@lookup_by_id, config, Array(ids))
+      @lookup_by_id.append(config, ids)
     end
 
     def lookup_by_fk(config, fk_info, fk_value)
-      add_to_hash(@lookup_by_fk, [config, fk_info], fk_value)
+      @lookup_by_fk.append([config, fk_info], fk_value)
     end
 
     def next_lookup
@@ -100,12 +99,12 @@ module Vorpal
     private
 
     def pop_id_lookup
-      config, ids = pop(@lookup_by_id)
+      config, ids = @lookup_by_id.pop
       LookupById.new(config, ids)
     end
 
     def pop_fk_lookup
-      key, fk_values = pop(@lookup_by_fk)
+      key, fk_values = @lookup_by_fk.pop
       config = key.first
       fk_info = key.last
       LookupByFk.new(config, fk_info, fk_values)

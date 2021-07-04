@@ -311,7 +311,7 @@ describe 'performance' do
 
       map Bug, table_name: "bugs_perf" do
         attributes :name
-        belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, child_classes: [Trunk, Branch]
+        belongs_to :lives_on, fk: :lives_on_id, fk_type: :lives_on_type, associated_classes: [Trunk, Branch]
       end
     end
     engine.mapper_for(Tree)
