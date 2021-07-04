@@ -98,6 +98,8 @@ module Vorpal
       # @option options [Boolean] :owned (True) True if the associated type belongs to the aggregate. Changes to any object belonging to the aggregate will be persisted when the aggregate is persisted.
       # @option options [String] :fk (Association-owning class name converted to snakecase and appended with a '_id') The name of the DB column on the associated table that contains the foreign key reference to the association owner.
       # @option options [String] :fk_type The name of the DB column on the associated table that contains the association-owning class name. Only needed when the associated end is polymorphic.
+      # @option options [String] :unique_key_name ("id") The name of the column on the owning table that the foreign key points to. Normally the primary key column.
+      # @option options [String] :primary_key Same as :unique_key_name. Exists for compatibility with Rails API.
       # @option options [Class] :child_class DEPRECATED. Use `associated_class` instead. The associated class.
       # @option options [Class] :associated_class (Name of the association converted to a Class) The associated class.
       def has_many(name, options={})
@@ -116,6 +118,8 @@ module Vorpal
       # @option options [Boolean] :owned (True) True if the associated type belongs to the aggregate. Changes to any object belonging to the aggregate will be persisted when the aggregate is persisted.
       # @option options [String] :fk (Association-owning class name converted to snakecase and appended with a '_id') The name of the DB column on the associated table that contains the foreign key reference to the association owner.
       # @option options [String] :fk_type The name of the DB column on the associated table that contains the association-owning class name. Only needed when the associated end is polymorphic.
+      # @option options [String] :unique_key_name ("id") The name of the column on the owning table that the foreign key points to. Normally the primary key column.
+      # @option options [String] :primary_key Same as :unique_key_name. Exists for compatibility with Rails API.
       # @option options [Class] :child_class DEPRECATED. Use `associated_class` instead. The associated class.
       # @option options [Class] :associated_class (Name of the association converted to a Class) The associated class.
       def has_one(name, options={})
@@ -136,6 +140,8 @@ module Vorpal
       # @option options [Boolean] :owned (True) True if the associated type belongs to the aggregate. Changes to any object belonging to the aggregate will be persisted when the aggregate is persisted.
       # @option options [String] :fk (Associated class name converted to snakecase and appended with a '_id') The name of the DB column on the association-owning table that contains the foreign key reference to the associated table.
       # @option options [String] :fk_type The name of the DB column on the association-owning table that contains the associated class name. Only needed when the association is polymorphic.
+      # @option options [String] :unique_key_name ("id") The name of the column on the associated table that the foreign key points to. Normally the primary key column.
+      # @option options [String] :primary_key Same as :unique_key_name. Exists for compatibility with Rails API.
       # @option options [Class] :child_class DEPRECATED. Use `associated_class` instead. The associated class.
       # @option options [Class] :associated_class (Name of the association converted to a Class) The associated class.
       # @option options [[Class]] :child_classes DEPRECATED. Use `associated_classes` instead. The list of possible classes that can be associated. This is for polymorphic associations. Takes precedence over `:associated_class`.

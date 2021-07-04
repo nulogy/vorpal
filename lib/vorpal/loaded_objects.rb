@@ -17,7 +17,7 @@ module Vorpal
 
     def add(config, objects)
       objects_to_add = objects.map do |object|
-        if !already_loaded?(config, object.id)
+        if !already_loaded?(config, object)
           add_to_cache(config, object)
         end
       end.compact
@@ -25,8 +25,8 @@ module Vorpal
       objects_to_add
     end
 
-    def find_by_primary_key(config, id)
-      find_by_unique_key(config, "id", id)
+    def find_by_primary_key(config, object)
+      find_by_unique_key(config, "id", object.id)
     end
 
     def find_by_unique_key(config, column_name, value)
@@ -43,10 +43,11 @@ module Vorpal
 
     private
 
-    def already_loaded?(config, id)
-      !find_by_primary_key(config, id).nil?
+    def already_loaded?(config, object)
+      !find_by_primary_key(config, object).nil?
     end
 
+    # TODO: Do we have to worry about symbols vs strings for the column_name?
     def add_to_cache(config, object)
       # we take a shortcut here assuming that the cache has already been primed with the primary key column
       # because this method should always be guarded by #already_loaded?
@@ -62,6 +63,7 @@ module Vorpal
     end
 
     # lazily primes the cache
+    # TODO: Do we have to worry about symbols vs strings for the column_name?
     def lookup_hash(config, column_name)
       column_cache = @cache[config]
       if column_cache.nil?

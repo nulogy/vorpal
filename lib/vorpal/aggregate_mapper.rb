@@ -27,12 +27,12 @@ module Vorpal
     # Loads an aggregate from the DB. Will eagerly load all objects in the
     # aggregate and on the boundary (owned: false).
     #
-    # @param db_root [Object] DB representation of the root of the aggregate to be
+    # @param db_root [Object, nil] DB representation of the root of the aggregate to be
     #   loaded. This can be nil.
     # @param identity_map [IdentityMap] Provide your own IdentityMap instance
     #   if you want entity id -> unique object mapping for a greater scope than one
     #   operation.
-    # @return [Object] Aggregate root corresponding to the given DB representation.
+    # @return [Object, nil] Aggregate root corresponding to the given DB representation.
     def load_one(db_root, identity_map=IdentityMap.new)
       @engine.load_one(db_root, @domain_class, identity_map)
     end

@@ -160,7 +160,7 @@ module Vorpal
     def serialize_object(object, config, loaded_db_objects)
       if config.serialization_required?
         attributes = config.serialize(object)
-        db_object = loaded_db_objects.find_by_primary_key(config, object.id)
+        db_object = loaded_db_objects.find_by_primary_key(config, object)
         if object.id.nil? || db_object.nil? # object doesn't exist in the DB
           config.build_db_object(attributes)
         else

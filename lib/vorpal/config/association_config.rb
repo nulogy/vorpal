@@ -59,7 +59,7 @@ module Vorpal
       end
 
       def set_foreign_key(local_db_object, remote_object)
-        local_class_config.set_attribute(local_db_object, @fk, remote_object.try(:id))
+        local_class_config.set_attribute(local_db_object, @fk, remote_object&.send(unique_key_name))
         local_class_config.set_attribute(local_db_object, @fk_type, remote_object.class.name) if polymorphic?
       end
 

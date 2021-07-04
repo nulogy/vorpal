@@ -15,12 +15,13 @@ describe 'AggregateMapper' do
 
   class Trunk
     attr_accessor :id
+    attr_accessor :trunk_unique_key
     attr_accessor :length
     attr_accessor :bugs
     attr_accessor :tree
 
-    def initialize(id: nil, length: 0, bugs: [], tree: nil)
-      @id, @length, @bugs, @tree = id, length, bugs, tree
+    def initialize(id: nil, trunk_unique_key: nil, length: 0, bugs: [], tree: nil)
+      @id, @trunk_unique_key, @length, @bugs, @tree = id, trunk_unique_key, length, bugs, tree
     end
   end
 
@@ -42,14 +43,16 @@ describe 'AggregateMapper' do
   class Tree
     attr_accessor :id
     attr_accessor :name
+    attr_accessor :tree_unique_key
     attr_accessor :trunk
     attr_accessor :environment
     attr_accessor :fissures
     attr_accessor :branches
 
-    def initialize(id: nil, name: "", trunk: nil, environment: nil, fissures: [], branches: [])
+    def initialize(id: nil, name: "", tree_unique_key: nil, trunk: nil, environment: nil, fissures: [], branches: [])
       @id = id
       @name = name
+      @tree_unique_key = tree_unique_key
       @trunk = trunk
       @environment = environment
       @fissures = fissures
@@ -61,8 +64,8 @@ describe 'AggregateMapper' do
     define_table('branches', {length: :decimal, tree_id: :integer, branch_id: :integer}, false)
     define_table('bugs', {name: :text, lives_on_id: :integer, lives_on_type: :string}, false)
     define_table('fissures', {length: :decimal, tree_id: :integer}, false)
-    define_table('trees', {name: :text, trunk_id: :integer, environment_id: :integer, environment_type: :string}, false)
-    define_table('trunks', {length: :decimal}, false)
+    define_table('trees', {name: :text, tree_unique_key: :integer, trunk_id: :integer, environment_id: :integer, environment_type: :string}, false)
+    define_table('trunks', {trunk_unique_key: :integer, length: :decimal}, false)
     define_table('swamps', {}, false)
   end
 
@@ -777,6 +780,73 @@ describe 'AggregateMapper' do
     end
   end
 
+  describe 'associations using non-primary keys' do
+    describe 'has_one' do
+      let(:test_mapper) do
+        engine = Vorpal.define do
+          map Tree do
+            attributes :name
+          end
+
+          map Trunk do
+            attributes :trunk_unique_key
+            has_one :tree, primary_key: :trunk_unique_key
+          end
+        end
+        engine.mapper_for(Trunk)
+      end
+
+      it 'sets foreign keys' do
+        tree = Tree.new
+        trunk = Trunk.new(trunk_unique_key: 1111, tree: tree)
+
+        test_mapper.persist(trunk)
+
+        tree_db = db_class_for(Tree, test_mapper).first
+        expect(tree_db.trunk_id).to eq 1111
+      end
+
+      it 'hydrates' do
+        trunk_db = db_class_for(Trunk, test_mapper).create!(trunk_unique_key: 1111, length: 9090)
+        db_class_for(Tree, test_mapper).create!(trunk_id: 1111, name: 'big tree')
+
+        trunk = test_mapper.load_one(trunk_db)
+
+        expect(trunk.tree.name).to eq('big tree')
+      end
+    end
+
+    it 'sets foreign keys' do
+      test_mapper = configure_unique_key_associations
+      trunk = Trunk.new(trunk_unique_key: 1111)
+      tree = Tree.new(tree_unique_key: 2222, trunk: trunk)
+      trunk.tree = tree
+      tree.branches = [Branch.new, Branch.new]
+
+      test_mapper.persist(tree)
+
+      tree_db = db_class_for(Tree, test_mapper).first
+      expect(tree_db.trunk_id).to eq 1111
+
+      branch_db_1 = db_class_for(Branch, test_mapper).first
+      expect(branch_db_1.tree_id).to eq(2222)
+      branch_db_2 = db_class_for(Branch, test_mapper).last
+      expect(branch_db_2.tree_id).to eq(2222)
+    end
+
+    it 'hydrates' do
+      test_mapper = configure_unique_key_associations
+      db_class_for(Trunk, test_mapper).create!(trunk_unique_key: 1111, length: 9090)
+      db_class_for(Branch, test_mapper).create!(tree_id: 2222, length: 8080)
+      tree_db = db_class_for(Tree, test_mapper).create!(trunk_id: 1111, tree_unique_key: 2222)
+
+      tree = test_mapper.load_one(tree_db)
+
+      expect(tree.trunk.length).to eq 9090
+      expect(tree.branches).to match_array([an_object_having_attributes(length: 8080)])
+    end
+  end
+
 private
 
   def configure_uuid_id
@@ -962,5 +1032,25 @@ private
       end
     end
     engine.mapper_for(Trunk)
+  end
+
+  def configure_unique_key_associations
+    engine = Vorpal.define do
+      map Tree do
+        attributes :name, :tree_unique_key
+        belongs_to :trunk, primary_key: :trunk_unique_key
+        has_many :branches, primary_key: :tree_unique_key
+      end
+
+      map Trunk do
+        attributes :length, :trunk_unique_key
+        has_one :tree, primary_key: :trunk_unique_key
+      end
+
+      map Branch do
+        attributes :length
+      end
+    end
+    engine.mapper_for(Tree)
   end
 end
