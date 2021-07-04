@@ -24,9 +24,9 @@ module Vorpal
 
       until @lookup_instructions.empty?
         lookup = @lookup_instructions.next_lookup
-        new_objects = lookup.load_all(@db_driver)
-        @loaded_objects.add(lookup.config, new_objects)
-        explore_objects(lookup.config, new_objects)
+        newly_loaded_objects = lookup.load_all(@db_driver)
+        unexplored_objects = @loaded_objects.add(lookup.config, newly_loaded_objects)
+        explore_objects(lookup.config, unexplored_objects)
       end
 
       @loaded_objects

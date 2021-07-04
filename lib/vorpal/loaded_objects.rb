@@ -20,8 +20,9 @@ module Vorpal
         if !already_loaded?(config, object.id)
           @objects_by_id[[config.domain_class.name, object.id]] = object
         end
-      end
-      @objects.append(config, objects_to_add.compact)
+      end.compact
+      @objects.append(config, objects_to_add)
+      objects_to_add
     end
 
     def find_by_id(config, id)
