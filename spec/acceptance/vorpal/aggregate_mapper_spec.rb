@@ -794,6 +794,36 @@ describe 'AggregateMapper' do
     end
   end
 
+  describe 'mis-configured' do
+    it 'raises an error when both sides of a 1-1 association do not have the same unique_key_name set' do
+      expect {
+        Vorpal.define do
+          map Tree do
+            belongs_to :trunk, primary_key: :id
+          end
+
+          map Trunk do
+            has_one :tree, primary_key: :trunk_unique_key
+          end
+        end
+      }.to raise_error(Vorpal::ConfigurationError, "Tree belongs_to :trunk and Trunk has_one :tree must have the same unique_key_name/primary_key")
+    end
+
+    it 'raises an error when both sides of a 1-* association do not have the same unique_key_name set' do
+      expect {
+        Vorpal.define do
+          map Tree do
+            has_many :branches, primary_key: :id
+          end
+
+          map Branch do
+            belongs_to :tree, primary_key: :tree_unique_key
+          end
+        end
+      }.to raise_error(Vorpal::ConfigurationError, "Branch belongs_to :tree and Tree has_many :branches must have the same unique_key_name/primary_key")
+    end
+  end
+
   class TreeUUID
     attr_accessor :id
     attr_accessor :name

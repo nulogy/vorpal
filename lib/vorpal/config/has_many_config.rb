@@ -29,6 +29,10 @@ module Vorpal
         end
         get_associated(owner) << associates
       end
+
+      def pretty_name
+        "#{@class_config.domain_class.name} has_many :#{name}"
+      end
     end
   end
 end

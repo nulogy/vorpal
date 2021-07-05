@@ -4,4 +4,6 @@ module Vorpal
   class InvalidAggregateRoot < StandardError; end
 
   class ConfigurationNotFound < StandardError; end
+
+  class ConfigurationError < StandardError; end
 end

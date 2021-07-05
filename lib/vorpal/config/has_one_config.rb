@@ -26,6 +26,10 @@ module Vorpal
       def associate(owner, associate)
         owner.send("#{name}=", associate)
       end
+
+      def pretty_name
+        "#{@class_config.domain_class.name} has_one :#{name}"
+      end
     end
   end
 end

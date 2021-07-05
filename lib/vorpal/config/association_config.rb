@@ -71,6 +71,14 @@ module Vorpal
       def unique_key_name
         (@local_end_config || @remote_end_config).unique_key_name
       end
+
+      def validate
+        if @local_end_config && @remote_end_config
+          if @local_end_config.unique_key_name != @remote_end_config.unique_key_name
+            raise ConfigurationError.new("#{@local_end_config.pretty_name} and #{@remote_end_config.pretty_name} must have the same unique_key_name/primary_key")
+          end
+        end
+      end
     end
   end
 end

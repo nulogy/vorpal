@@ -26,6 +26,10 @@ module Vorpal
       def associate(owner, associate)
         owner.send("#{name}=", associate)
       end
+
+      def pretty_name
+        "#{association_config.local_class_config.domain_class.name} belongs_to :#{name}"
+      end
     end
   end
 end
