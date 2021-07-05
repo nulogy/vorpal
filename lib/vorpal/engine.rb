@@ -203,7 +203,7 @@ module Vorpal
           config.has_ones.each do |has_one_config|
             if has_one_config.owned
               associate = has_one_config.get_associated(object)
-              has_one_config.set_foreign_key(mapping[associate], object)
+              has_one_config.set_foreign_key(mapping[associate], object) if associate
             end
           end
 

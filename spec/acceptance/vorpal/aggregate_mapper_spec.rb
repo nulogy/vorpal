@@ -176,32 +176,6 @@ describe 'AggregateMapper' do
 
       expect(db_class_for(Tree, test_mapper).count).to eq 1
     end
-
-    it 'removes orphans' do
-      test_mapper = configure
-
-      tree_db = db_class_for(Tree, test_mapper).create!
-      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
-
-      tree = Tree.new(id: tree_db.id, branches: [])
-
-      test_mapper.persist(tree)
-
-      expect(db_class_for(Branch, test_mapper).count).to eq 0
-    end
-
-    it 'does not remove orphans from unowned associations' do
-      test_mapper = configure_unowned
-
-      tree_db = db_class_for(Tree, test_mapper).create!
-      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
-
-      tree = Tree.new(id: tree_db.id, branches: [])
-
-      test_mapper.persist(tree)
-
-      expect(db_class_for(Branch, test_mapper).count).to eq 1
-    end
   end
 
   it 'copies attributes to domain' do
@@ -332,6 +306,28 @@ describe 'AggregateMapper' do
       new_tree = test_mapper.load_one(tree_db)
       expect(new_tree.trunk.length).to eq 21
     end
+
+    it 'removes orphans' do
+      test_mapper = configure
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
+      tree = Tree.new(id: tree_db.id, trunk: nil)
+
+      test_mapper.persist(tree)
+
+      expect(db_class_for(Trunk, test_mapper).count).to eq(0)
+    end
+
+    it 'does not remove orphans when unowned' do
+      test_mapper = configure_unowned
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
+      tree = Tree.new(id: tree_db.id, trunk: nil)
+
+      test_mapper.persist(tree)
+
+      expect(db_class_for(Tree, test_mapper).count).to eq(1)
+    end
   end
 
   describe 'has_many associations' do
@@ -398,6 +394,28 @@ describe 'AggregateMapper' do
 
       expect(tree.branches.first.length).to eq 50
     end
+
+    it 'removes orphans' do
+      test_mapper = configure
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
+      tree = Tree.new(id: tree_db.id, branches: [])
+
+      test_mapper.persist(tree)
+
+      expect(db_class_for(Branch, test_mapper).count).to eq 0
+    end
+
+    it 'does not remove orphans when unowned' do
+      test_mapper = configure_unowned
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
+      tree = Tree.new(id: tree_db.id, branches: [])
+
+      test_mapper.persist(tree)
+
+      expect(db_class_for(Branch, test_mapper).count).to eq 1
+    end
   end
 
   describe 'has_one associations' do
@@ -440,6 +458,28 @@ describe 'AggregateMapper' do
       trunk = test_mapper.load_one(trunk_db)
 
       expect(trunk.tree.name).to eq 'big tree'
+    end
+
+    it 'removes orphans' do
+      test_mapper = configure_has_one
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
+      trunk = Trunk.new(id: trunk_db.id)
+
+      test_mapper.persist(trunk)
+
+      expect(db_class_for(Tree, test_mapper).count).to eq(0)
+    end
+
+    it 'does not remove orphans when unowned' do
+      test_mapper = configure_unowned_has_one
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
+      trunk = Trunk.new(id: trunk_db.id)
+
+      test_mapper.persist(trunk)
+
+      expect(db_class_for(Tree, test_mapper).count).to eq(1)
     end
   end
 
