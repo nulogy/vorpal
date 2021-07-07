@@ -15,12 +15,13 @@ describe 'AggregateMapper' do
 
   class Trunk
     attr_accessor :id
+    attr_accessor :trunk_unique_key
     attr_accessor :length
     attr_accessor :bugs
     attr_accessor :tree
 
-    def initialize(id: nil, length: 0, bugs: [], tree: nil)
-      @id, @length, @bugs, @tree = id, length, bugs, tree
+    def initialize(id: nil, trunk_unique_key: nil, length: 0, bugs: [], tree: nil)
+      @id, @trunk_unique_key, @length, @bugs, @tree = id, trunk_unique_key, length, bugs, tree
     end
   end
 
@@ -42,14 +43,16 @@ describe 'AggregateMapper' do
   class Tree
     attr_accessor :id
     attr_accessor :name
+    attr_accessor :tree_unique_key
     attr_accessor :trunk
     attr_accessor :environment
     attr_accessor :fissures
     attr_accessor :branches
 
-    def initialize(id: nil, name: "", trunk: nil, environment: nil, fissures: [], branches: [])
+    def initialize(id: nil, name: "", tree_unique_key: nil, trunk: nil, environment: nil, fissures: [], branches: [])
       @id = id
       @name = name
+      @tree_unique_key = tree_unique_key
       @trunk = trunk
       @environment = environment
       @fissures = fissures
@@ -61,8 +64,8 @@ describe 'AggregateMapper' do
     define_table('branches', {length: :decimal, tree_id: :integer, branch_id: :integer}, false)
     define_table('bugs', {name: :text, lives_on_id: :integer, lives_on_type: :string}, false)
     define_table('fissures', {length: :decimal, tree_id: :integer}, false)
-    define_table('trees', {name: :text, trunk_id: :integer, environment_id: :integer, environment_type: :string}, false)
-    define_table('trunks', {length: :decimal}, false)
+    define_table('trees', {name: :text, tree_unique_key: :integer, trunk_id: :integer, environment_id: :integer, environment_type: :string}, false)
+    define_table('trunks', {trunk_unique_key: :integer, length: :decimal}, false)
     define_table('swamps', {}, false)
   end
 
@@ -172,32 +175,6 @@ describe 'AggregateMapper' do
       test_mapper.persist(tree)
 
       expect(db_class_for(Tree, test_mapper).count).to eq 1
-    end
-
-    it 'removes orphans' do
-      test_mapper = configure
-
-      tree_db = db_class_for(Tree, test_mapper).create!
-      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
-
-      tree = Tree.new(id: tree_db.id, branches: [])
-
-      test_mapper.persist(tree)
-
-      expect(db_class_for(Branch, test_mapper).count).to eq 0
-    end
-
-    it 'does not remove orphans from unowned associations' do
-      test_mapper = configure_unowned
-
-      tree_db = db_class_for(Tree, test_mapper).create!
-      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
-
-      tree = Tree.new(id: tree_db.id, branches: [])
-
-      test_mapper.persist(tree)
-
-      expect(db_class_for(Branch, test_mapper).count).to eq 1
     end
   end
 
@@ -329,6 +306,28 @@ describe 'AggregateMapper' do
       new_tree = test_mapper.load_one(tree_db)
       expect(new_tree.trunk.length).to eq 21
     end
+
+    it 'removes orphans' do
+      test_mapper = configure
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
+      tree = Tree.new(id: tree_db.id, trunk: nil)
+
+      test_mapper.persist(tree)
+
+      expect(db_class_for(Trunk, test_mapper).count).to eq(0)
+    end
+
+    it 'does not remove orphans when unowned' do
+      test_mapper = configure_unowned
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      tree_db = db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
+      tree = Tree.new(id: tree_db.id, trunk: nil)
+
+      test_mapper.persist(tree)
+
+      expect(db_class_for(Tree, test_mapper).count).to eq(1)
+    end
   end
 
   describe 'has_many associations' do
@@ -395,6 +394,37 @@ describe 'AggregateMapper' do
 
       expect(tree.branches.first.length).to eq 50
     end
+
+    it 'removes orphans' do
+      test_mapper = configure
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
+      tree = Tree.new(id: tree_db.id, branches: [])
+
+      test_mapper.persist(tree)
+
+      expect(db_class_for(Branch, test_mapper).count).to eq 0
+    end
+
+    it 'does not remove orphans when unowned' do
+      test_mapper = configure_unowned
+      tree_db = db_class_for(Tree, test_mapper).create!
+      db_class_for(Branch, test_mapper).create!(tree_id: tree_db.id)
+      tree = Tree.new(id: tree_db.id, branches: [])
+
+      test_mapper.persist(tree)
+
+      expect(db_class_for(Branch, test_mapper).count).to eq 1
+    end
+
+    it 'raise a nice error when set to nil' do
+      test_mapper = configure
+      tree = Tree.new(branches: nil)
+
+      expect {
+        test_mapper.persist(tree)
+      }.to raise_error(Vorpal::InvariantViolated, "Tree has_many :branches was set to nil. Use an empty array instead.")
+    end
   end
 
   describe 'has_one associations' do
@@ -437,6 +467,28 @@ describe 'AggregateMapper' do
       trunk = test_mapper.load_one(trunk_db)
 
       expect(trunk.tree.name).to eq 'big tree'
+    end
+
+    it 'removes orphans' do
+      test_mapper = configure_has_one
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
+      trunk = Trunk.new(id: trunk_db.id)
+
+      test_mapper.persist(trunk)
+
+      expect(db_class_for(Tree, test_mapper).count).to eq(0)
+    end
+
+    it 'does not remove orphans when unowned' do
+      test_mapper = configure_unowned_has_one
+      trunk_db = db_class_for(Trunk, test_mapper).create!
+      db_class_for(Tree, test_mapper).create!(trunk_id: trunk_db.id)
+      trunk = Trunk.new(id: trunk_db.id)
+
+      test_mapper.persist(trunk)
+
+      expect(db_class_for(Tree, test_mapper).count).to eq(1)
     end
   end
 
@@ -751,6 +803,36 @@ describe 'AggregateMapper' do
     end
   end
 
+  describe 'mis-configured' do
+    it 'raises an error when both sides of a 1-1 association do not have the same unique_key_name set' do
+      expect {
+        Vorpal.define do
+          map Tree do
+            belongs_to :trunk, unique_key_name: :id
+          end
+
+          map Trunk do
+            has_one :tree, unique_key_name: :trunk_unique_key
+          end
+        end
+      }.to raise_error(Vorpal::ConfigurationError, "Tree belongs_to :trunk and Trunk has_one :tree must have the same unique_key_name/primary_key")
+    end
+
+    it 'raises an error when both sides of a 1-* association do not have the same unique_key_name set' do
+      expect {
+        Vorpal.define do
+          map Tree do
+            has_many :branches, unique_key_name: :id
+          end
+
+          map Branch do
+            belongs_to :tree, unique_key_name: :tree_unique_key
+          end
+        end
+      }.to raise_error(Vorpal::ConfigurationError, "Branch belongs_to :tree and Tree has_many :branches must have the same unique_key_name/primary_key")
+    end
+  end
+
   class TreeUUID
     attr_accessor :id
     attr_accessor :name
@@ -774,6 +856,72 @@ describe 'AggregateMapper' do
       mapper.persist([tree])
 
       expect(tree.id).to be_a(String)
+    end
+  end
+
+  describe 'associations using non-primary keys' do
+    describe 'has_one' do
+      let(:test_mapper) do
+        engine = Vorpal.define do
+          map Tree do
+            attributes :name
+          end
+
+          map Trunk do
+            has_one :tree, unique_key_name: :trunk_unique_key
+          end
+        end
+        engine.mapper_for(Trunk)
+      end
+
+      it 'sets foreign keys' do
+        tree = Tree.new
+        trunk = Trunk.new(trunk_unique_key: 1111, tree: tree)
+
+        test_mapper.persist(trunk)
+
+        tree_db = db_class_for(Tree, test_mapper).first
+        expect(tree_db.trunk_id).to eq 1111
+      end
+
+      it 'hydrates' do
+        trunk_db = db_class_for(Trunk, test_mapper).create!(trunk_unique_key: 1111, length: 9090)
+        db_class_for(Tree, test_mapper).create!(trunk_id: 1111, name: 'big tree')
+
+        trunk = test_mapper.load_one(trunk_db)
+
+        expect(trunk.tree.name).to eq('big tree')
+      end
+    end
+
+    it 'sets foreign keys' do
+      test_mapper = configure_unique_key_associations
+      trunk = Trunk.new(trunk_unique_key: 1111)
+      tree = Tree.new(tree_unique_key: 2222, trunk: trunk)
+      trunk.tree = tree
+      tree.branches = [Branch.new, Branch.new]
+
+      test_mapper.persist(tree)
+
+      tree_db = db_class_for(Tree, test_mapper).first
+      expect(tree_db.trunk_id).to eq 1111
+
+      branch_db_1 = db_class_for(Branch, test_mapper).first
+      expect(branch_db_1.tree_id).to eq(2222)
+      branch_db_2 = db_class_for(Branch, test_mapper).last
+      expect(branch_db_2.tree_id).to eq(2222)
+    end
+
+    it 'hydrates' do
+      test_mapper = configure_unique_key_associations
+      db_class_for(Trunk, test_mapper).create!(trunk_unique_key: 1111, length: 9090)
+      db_class_for(Branch, test_mapper).create!(tree_id: 2222, length: 8080)
+      tree_db = db_class_for(Tree, test_mapper).create!(trunk_id: 1111, tree_unique_key: 2222)
+
+      tree = test_mapper.load_one(tree_db)
+
+      expect(tree.trunk.length).to eq 9090
+      expect(tree.branches).to match_array([an_object_having_attributes(length: 8080)])
     end
   end
 
@@ -962,5 +1110,25 @@ private
       end
     end
     engine.mapper_for(Trunk)
+  end
+
+  def configure_unique_key_associations
+    engine = Vorpal.define do
+      map Tree do
+        attributes :name, :tree_unique_key
+        belongs_to :trunk, primary_key: :trunk_unique_key
+        has_many :branches, primary_key: :tree_unique_key
+      end
+
+      map Trunk do
+        attributes :length, :trunk_unique_key
+        has_one :tree, primary_key: :trunk_unique_key
+      end
+
+      map Branch do
+        attributes :length
+      end
+    end
+    engine.mapper_for(Tree)
   end
 end

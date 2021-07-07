@@ -30,6 +30,7 @@ module Vorpal
 
       config.has_manys.each do |has_many_config|
         associates = has_many_config.get_associated(object)
+        raise InvariantViolated.new("#{has_many_config.pretty_name} was set to nil. Use an empty array instead.") if associates.nil?
         associates.each do |associate|
           accept(associate, visitor, already_visited) if visitor.continue_traversal?(has_many_config)
         end

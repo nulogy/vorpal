@@ -48,6 +48,7 @@ module Vorpal
 
         association_configs.values.each do |association_config|
           association_config.local_class_config.local_association_configs << association_config
+          association_config.validate
         end
       end
 

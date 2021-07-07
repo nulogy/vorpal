@@ -6,10 +6,10 @@ module Vorpal
     class ArrayHash
       extend Forwardable
 
-      def_delegators :@hash, :each, :empty?
+      def_delegators :@hash, :each, :empty?, :[]
 
       def initialize
-        @hash = {}
+        @hash = Hash.new([])
       end
 
       def append(key, values)
@@ -23,6 +23,10 @@ module Vorpal
         key = @hash.first.first
         values = @hash.delete(key)
         [key, values]
+      end
+
+      def values
+        @hash.values.flatten
       end
     end
   end

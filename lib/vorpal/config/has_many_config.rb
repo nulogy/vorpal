@@ -16,7 +16,7 @@ module Vorpal
       include Util::HashInitialization
       include RemoteEndConfig
 
-      attr_reader :name, :owned, :fk, :fk_type, :associated_class
+      attr_reader :name, :owned, :fk, :fk_type, :associated_class, :unique_key_name
       attr_accessor :association_config
 
       def get_associated(owner)
@@ -28,6 +28,10 @@ module Vorpal
           owner.send("#{name}=", [])
         end
         get_associated(owner) << associates
+      end
+
+      def pretty_name
+        "#{@class_config.domain_class.name} has_many :#{name}"
       end
     end
   end

@@ -30,6 +30,10 @@ module Vorpal
       def foreign_key_info
         association_config.foreign_key_info(@class_config)
       end
+
+      def get_unique_key_value(db_owner)
+        db_owner.send(unique_key_name)
+      end
     end
 
     # @private

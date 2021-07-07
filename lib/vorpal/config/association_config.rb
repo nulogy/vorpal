@@ -59,13 +59,25 @@ module Vorpal
       end
 
       def set_foreign_key(local_db_object, remote_object)
-        local_class_config.set_attribute(local_db_object, @fk, remote_object.try(:id))
+        local_class_config.set_attribute(local_db_object, @fk, remote_object&.send(unique_key_name))
         local_class_config.set_attribute(local_db_object, @fk_type, remote_object.class.name) if polymorphic?
       end
 
       # @return ForeignKeyInfo
       def foreign_key_info(remote_class_config)
         ForeignKeyInfo.new(@fk, @fk_type, remote_class_config.domain_class.name, polymorphic?)
+      end
+
+      def unique_key_name
+        (@local_end_config || @remote_end_config).unique_key_name
+      end
+
+      def validate
+        if @local_end_config && @remote_end_config
+          if @local_end_config.unique_key_name != @remote_end_config.unique_key_name
+            raise ConfigurationError.new("#{@local_end_config.pretty_name} and #{@remote_end_config.pretty_name} must have the same unique_key_name/primary_key")
+          end
+        end
       end
     end
   end
