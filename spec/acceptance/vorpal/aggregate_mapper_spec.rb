@@ -416,6 +416,15 @@ describe 'AggregateMapper' do
 
       expect(db_class_for(Branch, test_mapper).count).to eq 1
     end
+
+    it 'raise a nice error when set to nil' do
+      test_mapper = configure
+      tree = Tree.new(branches: nil)
+
+      expect {
+        test_mapper.persist(tree)
+      }.to raise_error(Vorpal::InvariantViolated, "Tree has_many :branches was set to nil. Use an empty array instead.")
+    end
   end
 
   describe 'has_one associations' do

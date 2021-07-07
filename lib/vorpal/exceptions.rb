@@ -6,4 +6,6 @@ module Vorpal
   class ConfigurationNotFound < StandardError; end
 
   class ConfigurationError < StandardError; end
+
+  class InvariantViolated < StandardError; end
 end
