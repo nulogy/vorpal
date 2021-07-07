@@ -808,11 +808,11 @@ describe 'AggregateMapper' do
       expect {
         Vorpal.define do
           map Tree do
-            belongs_to :trunk, primary_key: :id
+            belongs_to :trunk, unique_key_name: :id
           end
 
           map Trunk do
-            has_one :tree, primary_key: :trunk_unique_key
+            has_one :tree, unique_key_name: :trunk_unique_key
           end
         end
       }.to raise_error(Vorpal::ConfigurationError, "Tree belongs_to :trunk and Trunk has_one :tree must have the same unique_key_name/primary_key")
@@ -822,11 +822,11 @@ describe 'AggregateMapper' do
       expect {
         Vorpal.define do
           map Tree do
-            has_many :branches, primary_key: :id
+            has_many :branches, unique_key_name: :id
           end
 
           map Branch do
-            belongs_to :tree, primary_key: :tree_unique_key
+            belongs_to :tree, unique_key_name: :tree_unique_key
           end
         end
       }.to raise_error(Vorpal::ConfigurationError, "Branch belongs_to :tree and Tree has_many :branches must have the same unique_key_name/primary_key")
@@ -868,8 +868,7 @@ describe 'AggregateMapper' do
           end
 
           map Trunk do
-            attributes :trunk_unique_key
-            has_one :tree, primary_key: :trunk_unique_key
+            has_one :tree, unique_key_name: :trunk_unique_key
           end
         end
         engine.mapper_for(Trunk)
