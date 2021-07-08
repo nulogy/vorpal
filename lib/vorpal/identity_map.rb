@@ -28,14 +28,9 @@ module Vorpal
 
     def key(db_row)
       return nil unless db_row
-      primary_key_value = get_primary_key_value(db_row)
-      raise "Cannot map a DB row without an id '#{db_row.inspect}' to an entity." if primary_key_value.nil?
+      raise "Cannot map a DB row without an id '#{db_row.inspect}' to an entity." if db_row.id.nil?
       raise "Cannot map a DB row without a Class with a name '#{db_row.inspect}' to an entity." if db_row.class.name.nil?
-      [primary_key_value, db_row.class.name]
-    end
-
-    def get_primary_key_value(db_row)
-      db_row.send(db_row.class.primary_key)
+      [db_row.id, db_row.class.name]
     end
   end
 end

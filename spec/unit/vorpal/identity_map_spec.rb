@@ -24,10 +24,6 @@ describe Vorpal::IdentityMap do
   it 'raises an exception when the key object extends a class with no name (such as anonymous classes)' do
     anonymous_class = Class.new do
       attr_accessor :id
-
-      def self.primary_key
-        "id"
-      end
     end
 
     entity = anonymous_class.new
@@ -38,16 +34,12 @@ describe Vorpal::IdentityMap do
 
   def build_entity(id)
     entity = Entity.new
-    entity.pk = id
+    entity.id = id
     entity
   end
 
   class Entity
-    attr_accessor :pk
-
-    def self.primary_key
-      "pk"
-    end
+    attr_accessor :id
   end
 
   def build_funny_entity(id)
@@ -58,10 +50,6 @@ describe Vorpal::IdentityMap do
 
   class Funny
     attr_accessor :id
-
-    def self.primary_key
-      "id"
-    end
 
     def hash
       1
