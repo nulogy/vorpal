@@ -47,6 +47,12 @@ module DbHelpers
     end
   end
 
+  def define_updatable_view(view_name, table_name)
+    db_connection.execute(<<~SQL)
+      CREATE OR REPLACE VIEW #{view_name} AS SELECT * FROM #{table_name}
+    SQL
+  end
+
   # Has the same API as the Rails create_table, except doesn't die when the
   # table already exists
   def create_table(table_name, force: nil, **options)

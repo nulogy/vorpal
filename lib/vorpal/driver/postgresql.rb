@@ -99,6 +99,7 @@ module Vorpal
 
         db_class.vorpal_model_class_name = Util::StringUtils.escape_class_name(model_class.name)
         db_class.table_name = table_name
+        db_class.primary_key = 'id'
         db_class
       end
 
