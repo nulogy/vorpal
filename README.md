@@ -52,7 +52,7 @@ class Branch
   attr_accessor :tree
 end
 
-class Gardener
+class Gardener < ActiveRecord::Base
 end
 
 class Tree
