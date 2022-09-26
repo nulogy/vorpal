@@ -64,8 +64,7 @@ describe 'AggregateMapper' do
     define_table('branches', {length: :decimal, tree_id: :integer, branch_id: :integer}, false)
     define_table('bugs', {name: :text, lives_on_id: :integer, lives_on_type: :string}, false)
     define_table('fissures', {length: :decimal, tree_id: :integer}, false)
-    define_table('trees_table', {name: :text, tree_unique_key: :integer, trunk_id: :integer, environment_id: :integer, environment_type: :string}, false)
-    define_updatable_view('trees', 'trees_table')
+    define_table('trees', {name: :text, tree_unique_key: :integer, trunk_id: :integer, environment_id: :integer, environment_type: :string}, false)
     define_table('trunks', {trunk_unique_key: :integer, length: :decimal}, false)
     define_table('swamps', {}, false)
   end
