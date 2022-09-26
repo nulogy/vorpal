@@ -1,6 +1,11 @@
-appraise "rails-6-0" do
+appraise "rails-7-0" do
   ruby ">= 2.7.0"
-  gem "activerecord", "~> 6.0.0"
+  gem "activerecord", "~> 7.0.4"
+end
+
+appraise "rails-6-1" do
+  ruby ">= 2.7.0"
+  gem "activerecord", "~> 6.1.0"
 end
 
 appraise "rails-5-2" do

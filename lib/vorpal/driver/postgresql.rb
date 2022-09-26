@@ -65,7 +65,10 @@ module Vorpal
       # @param db_class [Class] A subclass of ActiveRecord::Base
       # @return [[Integer]] An array of unused primary keys.
       def get_primary_keys(db_class, count)
-        result = execute("select nextval($1) from generate_series(1,$2);", [sequence_name(db_class), count])
+        result = execute("select nextval($1) from generate_series(1,$2);", [
+          ActiveRecord::Relation::QueryAttribute.new("sequence_name", sequence_name(db_class), ActiveRecord::Type::String.new),
+          ActiveRecord::Relation::QueryAttribute.new("count", count, ActiveRecord::Type::Integer.new)
+        ])
         result.rows.map(&:first).map(&:to_i)
       end
 
@@ -140,12 +143,11 @@ module Vorpal
       def sequence_name(db_class)
         @sequence_names[db_class] ||= execute(
           "SELECT substring(column_default from '''(.*)''') FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = $1 AND column_name = 'id' LIMIT 1",
-          [db_class.table_name]
+          [ActiveRecord::Relation::QueryAttribute.new("table_name", db_class.table_name, ActiveRecord::Type::String.new)]
         ).rows.first.first
       end
 
       def execute(sql, binds)
-        binds = binds.map { |row| [nil, row] }
         ActiveRecord::Base.connection.exec_query(sql, 'SQL', binds)
       end
     end

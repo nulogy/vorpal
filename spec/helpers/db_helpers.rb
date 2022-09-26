@@ -47,12 +47,6 @@ module DbHelpers
     end
   end
 
-  def define_updatable_view(view_name, table_name)
-    db_connection.execute(<<~SQL)
-      CREATE OR REPLACE VIEW #{view_name} AS SELECT * FROM #{table_name}
-    SQL
-  end
-
   # Has the same API as the Rails create_table, except doesn't die when the
   # table already exists
   def create_table(table_name, force: nil, **options)
@@ -74,7 +68,9 @@ module DbHelpers
   def table_name_is_free?(table_name)
     if (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 1) ||
       (ActiveRecord::VERSION::MAJOR == 5 && ActiveRecord::VERSION::MINOR == 2) ||
-      (ActiveRecord::VERSION::MAJOR == 6 && ActiveRecord::VERSION::MINOR == 0)
+      (ActiveRecord::VERSION::MAJOR == 6 && ActiveRecord::VERSION::MINOR == 0) ||
+      (ActiveRecord::VERSION::MAJOR == 6 && ActiveRecord::VERSION::MINOR == 1) ||
+      (ActiveRecord::VERSION::MAJOR == 7 && ActiveRecord::VERSION::MINOR == 0)
       !db_connection.data_source_exists?(table_name)
     else
       raise "ActiveRecord Version #{ActiveRecord::VERSION::STRING} is not supported!"
